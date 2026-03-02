@@ -1,0 +1,288 @@
+<div th:fragment="CuerpoPagina">
+
+    <!-- Título de la sección -->
+    <h2 class="mb-5 mt-4 text-center">Tus próximos eventos</h2>
+
+    <!-- Tareas próximas -->
+    <div class="cards-row" th:if="${tareasProximas != null and !#lists.isEmpty(tareasProximas)}">
+        <div class="cards-col" th:each="mapa : ${tareasProximas}">
+            <div class="custom-card">
+                <div class="custom-card-header">
+                    <span class="custom-card-icon">
+                        <svg fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path clip-rule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" fill-rule="evenodd"></path>
+                        </svg>
+                    </span>
+                    <p class="custom-card-alert">Trabajo Pendiente!</p>
+                    <span class="task-status status-pending"></span>
+                </div>
+                <p class="custom-card-message"
+                   th:text="'Tarea de ' + ${mapa['tarea']['curso']['nombre']} + ' para el ' + ${#temporals.format(mapa['tarea']['fechaEntrega'], 'dd/MM/yyyy')}">
+                    Tarea de Ejemplo para el 7/12/25
+                </p>
+                <p>Tiempo disponible: 
+                    <b th:text="${mapa['diasRestantes'] + ' días'}" 
+                       th:class="${mapa['colorTiempo']}">4 días</b>
+                </p>
+                <div class="custom-card-actions">
+                    <a th:href="@{/tareas/ver/{id}(id=${mapa['tarea']['id']})}" 
+                       class="custom-card-read">Ver Tarea</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensaje cuando no hay tareas -->
+    <div th:if="${tareasProximas == null or #lists.isEmpty(tareasProximas)}" class="text-center">
+        <p>No hay tareas próximas a vencer.</p>
+    </div>
+
+    <!-- Progreso del Cuatrimestre con Configuración - CENTRADO -->
+    <div class="text-center mt-5 mb-3">
+        <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap">
+            <h2 class="m-0">Progreso del Cuatrimestre</h2>
+
+            <!-- Dropdown con botón relleno -->
+            <div class="dropdown">
+                <button class="btn btn-primary btn-sm dropdown-toggle" 
+                        type="button" 
+                        id="dropdownConfigCuatrimestre" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false">
+                    ⚙️ Configurar
+                </button>
+
+                <div class="dropdown-menu p-3 shadow-lg border-0 rounded-3" 
+                     aria-labelledby="dropdownConfigCuatrimestre" 
+                     style="min-width: 280px;">
+
+                    <form th:action="@{/configurar-cuatrimestre}" method="post">
+                        <!-- Fecha inicio -->
+                        <div class="mb-3">
+                            <label for="inicio" class="form-label fw-bold">📅 Fecha de inicio</label>
+                            <input type="date" 
+                                   id="inicio" 
+                                   name="inicio" 
+                                   th:value="${fechaInicioCuatrimestre}" 
+                                   class="form-control" 
+                                   required>
+                        </div>
+
+                        <!-- Fecha fin -->
+                        <div class="mb-3">
+                            <label for="fin" class="form-label fw-bold">📅 Fecha final</label>
+                            <input type="date" 
+                                   id="fin" 
+                                   name="fin" 
+                                   th:value="${fechaFinCuatrimestre}" 
+                                   class="form-control" 
+                                   required>
+                        </div>
+
+                        <!-- Guardar -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-sm">
+                                💾 Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra de progreso con información detallada de tareas -->
+    <div class="barra-progreso">
+        <div th:each="semana : ${semanas}" 
+             th:class="'semana ' + (${semana['completada']} ? 'completada' : '')"
+             th:attr="data-semana=${semana['numero']}">
+
+            S<span th:text="${semana['numero']}">1</span>
+
+            <!-- Tooltip mejorado que usa el sistema existente -->
+            <div class="info">
+                <!-- Header del tooltip -->
+                <div class="tooltip-header-mejorado">
+                    📅 Semana <span th:text="${semana['numero']}">1</span>
+                    <span th:if="${semana['actual']}" class="badge-actual">Actual</span>
+                </div>
+                
+                <!-- HR debajo del header -->
+                <hr class="separador-header-hr">
+
+                <!-- Contenido con tareas -->
+                <div th:if="${semana['tareas'] != null and !#lists.isEmpty(semana['tareas'])}">
+                    <div th:each="tarea, iterStat : ${semana['tareas']}" class="tarea-separada">
+                        <div class="tarea-nombre">📝 Tarea: <span th:text="${tarea['titulo']}">Título de la tarea</span></div>
+                        <div class="tarea-curso">📚 <span th:text="${tarea['curso']['nombre']}">Curso</span></div>
+                        <div class="tarea-fecha">📅 <span th:text="${#temporals.format(tarea['fechaEntrega'], 'dd/MM/yyyy')}">Fecha</span></div>
+                        <div class="tarea-estado">
+                            <span th:if="${tarea['estado'].name()} == 'ENTREGADA'" class="estado-ok">✅ Completada</span>
+                            <span th:unless="${tarea['estado'].name()} == 'ENTREGADA'" class="estado-pendiente">⏳ Pendiente</span>
+                        </div>
+                        
+                        <!-- Separador entre tareas (excepto la última) -->
+                        <hr th:unless="${iterStat.last}" class="separador-tarea-hr">
+                    </div>
+                </div>
+
+                <!-- Contenido sin tareas -->
+                <div th:if="${semana['tareas'] == null or #lists.isEmpty(semana['tareas'])}" 
+                     class="sin-tareas-mensaje">
+                    📝 Sin tareas asignadas
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ========================== */
+    /* MEJORAS PARA TOOLTIPS DE SEMANAS */
+    /* ========================== */
+    
+    /* Mejoramos el tooltip existente para que sea más legible */
+    .semana .info {
+        visibility: hidden;
+        opacity: 0;
+        width: 280px; /* Ancho aumentado */
+        background-color: #111827;
+        color: #fff;
+        text-align: left;
+        padding: 12px; /* Más padding */
+        border-radius: 12px; /* Bordes más redondeados */
+        position: absolute;
+        bottom: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        transition: opacity 0.3s;
+        z-index: 100; /* Z-index más alto */
+        font-size: 0.85rem; /* Texto un poco más grande */
+        line-height: 1.4rem; /* Mejor espaciado de línea */
+        box-shadow: 0 8px 25px rgba(0,0,0,0.4); /* Sombra más pronunciada */
+        border: 1px solid rgba(255,255,255,0.1); /* Borde sutil */
+    }
+
+    /* Header del tooltip */
+    .tooltip-header-mejorado {
+        font-weight: bold;
+        font-size: 0.95rem;
+        margin-bottom: 0px; /* Removido margin-bottom ya que el HR lo maneja */
+        padding-bottom: 0px; /* Removido padding-bottom ya que el HR lo maneja */
+        border-bottom: none; /* Removido border-bottom ya que usamos HR */
+        color: #60a5fa; /* Color azul claro */
+    }
+
+    .badge-actual {
+        background-color: #3b82f6;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        margin-left: 6px;
+    }
+
+    /* Cada tarea separada */
+    .tarea-separada {
+        margin-bottom: 8px;
+    }
+
+    .tarea-nombre {
+        font-weight: bold;
+        color: #fbbf24; /* Color amarillo */
+        margin-bottom: 3px;
+        font-size: 0.9rem;
+    }
+
+    .tarea-curso, .tarea-fecha {
+        color: #d1d5db; /* Gris claro */
+        margin-bottom: 2px;
+        font-size: 0.8rem;
+    }
+
+    .tarea-estado {
+        margin-top: 4px;
+        font-size: 0.8rem;
+    }
+
+    .estado-ok {
+        color: #10b981; /* Verde */
+        font-weight: bold;
+    }
+
+    .estado-pendiente {
+        color: #f59e0b; /* Naranja */
+        font-weight: bold;
+    }
+
+    /* HR debajo del header de semana */
+    .separador-header-hr {
+        border: none;
+        height: 1px;
+        background-color: rgba(255,255,255,0.25);
+        margin: 8px 0;
+        opacity: 0.8;
+    }
+
+    /* Separador entre tareas con HR */
+    .separador-tarea-hr {
+        border: none;
+        height: 1px;
+        background-color: rgba(255,255,255,0.25);
+        margin: 10px 0;
+        opacity: 0.8;
+    }
+
+    /* Mensaje cuando no hay tareas */
+    .sin-tareas-mensaje {
+        text-align: center;
+        color: #9ca3af;
+        font-style: italic;
+        padding: 8px 0;
+    }
+
+    /* Flecha del tooltip mejorada */
+    .semana .info::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -8px; /* Flecha más grande */
+        border-width: 8px;
+        border-style: solid;
+        border-color: #111827 transparent transparent transparent;
+    }
+
+    /* Hover mejorado */
+    .semana:hover .info {
+        visibility: visible;
+        opacity: 1;
+        bottom: 55px; /* Un poco más arriba */
+    }
+
+    /* Asegurar que el tooltip no se corte en pantallas pequeñas */
+    @media (max-width: 768px) {
+        .semana .info {
+            width: 250px;
+            font-size: 0.8rem;
+            line-height: 1.3rem;
+        }
+    }
+
+    /* Mejorar la visibilidad cuando hay muchas semanas */
+    .barra-progreso {
+        padding: 20px 0; /* Más espacio vertical */
+    }
+
+    /* Colores para tiempo restante (manteniendo tu sistema) */
+    .text-success { color: var(--color-success) !important; }
+    .text-warning { color: var(--color-warning) !important; }
+    .text-danger { color: var(--color-danger) !important; }
+
+    /* Variables de color */
+    :root {
+        --color-success: #10b981;
+        --color-warning: #f59e0b;
+        --color-danger: #ef4444;
+    }
+</style>

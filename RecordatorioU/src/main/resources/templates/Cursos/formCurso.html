@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Agregar Curso</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" th:href="@{/css/estilos.css(v=${#dates.createNow().time})}" href="/css/estilos.css">
+        <style>
+            .total-row {
+                background-color: #f8f9fa;
+                font-weight: bold;
+                border-top: 2px solid #dee2e6;
+            }
+            .total-porcentaje {
+                font-size: 1.1rem;
+                color: #28a745;
+            }
+            .total-porcentaje.error {
+                color: #dc3545;
+            }
+        </style>
+    </head>
+    <body>
+
+        <div th:replace="~{fragments/header :: HeaderPagina}"></div>
+
+        <main class="container mt-5">
+            <h2 class="mb-4" th:text="${curso.id == null} ? 'Agregar Curso' : 'Editar Curso'">Agregar Curso</h2>
+
+            <!-- Mostrar mensajes -->
+            <div th:if="${mensaje}" class="alert" th:classappend="' alert-' + ${tipo}" role="alert">
+                <span th:text="${mensaje}"></span>
+            </div>
+
+            <form th:action="@{/cursos/guardar}" th:object="${curso}" method="post">
+                <input type="hidden" th:field="*{id}" />
+
+                <div class="mb-3">
+                    <label class="form-label">Nombre del Curso</label>
+                    <input type="text" class="form-control" th:field="*{nombre}" placeholder="Ej: Programación en Java" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Modalidad</label>
+                    <select class="form-select" id="modalidad" th:field="*{modalidad}" required>
+                        <option value="" disabled th:if="${curso.modalidad == null}" selected>Seleccione modalidad</option>
+                        <option value="VIRTUAL" th:selected="${curso.modalidad == T(com.reminderU.reminderU.modelo.Curso.Modalidad).VIRTUAL}">Virtual</option>
+                        <option value="PRESENCIAL" th:selected="${curso.modalidad == T(com.reminderU.reminderU.modelo.Curso.Modalidad).PRESENCIAL}">Presencial</option>
+                    </select>
+                </div>
+
+                <div class="mb-3" id="sede-container" th:style="${curso.modalidad == T(com.reminderU.reminderU.modelo.Curso.Modalidad).PRESENCIAL} ? 'display:block;' : 'display:none;'">
+                    <label class="form-label">Sede</label>
+                    <input type="text" class="form-control" th:field="*{sede}" placeholder="Ej: San Pedro, Heredia">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Profesor</label>
+                    <input type="text" class="form-control" th:field="*{profesor}" placeholder="Ej: Juan Pérez" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Correo del Profesor</label>
+                    <input type="email" class="form-control" th:field="*{correo}" placeholder="ejemplo@ufide.ac.cr" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Horario</label>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <select class="form-select" id="dia" th:field="*{dia}" required>
+                                <option value="" disabled th:if="${curso.dia == null}" selected>Seleccione el día</option>
+                                <option th:each="d : ${dias}" 
+                                        th:value="${d}" 
+                                        th:text="${d}" 
+                                        th:selected="${curso.dia != null} ? ${curso.dia.name()} == ${d} : false">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-select" id="hora" th:field="*{hora}" required>
+                                <option value="" disabled th:if="${curso.hora == null}" selected>Seleccione la hora</option>
+                                <option th:each="h : ${franjasHorarias}" 
+                                        th:value="${h}" 
+                                        th:text="${h}" 
+                                        th:selected="${curso.hora != null} ? ${curso.hora} == ${h} : false">
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estrategia de evaluación -->
+                <h3 class="mt-4">📊 Estrategia de Evaluación</h3>
+                <table class="table table-bordered" id="tablaEvaluacion">
+                    <thead>
+                        <tr>
+                            <th>Rubro</th>
+                            <th>Porcentaje (%)</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="rubro, iterStat : ${curso.rubros}">
+                            <td>
+                                <input type="text"
+                                       th:name="'rubros[' + ${iterStat.index} + '].nombre'"
+                                       th:value="${rubro.nombre}"
+                                       class="form-control"
+                                       placeholder="Nuevo rubro"
+                                       required>
+                            </td>
+                            <td>
+                                <input type="number"
+                                       th:name="'rubros[' + ${iterStat.index} + '].porcentaje'"
+                                       th:value="${rubro.porcentaje}"
+                                       class="form-control rubro-porcentaje"
+                                       min="0" max="100" step="0.01"
+                                       required>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-danger eliminarFila">❌</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td><strong>TOTAL</strong></td>
+                            <td><span id="totalPorcentaje" class="total-porcentaje">0.00%</span></td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div class="mt-2">
+                    <button type="button" class="btn btn-sm btn-secondary" id="agregarRubroBtn">Agregar Rubro</button>
+                    <small class="text-muted ms-3">El total debe sumar 100%</small>
+                </div>
+
+
+
+                <button type="submit" class="btn btn-primary mt-3">
+                    <span th:if="${curso.id == null}">Agregar Curso</span>
+                    <span th:if="${curso.id != null}">Actualizar Curso</span>
+                </button>
+                <a th:href="@{/cursos}" class="btn btn-secondary mt-3 ms-2">Cancelar</a>
+            </form>
+
+        </main>
+
+        <div th:replace="~{fragments/footer :: FooterPagina}"></div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Toggle sede
+                const modalidadSelect = document.getElementById('modalidad');
+                const sedeContainer = document.getElementById('sede-container');
+
+                function toggleSede() {
+                    sedeContainer.style.display = modalidadSelect.value === 'PRESENCIAL' ? 'block' : 'none';
+                }
+
+                toggleSede();
+                modalidadSelect.addEventListener('change', toggleSede);
+
+                // Estrategia de evaluación dinámica
+                let indice = document.querySelectorAll('#tablaEvaluacion tbody tr').length;
+                const tabla = document.getElementById('tablaEvaluacion');
+                const btnAgregar = document.getElementById('agregarRubroBtn');
+                const totalSpan = document.getElementById('totalPorcentaje');
+
+                // Función para agregar fila
+                btnAgregar.addEventListener('click', function () {
+                    const tbody = tabla.querySelector('tbody');
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                    <td><input type="text" name="rubros[${indice}].nombre" class="form-control" placeholder="Nuevo rubro" required></td>
+                    <td><input type="number" name="rubros[${indice}].porcentaje" class="form-control rubro-porcentaje" min="0" max="100" step="0.01" required></td>
+                    <td><button type="button" class="btn btn-sm btn-danger eliminarFila">❌</button></td>
+                `;
+                    tbody.appendChild(fila);
+                    indice++;
+                    agregarEventoEliminar(fila);
+                    agregarEventoPorcentaje(fila);
+                    actualizarTotal();
+                });
+
+                // Función para agregar evento a eliminar
+                function agregarEventoEliminar(fila) {
+                    const btn = fila.querySelector('.eliminarFila');
+                    btn.addEventListener('click', function () {
+                        fila.remove();
+                        actualizarIndices();
+                        actualizarTotal();
+                    });
+                }
+
+                // Inicializar botones eliminar existentes y eventos de porcentaje
+                tabla.querySelectorAll('tbody tr').forEach(tr => {
+                    agregarEventoEliminar(tr);
+                    agregarEventoPorcentaje(tr);
+                });
+
+                // Actualizar nombres de los inputs para que Spring los lea correctamente
+                function actualizarIndices() {
+                    const filas = tabla.querySelectorAll('tbody tr');
+                    filas.forEach((tr, idx) => {
+                        tr.querySelectorAll('input').forEach(input => {
+                            if (input.name.includes('nombre'))
+                                input.name = `rubros[${idx}].nombre`;
+                            if (input.name.includes('porcentaje'))
+                                input.name = `rubros[${idx}].porcentaje`;
+                        });
+                    });
+                    indice = filas.length;
+                }
+
+                // Función para actualizar el total automáticamente
+                function actualizarTotal() {
+                    let total = 0;
+                    document.querySelectorAll('.rubro-porcentaje').forEach(input => {
+                        const val = parseFloat(input.value);
+                        if (!isNaN(val))
+                            total += val;
+                    });
+
+                    totalSpan.textContent = total.toFixed(2) + '%';
+
+                    // Cambiar color según si suma 100% o no
+                    totalSpan.classList.remove('error');
+                    if (total !== 100) {
+                        totalSpan.classList.add('error');
+                    }
+                }
+
+                // Evento input para cada porcentaje
+                function agregarEventoPorcentaje(fila) {
+                    const input = fila.querySelector('.rubro-porcentaje');
+                    if (input) {
+                        input.addEventListener('input', actualizarTotal);
+                    }
+                }
+
+                // Inicializar el total al cargar la página
+                actualizarTotal();
+            });
+        </script>
+
+    </body>
+</html>

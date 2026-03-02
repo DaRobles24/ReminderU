@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${tarea.id == null} ? 'Agregar Tarea' : 'Editar Tarea'">Agregar Tarea</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .card-section {
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+        .section-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+        #estadoSelect {
+            font-weight: bold;
+        }
+        .modalidad-container {
+            display: flex;
+            gap: 1rem;
+        }
+        .modalidad-option {
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px 0;
+            background: transparent;
+            transition: all 0.3s;
+        }
+        .modalidad-option:hover {
+            border-color: #007bff;
+            background-color: rgba(0,123,255,0.05);
+        }
+        .btn-check:checked + .modalidad-option {
+            border-color: #007bff;
+            background-color: rgba(0,123,255,0.2);
+        }
+        .modalidad-option .emoji {
+            font-size: 1.5rem;
+            display: block;
+        }
+    </style>
+
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    </head>
+<body>
+    <div th:replace="~{fragments/header :: HeaderPagina}"></div>
+    
+    <main class="container mt-5">
+        <h2 class="mb-4" th:text="${tarea.id == null} ? 'Agregar Tarea' : 'Editar Tarea'">Agregar Tarea</h2>
+        
+        <div th:if="${mensaje}" class="alert" th:classappend="' alert-' + ${tipo}" role="alert">
+            <span th:text="${mensaje}"></span>
+        </div>
+        
+        <form th:action="@{/tareas/guardar}" th:object="${tarea}" method="post" id="form-tarea">
+            <input type="hidden" th:field="*{id}" />
+            
+            <!-- SECCIÓN CURSO -->
+            <div class="card p-3 mb-3 card-section">
+                <div class="section-title">📚 Curso</div>
+                <select class="form-select" th:field="*{curso.id}" required>
+                    <option value="" th:selected="${tarea.curso == null}" disabled>Seleccione un curso</option>
+                    <option th:each="c : ${cursos}" th:value="${c.id}" th:text="${c.nombre}" 
+                            th:selected="${tarea.curso != null} ? ${tarea.curso.id} == ${c.id} : false"></option>
+                </select>
+            </div>
+            
+            <!-- SECCIÓN DATOS DE LA TAREA -->
+            <div class="card p-3 mb-3 card-section">
+                <div class="section-title">📝 Datos de la tarea</div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Título</label>
+                    <input type="text" class="form-control" th:field="*{titulo}" placeholder="Ej: Entregar proyecto" required>
+                </div>
+                
+                <!-- MODALIDAD -->
+                <div class="mb-3">
+                    <label class="form-label">Modalidad de trabajo</label>
+                    <div class="modalidad-container">
+                        <input type="radio" class="btn-check" th:field="*{modalidad}" value="INDIVIDUAL" id="individual" autocomplete="off">
+                        <label class="modalidad-option" for="individual">
+                            <span class="emoji">👤</span>
+                            Individual
+                        </label>
+                        
+                        <input type="radio" class="btn-check" th:field="*{modalidad}" value="GRUPAL" id="grupal" autocomplete="off">
+                        <label class="modalidad-option" for="grupal">
+                            <span class="emoji">👥</span>
+                            Grupal
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-control" th:field="*{descripcion}" placeholder="Ej: Proyecto de Java" required></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Valor de la tarea (%)</label>
+                    <input type="number" class="form-control" th:field="*{porcentaje}" placeholder="Ej: 20" min="0" max="100" step="0.01" required>
+                </div>
+            </div>
+            
+            <!-- SECCIÓN ENTREGA -->
+            <div class="card p-3 mb-3 card-section">
+                <div class="section-title">⏰ Entrega</div>
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Fecha de entrega</label>
+                        <input type="date" class="form-control" th:field="*{fechaEntrega}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Hora máxima de entrega</label>
+                        <input type="time" class="form-control" th:field="*{horaEntrega}" required>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SECCIÓN ESTADO -->
+            <div class="card p-3 mb-3 card-section">
+                <div class="section-title">✅ Estado</div>
+                <select class="form-select" th:field="*{estado}" id="estadoSelect">
+                    <option value="PENDIENTE">Pendiente</option>
+                    <option value="ENTREGADA">Completada</option>
+                    <option value="VENCIDA">Atrasada</option>
+                </select>
+            </div>
+            
+            <!-- BOTONES -->
+            <button type="submit" class="btn btn-primary mt-3">
+                <span th:if="${tarea.id == null}">💾 Guardar Tarea</span>
+                <span th:if="${tarea.id != null}">✏️ Actualizar Tarea</span>
+            </button>
+            <a th:href="@{/tareas}" class="btn btn-secondary mt-3 ms-2">❌ Cancelar</a>
+        </form>
+    </main>
+    
+    <div th:replace="~{fragments/footer :: FooterPagina}"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const estadoSelect = document.getElementById('estadoSelect');
+            
+            function actualizarColor() {
+                switch (estadoSelect.value) {
+                    case 'PENDIENTE':
+                        estadoSelect.style.color = 'orange';
+                        estadoSelect.style.borderColor = 'orange';
+                        break;
+                    case 'ENTREGADA':
+                        estadoSelect.style.color = 'green';
+                        estadoSelect.style.borderColor = 'green';
+                        break;
+                    case 'VENCIDA':
+                        estadoSelect.style.color = 'red';
+                        estadoSelect.style.borderColor = 'red';
+                        break;
+                    default:
+                        estadoSelect.style.color = 'black';
+                        estadoSelect.style.borderColor = '#ced4da';
+                }
+            }
+            
+            actualizarColor();
+            estadoSelect.addEventListener('change', actualizarColor);
+        });
+    </script>
+
+<div id="contenedor-tareas"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('form-tarea');
+    if(!form) return;
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Construir payload (ajusta names a los campos de tu form)
+        const data = {};
+        new FormData(form).forEach((v,k) => { data[k] = v; });
+
+        // CSRF
+        const tokenMeta = document.querySelector('meta[name="_csrf"]');
+        const headerMeta = document.querySelector('meta[name="_csrf_header"]');
+        const token = tokenMeta ? tokenMeta.getAttribute('content') : null;
+        const header = headerMeta ? headerMeta.getAttribute('content') : 'X-CSRF-TOKEN';
+
+        try {
+            const res = await fetch('/api/tareas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? {[header]: token} : {})
+                },
+                body: JSON.stringify(data)
+            });
+
+            if(!res.ok) {
+                const txt = await res.text();
+                alert('Error guardando tarea: ' + txt);
+                return;
+            }
+
+            const saved = await res.json();
+            // Insertar en la lista de tareas (contenedor)
+            const cont = document.getElementById('contenedor-tareas');
+            if(cont){
+                const nodo = document.createElement('div');
+                nodo.className = 'card p-2 mb-2';
+                nodo.innerHTML = `<h5>${saved.titulo || ''}</h5><p>${saved.descripcion || ''}</p><small>Entrega: ${saved.fechaEntrega || ''} ${saved.horaEntrega || ''}</small>`;
+                cont.prepend(nodo);
+            }
+
+            form.reset();
+        } catch (err) {
+            console.error(err);
+            alert('Error de comunicación con el servidor');
+        }
+    });
+});
+</script>
+</body>
+</html>

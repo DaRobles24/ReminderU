@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar/Editar Curso</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/estilos.css(v=${#dates.createNow().time})}" href="/css/estilos.css">
+</head>
+<body>
+
+    <div th:replace="~{fragments/header :: HeaderPagina}"></div>
+
+    <main class="container mt-5">
+        <h2 class="mb-4" th:text="${curso.id == null} ? 'Agregar Curso' : 'Editar Curso'">Agregar Curso</h2>
+
+        <!-- Mensaje de advertencia o éxito -->
+        <div th:if="${mensaje}" class="alert" th:classappend="' alert-' + ${tipo}" role="alert">
+            <span th:text="${mensaje}"></span>
+        </div>
+
+        <form th:action="@{/cursos/guardar}" th:object="${curso}" method="post">
+            <!-- Campo oculto para ID (para edición) -->
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="mb-3">
+                <label class="form-label">Nombre del Curso</label>
+                <input type="text" class="form-control" th:field="*{nombre}" placeholder="Ej: Programación en Java" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Modalidad</label>
+                <select class="form-select" id="modalidad" th:field="*{modalidad}" required>
+                    <option value="" disabled th:if="${curso.modalidad == null}" selected>Seleccione modalidad</option>
+                    <option value="VIRTUAL" th:selected="${curso.modalidad == T(com.reminderU.reminderU.modelo.Curso.Modalidad).VIRTUAL}">Virtual</option>
+                    <option value="PRESENCIAL" th:selected="${curso.modalidad == T(com.reminderU.reminderU.modelo.Curso.Modalidad).PRESENCIAL}">Presencial</option>
+                </select>
+            </div>
+
+            <div class="mb-3" id="sede-container" style="display:none;">
+                <label class="form-label">Sede</label>
+                <input type="text" class="form-control" th:field="*{sede}" placeholder="Ej: San Pedro, Heredia, etc.">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Profesor</label>
+                <input type="text" class="form-control" th:field="*{profesor}" placeholder="Ej: Juan Pérez" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Correo del Profesor</label>
+                <input type="email" class="form-control" th:field="*{correo}" placeholder="ejemplo@ufide.ac.cr" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Horario</label>
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <select class="form-select" id="dia" th:field="*{dia}" required>
+                            <option value="" disabled th:if="${curso.dia == null}" selected>Seleccione el día</option>
+                            <option value="LUNES" th:selected="${curso.dia == T(com.reminderU.reminderU.modelo.Curso.Dia).LUNES}">Lunes</option>
+                            <option value="MARTES" th:selected="${curso.dia == T(com.reminderU.reminderU.modelo.Curso.Dia).MARTES}">Martes</option>
+                            <option value="MIERCOLES" th:selected="${curso.dia == T(com.reminderU.reminderU.modelo.Curso.Dia).MIERCOLES}">Miércoles</option>
+                            <option value="JUEVES" th:selected="${curso.dia == T(com.reminderU.reminderU.modelo.Curso.Dia).JUEVES}">Jueves</option>
+                            <option value="VIERNES" th:selected="${curso.dia == T(com.reminderU.reminderU.modelo.Curso.Dia).VIERNES}">Viernes</option>
+                            <option value="SABADO" th:selected="${curso.dia == T(com.reminderU.reminderU.modelo.Curso.Dia).SABADO}">Sábado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <select class="form-select" id="hora" th:field="*{hora}" required>
+                            <option value="" disabled th:if="${curso.hora == null}" selected>Seleccione la hora</option>
+                            <option value="8-11" th:selected="${curso.hora == '8-11'}">8-11 AM</option>
+                            <option value="11-2" th:selected="${curso.hora == '11-2'}">11-2 PM</option>
+                            <option value="2-5" th:selected="${curso.hora == '2-5'}">2-5 PM</option>
+                            <option value="6-9" th:selected="${curso.hora == '6-9'}">6-9 PM</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">
+                <span th:if="${curso.id == null}">Agregar Curso</span>
+                <span th:if="${curso.id != null}">Actualizar Curso</span>
+            </button>
+            <a th:href="@{/cursos}" class="btn btn-secondary mt-3 ms-2">Cancelar</a>
+        </form>
+
+    </main>
+
+    <div th:replace="~{fragments/footer :: FooterPagina}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalidadSelect = document.getElementById('modalidad');
+            const sedeContainer = document.getElementById('sede-container');
+
+            function toggleSede() {
+                sedeContainer.style.display = modalidadSelect.value === 'PRESENCIAL' ? 'block' : 'none';
+            }
+
+            toggleSede();
+            modalidadSelect.addEventListener('change', toggleSede);
+        });
+    </script>
+</body>
+</html>

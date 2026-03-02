@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Curso</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" th:href="@{/css/estilos.css(v=${#dates.createNow().time})}" href="/css/estilos.css">
+        <style>
+            /* ===== ESTILOS PRINCIPALES ===== */
+            .circulo-modalidad {
+                width: 15px;
+                height: 15px;
+                border-radius: 50%;
+                display: inline-block;
+                margin-right: 8px;
+            }
+            .circulo-virtual {
+                background-color: #007bff;
+            }
+            .circulo-presencial {
+                background-color: #28a745;
+            }
+            .virtual {
+                background-color: #007bff;
+                color: white;
+                border-radius: 8px;
+                font-size: 0.85rem;
+            }
+            .presencial {
+                background-color: #28a745;
+                color: white;
+                border-radius: 8px;
+                font-size: 0.85rem;
+            }
+            .cards-row {
+                margin-bottom: 20px;
+            }
+            .custom-card {
+                margin-bottom: 20px;
+            }
+            .horario-container {
+                overflow-x: auto;
+                margin: 20px 0;
+            }
+            .table td, .table th {
+                vertical-align: middle;
+                min-width: 120px;
+            }
+            .curso-celda {
+                min-height: 60px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            .leyenda-cursos {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 20px;
+                margin-bottom: 20px;
+            }
+            .evaluacion-section {
+                background: #fafafa;
+                border-radius: 8px;
+                padding: 20px;
+                margin-top: 20px;
+                border: 1px solid #e9ecef;
+            }
+            .evaluacion-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 16px;
+                color: #495057;
+                font-weight: 500;
+                font-size: 0.95rem;
+                border-bottom: 1px solid #e9ecef;
+                padding-bottom: 8px;
+            }
+            .evaluacion-icon {
+                font-size: 1rem;
+                color: #6c757d;
+            }
+            .sin-rubros {
+                text-align: center;
+                color: #868e96;
+                font-style: italic;
+                padding: 20px;
+                background: #f8f9fa;
+                border-radius: 4px;
+                border: 1px dashed #ced4da;
+                font-size: 0.9rem;
+            }
+            .rubros-container {
+                display: flex;
+                flex-direction: column;
+                gap: 1px;
+                background: #dee2e6;
+                border-radius: 4px;
+                overflow: hidden;
+            }
+            .rubro-item {
+                background: white;
+                border: none;
+                padding: 14px 16px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: background-color 0.2s ease;
+            }
+            .rubro-item:hover {
+                background: #f8f9fa;
+            }
+            .rubro-nombre {
+                font-weight: 500;
+                color: #495057;
+                font-size: 0.9rem;
+            }
+            .rubro-porcentaje {
+                background: #495057;
+                color: white;
+                padding: 4px 10px;
+                border-radius: 3px;
+                font-weight: 600;
+                font-size: 0.8rem;
+                min-width: 45px;
+                text-align: center;
+            }
+            .porcentaje-total {
+                margin-top: 12px;
+                padding-top: 12px;
+                border-top: 1px solid #e9ecef;
+                text-align: right;
+                font-size: 0.85rem;
+                color: #6c757d;
+                font-weight: 500;
+            }
+        </style>
+    </head>
+    <body>
+
+        <!-- Header -->
+        <div th:replace="~{fragments/header :: HeaderPagina}"></div>
+
+        <main class="container mt-4">
+
+            <!-- ALERTA DINÁMICA -->
+            <div th:if="${mensaje}" 
+                 class="alert alert-dismissible fade show"
+                 th:classappend="' alert-' + ${tipo}" role="alert">
+                <span th:text="${mensaje}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>Bienvenido a tus cursos</h3>
+
+                <!-- Dropdown Agregar/Editar Curso -->
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="agregarCursoDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        Cursos
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="agregarCursoDropdown">
+                        <li><a class="dropdown-item" th:href="@{/cursos/form}">Agregar Curso</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li th:each="curso : ${cursosExistentes}">
+                            <a class="dropdown-item" th:href="@{/cursos/editar/{id}(id=${curso.id})}">
+                                Editar [[${curso.nombre}]]
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Cards de cursos -->
+            <div class="row">
+                <div class="col-md-4" th:each="curso : ${cursosExistentes}">
+                    <div class="custom-card p-3 border rounded shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <p class="mb-0" th:text="${curso.modalidad.name()}"></p>
+                            <span class="circulo-modalidad"
+                                  th:classappend="${curso.modalidad.name() == 'VIRTUAL'} ? ' circulo-virtual' : ' circulo-presencial'"></span>
+                        </div>
+                        <hr>
+                        <p class="mb-1"><b th:text="${curso.nombre}"></b></p>
+                        <p class="mb-1">Profesor: <b th:text="${curso.profesor}"></b></p>
+                        <p class="mb-1">Correo: <b th:text="${curso.correo}"></b></p>
+                        <p class="mb-1">Horario: <b th:text="|${curso.dia.name()} ${curso.hora}|"></b></p>
+
+                        <!-- Estrategia de evaluación -->
+                        <div class="evaluacion-section">
+                            <div class="evaluacion-header">
+                                <span class="evaluacion-icon">📊</span>
+                                <span>Estrategia de Evaluación</span>
+                            </div>
+
+                            <div th:if="${#lists.isEmpty(curso.rubros)}" class="sin-rubros">
+                                Sin rubros definidos
+                            </div>
+
+                            <div th:unless="${#lists.isEmpty(curso.rubros)}">
+                                <div class="rubros-container">
+                                    <div th:each="rubro : ${curso.rubros}" class="rubro-item">
+                                        <div class="rubro-nombre" th:text="${rubro.nombre}"></div>
+                                        <div class="rubro-porcentaje" th:text="|${rubro.porcentaje}%|"></div>
+                                    </div>
+                                </div>
+                                <div class="porcentaje-total">
+                                    Total: 100%
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-2 d-flex justify-content-between">
+                            <a class="btn btn-sm btn-secondary" th:href="@{/cursos/editar/{id}(id=${curso.id})}">Editar</a>
+                            <a class="btn btn-sm btn-primary" th:href="@{/cursos/ver/{id}(id=${curso.id})}">Ir a Curso</a>
+                            <!-- NUEVO BOTÓN ELIMINAR CON MODAL -->
+                            <a class="btn btn-sm btn-danger" href="#"
+                               data-bs-toggle="modal" 
+                               th:attr="data-id=${curso.id}, data-nombre=${curso.nombre}"
+                               data-bs-target="#eliminarCursoModal">
+                                🗑️ Eliminar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <!-- Tabla de horarios -->
+            <h2 class="text-center mb-4">Horario de Clases</h2>
+            <div class="leyenda-cursos">
+                <div><span class="circulo-virtual"></span> Virtual</div>
+                <div><span class="circulo-presencial"></span> Presencial</div>
+            </div>
+
+            <div class="alert alert-info" th:if="${#lists.isEmpty(cursosExistentes)}">
+                <p class="mb-0">No hay cursos agregados aún. <a th:href="@{/cursos/form}">Agregar primer curso</a></p>
+            </div>
+
+            <div class="horario-container" th:unless="${#lists.isEmpty(cursosExistentes)}">
+                <table class="table table-bordered text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Horario</th>
+                            <th th:each="dia : ${dias}" th:text="${dia}">Día</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="hora : ${franjasHorarias}">
+                            <td class="fw-bold" th:text="${hora} + ' '">Hora</td>
+                            <td th:each="dia : ${dias}">
+                    <th:block th:with="diaMap=${mapaCursos.get(dia)}">
+                        <th:block th:with="curso=${diaMap != null ? diaMap.get(hora) : null}">
+                            <div th:if="${curso != null}">
+                                <div class="curso-celda p-2"
+                                     th:classappend="${curso.modalidad.name() == 'VIRTUAL'} ? ' virtual' : ' presencial'">
+                                    <div class="fw-bold" th:text="${curso.nombre}"></div>
+                                    <small th:text="${curso.profesor}"></small>
+                                </div>
+                            </div>
+                            <div th:unless="${curso != null}" class="text-muted">
+                                <small>-</small>
+                            </div>
+                        </th:block>
+                    </th:block>
+                    </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Modal curso agregado -->
+            <div th:if="${cursoAgregado != null}" class="modal fade" id="cursoAgregadoModal" tabindex="-1" aria-labelledby="cursoAgregadoModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="cursoAgregadoModalLabel">Curso Agregado</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p><b>Nombre:</b> <span th:text="${cursoAgregado.nombre}"></span></p>
+                            <p><b>Profesor:</b> <span th:text="${cursoAgregado.profesor}"></span></p>
+                            <p><b>Correo:</b> <span th:text="${cursoAgregado.correo}"></span></p>
+                            <p><b>Modalidad:</b> <span th:text="${cursoAgregado.modalidad.name()}"></span></p>
+                            <p><b>Horario:</b> <span th:text="|${cursoAgregado.dia.name()} ${cursoAgregado.hora}|"></span></p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            <a th:href="@{/cursos}" class="btn btn-primary">Ir a Mis Cursos</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NUEVO MODAL ELIMINAR CURSO -->
+            <div class="modal fade" id="eliminarCursoModal" tabindex="-1" aria-labelledby="eliminarCursoModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="eliminarCursoModalLabel">Eliminar Curso</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>⚠️ ¿Estás seguro que deseas eliminar el curso <b id="nombreCursoEliminar"></b>?</p>
+                            <p>Se eliminarán también todas sus tareas y evaluaciones asociadas.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <a href="#" class="btn btn-danger" id="confirmarEliminarCurso">Eliminar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+
+        <!-- Footer -->
+        <div th:replace="fragments/footer :: footer"></div>
+
+        <!-- Script Bootstrap y modal -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+        <!-- Script alert y modales -->
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function () {
+                // ALERTA DINÁMICA
+                var alerta = document.querySelector('.alert-dismissible');
+                if (alerta) {
+                    setTimeout(function () {
+                        var alert = bootstrap.Alert.getOrCreateInstance(alerta);
+                        alert.close();
+                    }, 3000);
+                }
+
+                // MODAL CURSO AGREGADO
+                var tieneCursoAgregado = /*[[${cursoAgregado != null}]]*/ false;
+                if (tieneCursoAgregado) {
+                    var modalEl = document.getElementById('cursoAgregadoModal');
+                    if (modalEl) {
+                        var modal = new bootstrap.Modal(modalEl, {backdrop: 'static', keyboard: false});
+                        modal.show();
+                    }
+                }
+
+                // MODAL ELIMINAR CURSO
+                var eliminarModal = document.getElementById('eliminarCursoModal');
+                eliminarModal.addEventListener('show.bs.modal', function (event) {
+                    var button = event.relatedTarget;
+                    var cursoId = button.getAttribute('data-id');
+                    var cursoNombre = button.getAttribute('data-nombre');
+
+                    document.getElementById('nombreCursoEliminar').textContent = cursoNombre;
+                    document.getElementById('confirmarEliminarCurso').setAttribute('href', '/cursos/eliminar/' + cursoId);
+                });
+            });
+        </script>
+
+    </body>
+</html>

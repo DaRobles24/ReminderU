@@ -1,0 +1,279 @@
+/* ========================== */
+/* ESTILOS GENERALES DEL BODY */
+/* ========================== */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5; /* fondo claro */
+}
+
+main {
+    flex: 1;
+    padding: 20px;
+}
+
+/* ========================== */
+/* CARDS DE EVENTOS / CURSOS */
+/* ========================== */
+.cards-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.cards-col {
+    flex: 1 1 300px;
+    max-width: 400px;
+}
+
+.custom-card {
+    background-color: #fff; /* fondo blanco */
+    border-radius: 1rem;
+    border: 1px solid rgba(219, 234, 254, 1);
+    padding: 1rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.custom-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* HEADER DE CARD */
+.custom-card-header {
+    display: flex;
+    justify-content: space-between; /* texto a la izquierda, bolita a la derecha */
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.custom-card-alert {
+    font-weight: 600;
+    color: #6b7280;
+}
+
+/* BOLITA DE MODALIDAD */
+.circulo-modalidad {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.circulo-virtual {
+    background-color: #0d3b66; /* azul profundo */
+}
+
+.circulo-presencial {
+    background-color: #f1c40f; /* amarillo */
+}
+
+/* LÍNEA SEPARADORA */
+.separador-card {
+    border: 0;
+    border-top: 2px solid #e0e0e0;
+    margin: 0.5rem 0 1rem 0;
+}
+
+/* MENSAJES Y DETALLES */
+.custom-card-message {
+    margin-top: 0.5rem;
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+.custom-card-actions {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.custom-card-read {
+    background-color: #3b82f6;
+    color: #fff;
+    text-decoration: none;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.custom-card-read:hover {
+    background-color: #2563eb;
+}
+
+/* ========================== */
+/* BARRA DE PROGRESO DEL CUATRIMESTRE */
+/* ========================== */
+.ProgresoCurso {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.barra-progreso {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    gap: 4px;
+    width: 95%;
+    margin: 1.5rem auto 2rem auto;
+    height: 40px;
+}
+
+.semana {
+    position: relative;
+    background-color: #e5e7eb;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #374151;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.semana.completada {
+    background-color: #3b82f6;
+    color: white;
+}
+
+/* POPUP SEMANA */
+.semana .info {
+    visibility: hidden;
+    opacity: 0;
+    width: 180px;
+    background-color: #111827;
+    color: #fff;
+    text-align: left;
+    padding: 8px;
+    border-radius: 8px;
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: opacity 0.3s;
+    z-index: 10;
+    font-size: 0.8rem;
+    line-height: 1.2rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.semana .info::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -6px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: #111827 transparent transparent transparent;
+}
+
+.semana:hover .info {
+    visibility: visible;
+    opacity: 1;
+}
+
+.custom-card-btn {
+    background-color: #3b82f6;
+    color: #fff;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.custom-card-btn:hover {
+    background-color: #2563eb;
+}
+
+.custom-card-btn.done {
+    background-color: #10b981; /* verde para acción “hecha” */
+}
+
+.custom-card-btn.done:hover {
+    background-color: #059669;
+}
+.task-status {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 0.5rem; /* separación del texto */
+}
+
+.status-pending {
+    background-color: #f59e0b; /* naranja para pendiente */
+}
+
+.status-done {
+    background-color: #10b981; /* verde para hecha */
+}
+
+/* ========================== */
+/* HORARIO DE CLASES */
+/* ========================== */
+.horario-container {
+    overflow-x: auto;
+    margin-top: 2rem;
+}
+
+.horario-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.horario-table th, 
+.horario-table td {
+    border: 1px solid #ccc;
+    padding: 14px 10px; /* aumenté el padding vertical de 10px a 14px */
+    min-width: 100px;
+    font-weight: bold;
+    line-height: 1.4; /* opcional, para más espacio entre líneas */
+}
+
+
+.horario-table td.virtual {
+    background-color: #0d3b66;
+    color: #fff;
+}
+
+.horario-table td.presencial {
+    background-color: #f1c40f;
+    color: #000;
+}
+
+/* Leyenda de modalidades */
+.leyenda-cursos {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.leyenda-cursos .circulo-virtual,
+.leyenda-cursos .circulo-presencial {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+
