@@ -11,6 +11,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Configuration
 public class SecurityConfig {
@@ -24,28 +26,18 @@ public class SecurityConfig {
         this.customOAuth2UserService = customOAuth2UserService;
     }
 
-    // ===============================
-    // Seguridad HTTP
-    // ===============================
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Permitir recursos públicos
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/login",
-                    "/registro",
-                    "/css/**",
-                    "/js/**",
-                    "/images/**",
-                    "/uploads/**",
-                    "/webjars/**",
-                    "/error",
-                    "/favicon.ico"
+                    "/login", "/registro",
+                    "/css/**", "/js/**", "/images/**",
+                    "/uploads/**", "/webjars/**",
+                    "/error", "/favicon.ico"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
-            // Form login (local)
             .formLogin(form -> form
                 .loginPage("/login")
                 .usernameParameter("email")
@@ -54,7 +46,6 @@ public class SecurityConfig {
                 .failureUrl("/login?error=true")
                 .permitAll()
             )
-            // Login con Google (OAuth2)
             .oauth2Login(oauth2 -> oauth2
                 .loginPage("/login")
                 .userInfoEndpoint(userInfo -> userInfo
@@ -63,20 +54,23 @@ public class SecurityConfig {
                 .defaultSuccessUrl("/perfil/home", true)
                 .failureUrl("/login?error=oauth")
             )
-            // Logout
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout=true")
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
+            )
+            // ✅ FIX BUG 3: Usar CookieCsrfTokenRepository para que el token
+            // sea accesible desde JavaScript via las meta tags de Thymeleaf
+            // Los endpoints /tareas/api/** usan fetch con el header CSRF incluido.
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
             );
-        
+
         return http.build();
     }
 
-    // ===============================
-    // Provider para autenticación local
-    // ===============================
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -85,17 +79,11 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    // ===============================
-    // AuthenticationManager
-    // ===============================
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
-    // ===============================
-    // Encoder de contraseñas
-    // ===============================
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

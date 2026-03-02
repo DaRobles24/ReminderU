@@ -29,7 +29,6 @@ public class TareaServiceImpl implements TareaService {
         return tareaRepository.findAll();
     }
 
-    // Nuevo método: listar tareas filtradas por usuario
     public List<Tarea> listarTareasPorUsuario(Usuario usuario) {
         return tareaRepository.findByCurso_Usuario(usuario);
     }
@@ -43,7 +42,7 @@ public class TareaServiceImpl implements TareaService {
     public Tarea guardarTarea(Tarea tarea) {
         Tarea saved = tareaRepository.save(tarea);
 
-        // Enviar correo si se desea notificación inmediata al crear tarea
+        // ✅ FIX BUG 1: Usar enviarEmailAsync para no bloquear la UI
         if (saved.getCurso() != null && saved.getCurso().getUsuario() != null) {
             String email = saved.getCurso().getUsuario().getEmail();
             String asunto = "📝 Nueva tarea agregada: " + saved.getTitulo();
@@ -65,7 +64,8 @@ public class TareaServiceImpl implements TareaService {
             mensaje.append("¡No olvides completarla a tiempo! 🚀\n\n");
             mensaje.append("Saludos,\nReminderU ✨");
 
-            emailService.enviarEmail(email, asunto, mensaje.toString());
+            // ASYNC: no bloquea la respuesta al usuario
+            emailService.enviarEmailAsync(email, asunto, mensaje.toString());
         }
 
         return saved;
@@ -81,7 +81,6 @@ public class TareaServiceImpl implements TareaService {
         return tareaRepository.findByCursoId(cursoId);
     }
 
-    // Envío automático de recordatorios diarios a las 8:00 AM
     @Scheduled(cron = "0 0 8 * * ?")
     public void enviarRecordatorios() {
         List<Tarea> tareas = tareaRepository.findAll();
@@ -101,13 +100,13 @@ public class TareaServiceImpl implements TareaService {
                     String mensaje = "Hola " + nombreUsuario + ",\n\n"
                             + "Te recordamos que la tarea \"" + tarea.getTitulo() + "\" vence en "
                             + diasRestantes + " día(s).\n\n¡No la dejes para último momento!\n\nSaludos,\nReminderU";
-                    emailService.enviarEmail(email, asunto, mensaje);
+                    emailService.enviarEmailAsync(email, asunto, mensaje);
                 } else if (diasRestantes < 0) {
                     String asunto = "Tarea vencida";
                     String mensaje = "Hola " + nombreUsuario + ",\n\n"
                             + "La tarea \"" + tarea.getTitulo() + "\" ya ha vencido.\n\n"
                             + "Por favor revisa tus pendientes.\n\nSaludos,\nReminderU";
-                    emailService.enviarEmail(email, asunto, mensaje);
+                    emailService.enviarEmailAsync(email, asunto, mensaje);
                 }
             }
         }

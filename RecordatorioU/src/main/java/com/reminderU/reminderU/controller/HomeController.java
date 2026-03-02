@@ -4,6 +4,7 @@ import com.reminderU.reminderU.modelo.Tarea;
 import com.reminderU.reminderU.modelo.ConfiguracionCuatrimestre;
 import com.reminderU.reminderU.modelo.Usuario;
 import com.reminderU.reminderU.repository.TareaRepository;
+import com.reminderU.reminderU.repository.UsuarioRepository;
 import com.reminderU.reminderU.service.impl.TareaServiceImpl;
 import com.reminderU.reminderU.service.ConfiguracionCuatrimestreService;
 import org.springframework.stereotype.Controller;
@@ -28,6 +29,9 @@ public class HomeController {
     @Autowired
     private TareaRepository tareaRepository;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     public HomeController(TareaServiceImpl tareaService,
                           ConfiguracionCuatrimestreService configuracionCuatrimestreService) {
         this.tareaService = tareaService;
@@ -36,29 +40,17 @@ public class HomeController {
 
     @GetMapping("/")
     public String index(Model model, Authentication authentication) {
-        // --------- Recuperar fechas del cuatrimestre desde la DB ----------
+        // --------- Configuración del cuatrimestre ----------
         ConfiguracionCuatrimestre config = configuracionCuatrimestreService.getConfiguracion();
         LocalDate fechaInicioCuatrimestre = config != null ? config.getFechaInicio() : LocalDate.of(2025, 9, 1);
-        LocalDate fechaFinCuatrimestre = config != null ? config.getFechaFin() : LocalDate.of(2025, 12, 15);
+        LocalDate fechaFinCuatrimestre   = config != null ? config.getFechaFin()    : LocalDate.of(2025, 12, 15);
 
         LocalDate hoy = LocalDate.now();
 
-        // --------- Obtener usuario autenticado ----------
-        Usuario usuario = null;
-        if (authentication != null && authentication.getPrincipal() != null) {
-            Object principal = authentication.getPrincipal();
-            try {
-                if (principal instanceof com.reminderU.reminderU.service.impl.CustomUserDetails) {
-                    usuario = ((com.reminderU.reminderU.service.impl.CustomUserDetails) principal).getUsuario();
-                } else if (principal instanceof com.reminderU.reminderU.service.impl.CustomOAuth2User) {
-                    usuario = ((com.reminderU.reminderU.service.impl.CustomOAuth2User) principal).getUsuario();
-                }
-            } catch (Exception ex) {
-                usuario = null;
-            }
-        }
+        // --------- ✅ FIX BUG 4: Obtener usuario de forma robusta ----------
+        Usuario usuario = obtenerUsuarioDesdeAuth(authentication);
 
-        // ------------------ TAREAS PRÓXIMAS (del usuario) ------------------
+        // --------- ✅ FIX BUG 5: Tareas del usuario con ventana de 7 días ----------
         List<Tarea> todasTareas = usuario != null
                 ? tareaRepository.findByCurso_Usuario(usuario)
                 : Collections.emptyList();
@@ -73,23 +65,24 @@ public class HomeController {
                     mapa.put("diasRestantes", diasRestantes);
 
                     String color;
-                    if (diasRestantes < 0) color = "text-danger";
-                    else if (diasRestantes > 4) color = "text-success";
-                    else if (diasRestantes <= 3 && diasRestantes >= 1) color = "text-warning";
-                    else color = "text-danger alerta-urgente";
+                    if (diasRestantes < 0)            color = "text-danger";
+                    else if (diasRestantes > 4)        color = "text-success";
+                    else if (diasRestantes >= 1)       color = "text-warning";
+                    else                               color = "text-danger alerta-urgente";
 
                     mapa.put("colorTiempo", color);
                     return mapa;
                 })
+                // ✅ FIX BUG 5: Ventana ampliada a 7 días (antes era <= 3)
                 .filter(m -> {
                     long dias = (Long) m.get("diasRestantes");
-                    return dias <= 3 && dias >= 0;
+                    return dias <= 7 && dias >= 0;
                 })
                 .toList();
 
         model.addAttribute("tareasProximas", tareasProximas);
 
-        // ------------------ PROGRESO DEL CUATRIMESTRE ------------------
+        // --------- Progreso del cuatrimestre ----------
         long totalSemanas = ChronoUnit.WEEKS.between(fechaInicioCuatrimestre, fechaFinCuatrimestre) + 1;
         long semanaActual = ChronoUnit.WEEKS.between(fechaInicioCuatrimestre, hoy) + 1;
 
@@ -103,7 +96,6 @@ public class HomeController {
             semana.put("completada", i < semanaActual);
             semana.put("actual", i == semanaActual);
 
-            // Todas las tareas de esta semana
             List<Tarea> tareasSemana = new ArrayList<>();
             for (Tarea t : todasTareas) {
                 if (t.getFechaEntrega() != null) {
@@ -114,7 +106,6 @@ public class HomeController {
                 }
             }
             semana.put("tareas", tareasSemana);
-
             semanas.add(semana);
         }
 
@@ -130,15 +121,39 @@ public class HomeController {
             @RequestParam("inicio") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate inicio,
             @RequestParam("fin") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fin) {
 
-        // --------- Guardar en la base de datos ----------
         ConfiguracionCuatrimestre c = configuracionCuatrimestreService.getConfiguracion();
-        if (c == null) {
-            c = new ConfiguracionCuatrimestre();
-        }
+        if (c == null) c = new ConfiguracionCuatrimestre();
         c.setFechaInicio(inicio);
         c.setFechaFin(fin);
         configuracionCuatrimestreService.save(c);
 
         return "redirect:/";
+    }
+
+    /**
+     * ✅ FIX BUG 4: Obtiene el Usuario desde cualquier tipo de principal
+     * (CustomUserDetails, CustomOAuth2User, o email fallback via BD)
+     */
+    private Usuario obtenerUsuarioDesdeAuth(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) return null;
+
+        Object principal = authentication.getPrincipal();
+
+        try {
+            if (principal instanceof com.reminderU.reminderU.service.impl.CustomUserDetails) {
+                return ((com.reminderU.reminderU.service.impl.CustomUserDetails) principal).getUsuario();
+            } else if (principal instanceof com.reminderU.reminderU.service.impl.CustomOAuth2User) {
+                return ((com.reminderU.reminderU.service.impl.CustomOAuth2User) principal).getUsuario();
+            } else {
+                // Fallback: buscar por email/username
+                String email = authentication.getName();
+                if (email != null && !email.isBlank()) {
+                    return usuarioRepository.findByEmail(email);
+                }
+            }
+        } catch (Exception ex) {
+            System.err.println("HomeController: no se pudo obtener usuario: " + ex.getMessage());
+        }
+        return null;
     }
 }
