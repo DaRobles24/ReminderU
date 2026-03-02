@@ -1,6 +1,7 @@
 package com.reminderU.reminderU.service;
 
 import com.reminderU.reminderU.modelo.ConfiguracionCuatrimestre;
+import com.reminderU.reminderU.modelo.Usuario;
 import com.reminderU.reminderU.repository.ConfiguracionCuatrimestreRepository;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
@@ -14,8 +15,9 @@ public class ConfiguracionCuatrimestreService {
         this.repo = repo;
     }
 
-    public ConfiguracionCuatrimestre getConfiguracion() {
-        Optional<ConfiguracionCuatrimestre> opt = repo.findTopByOrderByIdAsc();
+    public ConfiguracionCuatrimestre getConfiguracionPorUsuario(Usuario usuario) {
+        if (usuario == null) return null;
+        Optional<ConfiguracionCuatrimestre> opt = repo.findTopByUsuarioOrderByIdAsc(usuario);
         return opt.orElse(null);
     }
 

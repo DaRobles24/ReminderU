@@ -17,11 +17,17 @@ public class ConfiguracionCuatrimestre {
     @Column(name = "fecha_fin")
     private LocalDate fechaFin;
 
+    // Cada usuario tiene su propia configuración
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_usuario")
+    private Usuario usuario;
+
     public ConfiguracionCuatrimestre() {}
 
-    public ConfiguracionCuatrimestre(LocalDate inicio, LocalDate fin) {
+    public ConfiguracionCuatrimestre(LocalDate inicio, LocalDate fin, Usuario usuario) {
         this.fechaInicio = inicio;
         this.fechaFin = fin;
+        this.usuario = usuario;
     }
 
     public Long getId() { return id; }
@@ -32,4 +38,7 @@ public class ConfiguracionCuatrimestre {
 
     public LocalDate getFechaFin() { return fechaFin; }
     public void setFechaFin(LocalDate fechaFin) { this.fechaFin = fechaFin; }
+
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
 }

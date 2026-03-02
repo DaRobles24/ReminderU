@@ -1,10 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.reminderU.reminderU.repository;
 
 import com.reminderU.reminderU.modelo.ConfiguracionCuatrimestre;
+import com.reminderU.reminderU.modelo.Usuario;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -12,7 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ConfiguracionCuatrimestreRepository extends JpaRepository<ConfiguracionCuatrimestre, Long> {
 
-    // Como solo habrá un registro, tomamos el primero
-    Optional<ConfiguracionCuatrimestre> findTopByOrderByIdAsc();
+    // Buscar configuración del cuatrimestre por usuario
+    Optional<ConfiguracionCuatrimestre> findTopByUsuarioOrderByIdAsc(Usuario usuario);
 }
-
