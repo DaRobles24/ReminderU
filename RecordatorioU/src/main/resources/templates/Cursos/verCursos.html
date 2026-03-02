@@ -5,85 +5,181 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="'Curso - ' + ${curso.nombre}">Curso</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        .curso-header { margin-top: 20px; margin-bottom: 40px; }
-        .curso-header h1 { font-size: 2.2rem; font-weight: bold; }
-        .curso-header p { font-size: 1rem; color: #6c757d; }
-
-        .card { border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .card-body { padding: 15px; }
-
-        .badge-pendiente { background-color: #f59e0b; color: white; }
-        .badge-completada { background-color: #10b981; color: white; }
-
-        /* Estilos removidos de badges no utilizados */
-
-        .calcular-nota input { max-width: 100px; display: inline-block; margin-right: 10px; }
-        .calcular-nota label { font-weight: bold; margin-right: 5px; }
-        .resultado-nota { font-size: 1.3rem; font-weight: bold; color: #3b82f6; }
-        .porcentaje-obtenido { font-size: 1.1rem; font-weight: bold; color: #059669; }
-
-        /* Rubros tipo Excel */
-        .rubros-table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 10px;
-        }
-        .rubros-table th, .rubros-table td {
-            border: 1px solid #dee2e6;
-            padding: 8px;
-            text-align: center;
-        }
-        .rubros-table th {
-            background-color: #6c757d;
-            color: white;
+        :root {
+            --bg: #f5f4f0;
+            --surface: #ffffff;
+            --border: #e8e5df;
+            --text-primary: #1a1a2e;
+            --text-muted: #6b6b7a;
+            --accent: #3b5bdb;
+            --accent-light: #e8eeff;
+            --success: #2f9e44;
+            --success-light: #ebfbee;
+            --warning: #e67700;
+            --warning-light: #fff9db;
+            --danger: #c92a2a;
+            --danger-light: #fff5f5;
         }
 
-        /* Tareas colapsables - removido ya que se eliminó la sección */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* Botón volver mejorado */
-        .btn-volver {
-            position: sticky;
-            top: 20px;
-            z-index: 100;
-            margin-bottom: 20px;
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-primary);
         }
 
-        /* Calculadora mejorada */
-        .nota-actual { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 20px;
+        .page-wrapper { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+        /* Back button */
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem;
+            font-weight: 500; text-decoration: none;
+            background: var(--surface); border: 1px solid var(--border);
+            color: var(--text-primary); transition: all 0.15s;
+            margin-bottom: 1.5rem;
+        }
+        .btn-back:hover { background: var(--border); color: var(--text-primary); }
+
+        /* Course header */
+        .course-header {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 16px; padding: 2rem; margin-bottom: 1.5rem;
+        }
+        .course-title { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .course-meta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem; }
+        .meta-chip {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.8rem;
+            font-weight: 500; background: var(--bg); border: 1px solid var(--border);
+            color: var(--text-muted);
         }
 
-        .progreso-curso {
-            background-color: #f8f9fa;
-            border-left: 4px solid #28a745;
-            padding: 15px;
-            margin-bottom: 20px;
+        /* Rubros inline */
+        .rubros-inline { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .rubro-tag {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.78rem;
+            font-family: 'DM Mono', monospace; font-weight: 500;
+            background: var(--accent-light); color: var(--accent);
+            border: 1px solid #c5d3f8;
         }
 
-        .tarea-completada-calc {
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 8px;
+        /* ================================================
+           ACCUMULATED SCORE PANEL — Feature #1
+           ================================================ */
+        .score-panel {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px; padding: 1.75rem; margin-bottom: 1.5rem;
+            color: #fff; position: relative; overflow: hidden;
+        }
+        .score-panel::before {
+            content: ''; position: absolute; top: -40px; right: -40px;
+            width: 160px; height: 160px; border-radius: 50%;
+            background: rgba(59,91,219,0.25);
+        }
+        .score-panel-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;
+        }
+        .score-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.6; margin-bottom: 0.25rem; }
+        .score-value { font-size: 2.5rem; font-weight: 700; font-family: 'DM Mono', monospace; line-height: 1; }
+        .score-value small { font-size: 1rem; opacity: 0.6; margin-left: 2px; }
+        .score-stats { display: flex; gap: 2rem; flex-wrap: wrap; }
+        .stat-item { }
+        .stat-label { font-size: 0.72rem; opacity: 0.55; text-transform: uppercase; letter-spacing: 0.06em; }
+        .stat-value { font-size: 1rem; font-weight: 600; font-family: 'DM Mono', monospace; }
+
+        /* Progress bar */
+        .progress-track {
+            height: 8px; background: rgba(255,255,255,0.15); border-radius: 4px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(.4,0,.2,1);
+            background: linear-gradient(90deg, #748ffc, #74c0fc);
+        }
+        .progress-footer {
+            display: flex; justify-content: space-between; margin-top: 0.4rem;
+            font-size: 0.72rem; opacity: 0.55;
         }
 
-        .tarea-pendiente-calc {
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 8px;
+        /* Section title */
+        .section-title {
+            font-size: 1rem; font-weight: 600; margin-bottom: 1rem;
+            display: flex; align-items: center; gap: 0.5rem;
         }
 
-        /* Ocultar enlace de tareas del navbar */
-        .navbar a[href="/tareas"] {
-            display: none !important;
+        /* Task rows */
+        .tasks-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden; margin-bottom: 1.5rem;
         }
+        .tasks-card-header {
+            padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.85rem; font-weight: 600; color: var(--text-muted);
+        }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .dot-success { background: var(--success); }
+        .dot-warning { background: var(--warning); }
+
+        .task-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 1rem; align-items: center;
+            padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border);
+            transition: background 0.1s;
+        }
+        .task-row:last-child { border-bottom: none; }
+        .task-row:hover { background: var(--bg); }
+        .task-name { font-weight: 500; font-size: 0.9rem; }
+        .task-date { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+        .badge-pill {
+            padding: 0.25rem 0.6rem; border-radius: 20px;
+            font-size: 0.75rem; font-weight: 600;
+            font-family: 'DM Mono', monospace; white-space: nowrap;
+        }
+        .badge-success { background: var(--success-light); color: var(--success); }
+        .badge-warning { background: var(--warning-light); color: var(--warning); }
+        .badge-pending { background: #f1f3f5; color: #868e96; }
+
+        .weight-badge {
+            background: var(--accent-light); color: var(--accent);
+            padding: 0.25rem 0.6rem; border-radius: 6px;
+            font-size: 0.75rem; font-weight: 600; font-family: 'DM Mono', monospace;
+        }
+
+        /* Points column */
+        .points-col {
+            text-align: right; font-family: 'DM Mono', monospace;
+            font-size: 0.85rem; font-weight: 600;
+        }
+        .points-col.earned { color: var(--success); }
+        .points-col.pending { color: var(--text-muted); }
+
+        /* Summary sidebar */
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+        @media (max-width: 640px) { .summary-grid { grid-template-columns: 1fr; } }
+
+        .summary-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.25rem;
+        }
+        .summary-card-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.35rem; }
+        .summary-card-value { font-size: 1.5rem; font-weight: 700; font-family: 'DM Mono', monospace; }
+        .summary-card-value.accent { color: var(--accent); }
+        .summary-card-value.success { color: var(--success); }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center; padding: 2.5rem;
+            color: var(--text-muted); font-size: 0.9rem;
+        }
+        .empty-icon { font-size: 2rem; margin-bottom: 0.5rem; }
     </style>
 </head>
 <body>
@@ -91,271 +187,234 @@
     <!-- Header -->
     <div th:replace="~{fragments/header :: HeaderPagina}"></div>
 
-    <div class="container">
-        <!-- Información del curso con botón volver integrado -->
-        <div class="curso-header text-center">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <a href="/cursos" class="btn btn-outline-secondary btn-volver">
-                    <i class="fas fa-arrow-left me-2"></i>← Volver a cursos
-                </a>
-                <div class="flex-grow-1"></div>
-            </div>
-            
-            <h1 th:text="${curso.nombre}">Curso de Ejemplo</h1>
+    <div class="page-wrapper">
+        <!-- Back -->
+        <a href="/cursos" class="btn-back">← Volver a cursos</a>
 
-            <!-- Rubros tipo Excel -->
-            <div th:if="${#lists.isEmpty(curso.rubros)}" class="text-muted">
-                Sin rubros definidos
+        <!-- Course header -->
+        <div class="course-header">
+            <div class="course-title" th:text="${curso.nombre}">Nombre del curso</div>
+            <div class="course-meta">
+                <span class="meta-chip">👨‍🏫 <span th:text="${curso.profesor}">Profesor</span></span>
+                <span class="meta-chip">📧 <span th:text="${curso.correo}">correo</span></span>
+                <span class="meta-chip">📅 <span th:text="${curso.dia.name() + ' ' + curso.hora}">Horario</span></span>
+                <span class="meta-chip">🏫 <span th:text="${curso.modalidad.name()}">Modalidad</span></span>
             </div>
-            <div th:unless="${#lists.isEmpty(curso.rubros)}">
-                <table class="rubros-table">
-                    <thead>
-                        <tr>
-                            <th>Rubro</th>
-                            <th>Porcentaje</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="rubro : ${curso.rubros}">
-                            <td th:text="${rubro.nombre}">Nombre</td>
-                            <td th:text="|${rubro.porcentaje}%|">0%</td>
-                        </tr>
-                    </tbody>
-                </table>
+
+            <!-- Rubros -->
+            <div th:if="${!#lists.isEmpty(curso.rubros)}">
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.4rem;font-weight:500;">ESTRATEGIA DE EVALUACIÓN</div>
+                <div class="rubros-inline">
+                    <span th:each="rubro : ${curso.rubros}" class="rubro-tag">
+                        <span th:text="${rubro.nombre}">Rubro</span>
+                        <span th:text="'· ' + ${rubro.porcentaje} + '%'">0%</span>
+                    </span>
+                </div>
             </div>
         </div>
 
-        <!-- Nota actual del curso -->
-        <section class="mb-5">
-            <div class="nota-actual text-center">
-                <h2 class="mb-3">📊 Estado actual del curso</h2>
-                <div class="row">
-                    <div class="col-md-4">
-                        <h5>Porcentaje completado</h5>
-                        <h3 id="porcentajeCompletado">0%</h3>
+        <!-- ================================================
+             SCORE PANEL — Porcentaje acumulado actual
+             El JavaScript calcula esto dinámicamente.
+             Fórmula: Σ(nota_obtenida × valor_porcentual) / 100
+             ================================================ -->
+        <div class="score-panel" id="scorePanel">
+            <div class="score-panel-header">
+                <div>
+                    <div class="score-label">Porcentaje Acumulado</div>
+                    <div class="score-value" id="displayAccumulated">0<small>%</small></div>
+                </div>
+                <div class="score-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">Puntos obtenidos</div>
+                        <div class="stat-value" id="displayPoints">0.00</div>
                     </div>
-                    <div class="col-md-4">
-                        <h5>Puntos obtenidos</h5>
-                        <h3 id="puntosObtenidos">0.00</h3>
+                    <div class="stat-item">
+                        <div class="stat-label">% del curso evaluado</div>
+                        <div class="stat-value" id="displayCovered">0%</div>
                     </div>
-                    <div class="col-md-4">
-                        <h5>Nota actual</h5>
-                        <h3 id="notaActual">0.00</h3>
+                    <div class="stat-item">
+                        <div class="stat-label">Evaluaciones</div>
+                        <div class="stat-value" id="displayCount">0 / 0</div>
                     </div>
                 </div>
             </div>
-        </section>
-
-        <!-- Desglose de evaluaciones -->
-        <section class="calcular-nota mb-5">
-            <h2 class="mb-3">📝 Desglose de evaluaciones</h2>
-            
-            <div class="progreso-curso">
-                <h5><i class="fas fa-chart-line"></i> Progreso detallado</h5>
-                <p class="mb-1">Aquí puedes ver tu progreso real basado en las tareas que ya has completado.</p>
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill" style="width:0%"></div>
             </div>
+            <div class="progress-footer">
+                <span>0%</span>
+                <span id="progressLabel">0% del cuatrimestre completado</span>
+                <span>100%</span>
+            </div>
+        </div>
 
-            <div class="row">
-                <div class="col-md-8">
-                    <!-- Tareas completadas -->
-                    <div th:if="${tareasEntregadas != null and !#lists.isEmpty(tareasEntregadas)}">
-                        <h4 class="text-success mb-3"><i class="fas fa-check-circle"></i> Tareas completadas</h4>
-                        <div th:each="tarea : ${tareasEntregadas}" class="tarea-completada-calc">
-                            <div class="row align-items-center">
-                                <div class="col-md-5">
-                                    <strong th:text="${tarea.titulo}">Tarea 1</strong>
-                                    <br>
-                                    <small class="text-muted" th:text="'Entregada: ' + ${#temporals.format(tarea.fechaEntrega,'dd/MM/yyyy')}">Entregada: 15/01/2025</small>
-                                </div>
-                                <div class="col-md-3">
-                                    <span class="badge bg-success" th:text="'Nota: ' + ${tarea.notaObtenida} + '%'">Nota: 85%</span>
-                                </div>
-                                <div class="col-md-2">
-                                    <small th:text="'Peso: ' + ${tarea.porcentaje} + '%'">Peso: 30%</small>
-                                </div>
-                                <div class="col-md-2">
-                                    <strong class="text-success" 
-                                            th:text="${T(java.lang.String).format('%.2f', (tarea.notaObtenida / 100.0) * tarea.porcentaje)} + '%'"
-                                            th:data-puntos="${(tarea.notaObtenida / 100.0) * tarea.porcentaje}">
-                                        25.5%
-                                    </strong>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <!-- Summary cards -->
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-card-label">Nota actual (sobre lo evaluado)</div>
+                <div class="summary-card-value accent" id="displayCurrentGrade">—</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-card-label">Tareas pendientes</div>
+                <div class="summary-card-value" id="displayPending">—</div>
+            </div>
+        </div>
 
-                    <!-- Tareas pendientes -->
-                    <div th:if="${tareasPendientes != null and !#lists.isEmpty(tareasPendientes)}" class="mt-4">
-                        <h4 class="text-warning mb-3"><i class="fas fa-clock"></i> Tareas pendientes</h4>
-                        <div th:each="tarea : ${tareasPendientes}" class="tarea-pendiente-calc">
-                            <div class="row align-items-center">
-                                <div class="col-md-5">
-                                    <strong th:text="${tarea.titulo}">Tarea Pendiente</strong>
-                                    <br>
-                                    <small class="text-muted" th:text="'Entrega: ' + ${#temporals.format(tarea.fechaEntrega,'dd/MM/yyyy')}">Entrega: 30/01/2025</small>
-                                </div>
-                                <div class="col-md-3">
-                                    <span class="badge bg-warning text-dark">Pendiente</span>
-                                </div>
-                                <div class="col-md-2">
-                                    <small th:text="'Peso: ' + ${tarea.porcentaje} + '%'">Peso: 20%</small>
-                                </div>
-                                <div class="col-md-2">
-                                    <span class="text-muted">0.00%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Si no hay tareas -->
-                    <div th:if="${(tareasEntregadas == null or #lists.isEmpty(tareasEntregadas)) and (tareasPendientes == null or #lists.isEmpty(tareasPendientes))}" 
-                         class="text-center text-muted p-4">
-                        <i class="fas fa-inbox fa-3x mb-3"></i>
-                        <h5>No hay evaluaciones registradas</h5>
-                        <p>Agrega tareas desde la sección de cursos para comenzar a trackear tu progreso.</p>
-                    </div>
+        <!-- Tareas completadas -->
+        <div class="tasks-card">
+            <div class="tasks-card-header">
+                <span class="dot dot-success"></span>
+                Tareas completadas
+                (<span id="countCompleted">0</span>)
+            </div>
+            <div id="listCompleted">
+                <div th:if="${tareasEntregadas == null or #lists.isEmpty(tareasEntregadas)}" class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <div>Sin tareas completadas todavía</div>
                 </div>
 
-                <div class="col-md-4">
-                    <div class="card sticky-top">
-                        <div class="card-body">
-                            <h5 class="card-title text-center"><i class="fas fa-calculator"></i> Resumen del curso</h5>
-                            <hr>
-                            
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between">
-                                    <span>Evaluaciones completadas:</span>
-                                    <span id="evaluacionesCompletadas" class="fw-bold">0</span>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between">
-                                    <span>Evaluaciones pendientes:</span>
-                                    <span id="evaluacionesPendientes" class="fw-bold">0</span>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between">
-                                    <span>Porcentaje del curso cubierto:</span>
-                                    <span id="porcentajeCubierto" class="fw-bold text-success">0%</span>
-                                </div>
-                            </div>
-                            
-                            <hr>
-                            
-                            <div class="text-center">
-                                <p class="mb-2 text-muted">Tu nota actual es:</p>
-                                <h3 class="resultado-nota mb-3" id="notaFinalActual">0.00</h3>
-                                
-                                <div class="progress mb-2" style="height: 20px;">
-                                    <div id="barraProgreso" class="progress-bar bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                                        <span id="textoProgreso">0%</span>
-                                    </div>
-                                </div>
-                                <small class="text-muted">Progreso del curso</small>
-                            </div>
-                        </div>
+                <!--
+                    Cada fila tiene data-attributes para que JS pueda calcular sin hacer peticiones.
+                    data-nota: nota obtenida (0-100)
+                    data-weight: valor porcentual de la tarea
+                -->
+                <div th:each="tarea : ${tareasEntregadas}"
+                     class="task-row"
+                     th:attr="data-nota=${tarea.notaObtenida != null ? tarea.notaObtenida : 0},
+                              data-weight=${tarea.porcentaje}">
+                    <div>
+                        <div class="task-name" th:text="${tarea.titulo}">Título</div>
+                        <div class="task-date" th:text="'Entregada · ' + ${#temporals.format(tarea.fechaEntrega,'dd/MM/yyyy')}">fecha</div>
+                    </div>
+                    <span class="weight-badge" th:text="${tarea.porcentaje} + '%'">20%</span>
+                    <span class="badge-pill"
+                          th:classappend="${tarea.notaObtenida != null and tarea.notaObtenida >= 70} ? ' badge-success' : ' badge-warning'"
+                          th:text="${tarea.notaObtenida != null} ? (tarea.notaObtenida + ' / 100') : 'Sin nota'">85</span>
+                    <!-- Puntos aportados: (nota × peso) / 100 -->
+                    <div class="points-col earned"
+                         th:text="${tarea.notaObtenida != null} ? (${T(java.lang.String).format('%.2f', (tarea.notaObtenida / 100.0) * tarea.porcentaje)} + ' pts') : '—'">
+                        pts
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
 
+        <!-- Tareas pendientes -->
+        <div class="tasks-card">
+            <div class="tasks-card-header">
+                <span class="dot dot-warning"></span>
+                Tareas pendientes
+                (<span id="countPending">0</span>)
+            </div>
+            <div id="listPending">
+                <div th:if="${tareasPendientes == null or #lists.isEmpty(tareasPendientes)}" class="empty-state">
+                    <div class="empty-icon">🎉</div>
+                    <div>¡Sin tareas pendientes!</div>
+                </div>
 
+                <div th:each="tarea : ${tareasPendientes}"
+                     class="task-row"
+                     th:attr="data-weight=${tarea.porcentaje}">
+                    <div>
+                        <div class="task-name" th:text="${tarea.titulo}">Título</div>
+                        <div class="task-date" th:text="'Entrega · ' + ${#temporals.format(tarea.fechaEntrega,'dd/MM/yyyy')}">fecha</div>
+                    </div>
+                    <span class="weight-badge" th:text="${tarea.porcentaje} + '%'">20%</span>
+                    <span class="badge-pill badge-pending">Pendiente</span>
+                    <div class="points-col pending">—</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Footer -->
     <div th:replace="~{fragments/footer :: FooterPagina}"></div>
 
     <script>
-        function calcularNotaRealDelCurso() {
-            let totalPuntosObtenidos = 0;
-            let totalPorcentajeCompletado = 0;
-            let totalPorcentajeCurso = 0;
-            let evaluacionesCompletadas = 0;
-            let evaluacionesPendientes = 0;
+        /**
+         * Calcula el porcentaje acumulado actual y actualiza el panel.
+         *
+         * Fórmula:
+         *   porcentajeAcumulado = Σ( (nota_i / 100) × peso_i )
+         *
+         * Solo se cuentan las filas dentro de #listCompleted (tareas entregadas con nota).
+         * El panel se actualiza dinámicamente; si el DOM cambia (p. ej. tras guardar nota)
+         * basta con llamar calcularAcumulado() de nuevo.
+         */
+        function calcularAcumulado() {
+            // --- Recolectar datos de tareas completadas ---
+            const rowsCompleted = document.querySelectorAll('#listCompleted .task-row');
+            const rowsPending   = document.querySelectorAll('#listPending .task-row');
 
-            // Calcular de tareas completadas
-            const tareasCompletadas = document.querySelectorAll('.tarea-completada-calc [data-puntos]');
-            tareasCompletadas.forEach(elem => {
-                const puntos = parseFloat(elem.getAttribute('data-puntos')) || 0;
-                totalPuntosObtenidos += puntos;
-                evaluacionesCompletadas++;
+            let puntosObtenidos      = 0;  // Σ (nota/100 × peso)
+            let pesoCompletado       = 0;  // Σ peso de entregadas
+            let pesoPendiente        = 0;  // Σ peso de pendientes
+            let countCompletedValid  = 0;  // tareas con nota real
+            const totalTareas        = rowsCompleted.length + rowsPending.length;
+
+            rowsCompleted.forEach(row => {
+                const nota   = parseFloat(row.getAttribute('data-nota') || 0);
+                const peso   = parseFloat(row.getAttribute('data-weight') || 0);
+                const puntos = (nota / 100) * peso;
+                puntosObtenidos += puntos;
+                pesoCompletado  += peso;
+                if (nota > 0) countCompletedValid++;
             });
 
-            // Sumar porcentajes de tareas completadas para saber cuánto del curso está cubierto
-            const porcentajesCompletadas = document.querySelectorAll('.tarea-completada-calc small');
-            porcentajesCompletadas.forEach(elem => {
-                const texto = elem.textContent;
-                const match = texto.match(/Peso: (\d+(?:\.\d+)?)%/);
-                if (match) {
-                    totalPorcentajeCompletado += parseFloat(match[1]);
-                }
+            rowsPending.forEach(row => {
+                const peso = parseFloat(row.getAttribute('data-weight') || 0);
+                pesoPendiente += peso;
             });
 
-            // Contar tareas pendientes y sumar su peso
-            const tareasPendientes = document.querySelectorAll('.tarea-pendiente-calc small');
-            tareasPendientes.forEach(elem => {
-                const texto = elem.textContent;
-                const match = texto.match(/Peso: (\d+(?:\.\d+)?)%/);
-                if (match) {
-                    totalPorcentajeCurso += parseFloat(match[1]);
-                    evaluacionesPendientes++;
-                }
-            });
+            // Porcentaje acumulado (sobre el 100% total del curso)
+            const acumulado = puntosObtenidos; // ya está en escala 0-100
 
-            // Total del curso incluye lo completado y lo pendiente
-            totalPorcentajeCurso += totalPorcentajeCompletado;
+            // Nota actual: cuánto obtuve sobre lo que ya se evaluó
+            const notaActual = pesoCompletado > 0
+                ? (puntosObtenidos / pesoCompletado) * 100
+                : 0;
 
-            // Calcular la nota actual basada en lo completado
-            const notaActual = totalPorcentajeCompletado > 0 ? 
-                (totalPuntosObtenidos / totalPorcentajeCompletado) * 100 : 0;
+            // Porcentaje del curso que ya fue evaluado
+            const cursoCubierto = pesoCompletado; // en %
 
-            // Actualizar elementos del DOM
-            document.getElementById('porcentajeCompletado').textContent = totalPorcentajeCompletado.toFixed(1) + '%';
-            document.getElementById('puntosObtenidos').textContent = totalPuntosObtenidos.toFixed(2);
-            document.getElementById('notaActual').textContent = notaActual.toFixed(2);
-            document.getElementById('notaFinalActual').textContent = notaActual.toFixed(2);
+            // Progreso de la barra: cuánto del total ha sido cubierto
+            const totalPeso       = pesoCompletado + pesoPendiente;
+            const progresoBarra   = totalPeso > 0 ? (pesoCompletado / totalPeso) * 100 : 0;
 
-            document.getElementById('evaluacionesCompletadas').textContent = evaluacionesCompletadas;
-            document.getElementById('evaluacionesPendientes').textContent = evaluacionesPendientes;
-            document.getElementById('porcentajeCubierto').textContent = totalPorcentajeCompletado.toFixed(1) + '%';
+            // --- Actualizar DOM ---
+            document.getElementById('displayAccumulated').innerHTML =
+                acumulado.toFixed(1) + '<small>%</small>';
 
-            // Actualizar barra de progreso
-            const porcentajeProgreso = totalPorcentajeCurso > 0 ? 
-                (totalPorcentajeCompletado / totalPorcentajeCurso) * 100 : 0;
-            
-            document.getElementById('barraProgreso').style.width = porcentajeProgreso.toFixed(1) + '%';
-            document.getElementById('barraProgreso').setAttribute('aria-valuenow', porcentajeProgreso.toFixed(1));
-            document.getElementById('textoProgreso').textContent = porcentajeProgreso.toFixed(1) + '%';
+            document.getElementById('displayPoints').textContent =
+                puntosObtenidos.toFixed(2);
 
-            // Cambiar color de la barra según el progreso
-            const barra = document.getElementById('barraProgreso');
-            barra.className = 'progress-bar';
-            if (porcentajeProgreso < 30) {
-                barra.classList.add('bg-danger');
-            } else if (porcentajeProgreso < 70) {
-                barra.classList.add('bg-warning');
-            } else {
-                barra.classList.add('bg-success');
-            }
+            document.getElementById('displayCovered').textContent =
+                cursoCubierto.toFixed(1) + '%';
+
+            document.getElementById('displayCount').textContent =
+                countCompletedValid + ' / ' + totalTareas;
+
+            document.getElementById('displayCurrentGrade').textContent =
+                pesoCompletado > 0 ? notaActual.toFixed(1) + ' / 100' : '—';
+
+            document.getElementById('displayPending').textContent =
+                rowsPending.length;
+
+            // Barra de progreso
+            document.getElementById('progressFill').style.width =
+                Math.min(progresoBarra, 100).toFixed(1) + '%';
+
+            document.getElementById('progressLabel').textContent =
+                progresoBarra.toFixed(1) + '% del cuatrimestre evaluado';
+
+            // Contadores en headers de tarjetas
+            document.getElementById('countCompleted').textContent = rowsCompleted.length;
+            document.getElementById('countPending').textContent   = rowsPending.length;
         }
 
-
-
-        // Calcular la nota real al cargar la página
-        document.addEventListener('DOMContentLoaded', function() {
-            // Ocultar enlace de tareas del navbar
-            const tareasLink = document.querySelector('.navbar a[href="/tareas"]');
-            if (tareasLink) {
-                tareasLink.style.display = 'none';
-            }
-
-            // Calcular nota real del curso
-            calcularNotaRealDelCurso();
-        });
+        // Ejecutar al cargar y cuando cambie el DOM (por si se usa turbo/ajax)
+        document.addEventListener('DOMContentLoaded', calcularAcumulado);
     </script>
-
 </body>
 </html>

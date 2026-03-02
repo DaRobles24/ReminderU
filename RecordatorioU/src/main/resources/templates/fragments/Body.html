@@ -134,61 +134,27 @@
 
 <style>
     .semana .info {
-        visibility: hidden;
-        opacity: 0;
-        width: 280px;
-        background-color: #111827;
-        color: #fff;
-        text-align: left;
-        padding: 12px;
-        border-radius: 12px;
-        position: absolute;
-        bottom: 50px;
-        left: 50%;
-        transform: translateX(-50%);
-        transition: opacity 0.3s;
-        z-index: 100;
-        font-size: 0.85rem;
-        line-height: 1.4rem;
+        visibility: hidden; opacity: 0; width: 280px;
+        background-color: #111827; color: #fff; text-align: left;
+        padding: 12px; border-radius: 12px; position: absolute;
+        bottom: 50px; left: 50%; transform: translateX(-50%);
+        transition: opacity 0.3s; z-index: 100;
+        font-size: 0.85rem; line-height: 1.4rem;
         box-shadow: 0 8px 25px rgba(0,0,0,0.4);
         border: 1px solid rgba(255,255,255,0.1);
     }
-    .tooltip-header-mejorado {
-        font-weight: bold;
-        font-size: 0.95rem;
-        color: #60a5fa;
-    }
-    .badge-actual {
-        background-color: #3b82f6;
-        color: white;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 0.7rem;
-        margin-left: 6px;
-    }
+    .tooltip-header-mejorado { font-weight: bold; font-size: 0.95rem; color: #60a5fa; }
+    .badge-actual { background-color: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-left: 6px; }
     .tarea-separada { margin-bottom: 8px; }
     .tarea-nombre { font-weight: bold; color: #fbbf24; margin-bottom: 3px; font-size: 0.9rem; }
     .tarea-curso, .tarea-fecha { color: #d1d5db; margin-bottom: 2px; font-size: 0.8rem; }
     .tarea-estado { margin-top: 4px; font-size: 0.8rem; }
     .estado-ok { color: #10b981; font-weight: bold; }
     .estado-pendiente { color: #f59e0b; font-weight: bold; }
-    .separador-header-hr, .separador-tarea-hr {
-        border: none; height: 1px;
-        background-color: rgba(255,255,255,0.25);
-        margin: 8px 0; opacity: 0.8;
-    }
+    .separador-header-hr, .separador-tarea-hr { border: none; height: 1px; background-color: rgba(255,255,255,0.25); margin: 8px 0; opacity: 0.8; }
     .sin-tareas-mensaje { text-align: center; color: #9ca3af; font-style: italic; padding: 8px 0; }
-    .semana .info::after {
-        content: "";
-        position: absolute;
-        top: 100%; left: 50%;
-        margin-left: -8px;
-        border-width: 8px; border-style: solid;
-        border-color: #111827 transparent transparent transparent;
-    }
+    .semana .info::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -8px; border-width: 8px; border-style: solid; border-color: #111827 transparent transparent transparent; }
     .semana:hover .info { visibility: visible; opacity: 1; bottom: 55px; }
     .barra-progreso { padding: 20px 0; }
-    @media (max-width: 768px) {
-        .semana .info { width: 250px; font-size: 0.8rem; }
-    }
+    @media (max-width: 768px) { .semana .info { width: 250px; font-size: 0.8rem; } }
 </style>

@@ -49,7 +49,7 @@
 
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    </head>
+</head>
 <body>
     <div th:replace="~{fragments/header :: HeaderPagina}"></div>
     
@@ -60,7 +60,8 @@
             <span th:text="${mensaje}"></span>
         </div>
         
-        <form th:action="@{/tareas/guardar}" th:object="${tarea}" method="post" id="form-tarea">
+        <!-- El form hace POST normal a /tareas/guardar — sin fetch, sin JavaScript que interfiera -->
+        <form th:action="@{/tareas/guardar}" th:object="${tarea}" method="post">
             <input type="hidden" th:field="*{id}" />
             
             <!-- SECCIÓN CURSO -->
@@ -149,6 +150,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        /* Cambia el color del select de estado según la opción seleccionada */
         document.addEventListener('DOMContentLoaded', function () {
             const estadoSelect = document.getElementById('estadoSelect');
             
@@ -176,60 +178,5 @@
             estadoSelect.addEventListener('change', actualizarColor);
         });
     </script>
-
-<div id="contenedor-tareas"></div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('form-tarea');
-    if(!form) return;
-
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        // Construir payload (ajusta names a los campos de tu form)
-        const data = {};
-        new FormData(form).forEach((v,k) => { data[k] = v; });
-
-        // CSRF
-        const tokenMeta = document.querySelector('meta[name="_csrf"]');
-        const headerMeta = document.querySelector('meta[name="_csrf_header"]');
-        const token = tokenMeta ? tokenMeta.getAttribute('content') : null;
-        const header = headerMeta ? headerMeta.getAttribute('content') : 'X-CSRF-TOKEN';
-
-        try {
-            const res = await fetch('/api/tareas', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? {[header]: token} : {})
-                },
-                body: JSON.stringify(data)
-            });
-
-            if(!res.ok) {
-                const txt = await res.text();
-                alert('Error guardando tarea: ' + txt);
-                return;
-            }
-
-            const saved = await res.json();
-            // Insertar en la lista de tareas (contenedor)
-            const cont = document.getElementById('contenedor-tareas');
-            if(cont){
-                const nodo = document.createElement('div');
-                nodo.className = 'card p-2 mb-2';
-                nodo.innerHTML = `<h5>${saved.titulo || ''}</h5><p>${saved.descripcion || ''}</p><small>Entrega: ${saved.fechaEntrega || ''} ${saved.horaEntrega || ''}</small>`;
-                cont.prepend(nodo);
-            }
-
-            form.reset();
-        } catch (err) {
-            console.error(err);
-            alert('Error de comunicación con el servidor');
-        }
-    });
-});
-</script>
 </body>
 </html>
