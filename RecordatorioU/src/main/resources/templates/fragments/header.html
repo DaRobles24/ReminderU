@@ -105,7 +105,7 @@
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <label class="calc-label mb-0">📝 Evaluaciones futuras</label>
-                            <button class="calc-add-btn" id="addEvalBtn" type="button">+ Agregar</button>
+                            <button class="calc-add-btn" id="addEvalBtn" type="button" onclick="SimuladorNotas.agregarFila('','','')">+ Agregar</button>
                         </div>
                         <small style="color:#9ca3af; font-size:0.75rem; display:block; margin-bottom:0.6rem;">
                             Ingresa la nota que esperas obtener y el peso porcentual de cada evaluación.
@@ -251,17 +251,10 @@
 
 <!-- ── JavaScript del simulador ── -->
 <script>
-(function () {
+window.SimuladorNotas = (function () {
     'use strict';
-
     var evalCount = 0;
 
-    /**
-     * Agrega una fila de evaluación futura.
-     * @param {string} nombre  - Nombre sugerido
-     * @param {number|string} nota - Nota esperada (vacío = sin valor)
-     * @param {number|string} peso - Peso porcentual (vacío = sin valor)
-     */
     function agregarFila(nombre, nota, peso) {
         evalCount++;
         var list = document.getElementById('evalList');
@@ -269,17 +262,11 @@
 
         var row = document.createElement('div');
         row.className = 'eval-row';
-
         row.innerHTML =
             '<input type="text" placeholder="Nombre de la evaluación" class="eval-name" value="' + (nombre || '') + '">' +
             '<input type="number" placeholder="0–100" min="0" max="100" step="0.01" class="eval-nota" value="' + (nota !== undefined && nota !== '' ? nota : '') + '">' +
             '<input type="number" placeholder="0–100" min="0" max="100" step="0.01" class="eval-peso" value="' + (peso !== undefined && peso !== '' ? peso : '') + '">' +
-            '<button class="eval-del-btn" type="button" title="Eliminar fila">✕</button>';
-
-        row.querySelector('.eval-del-btn').addEventListener('click', function () {
-            row.remove();
-            calcular();
-        });
+            '<button class="eval-del-btn" type="button" title="Eliminar fila" onclick="this.closest(\'.eval-row\').remove(); SimuladorNotas.calcular();">✕</button>';
 
         row.querySelectorAll('input').forEach(function (inp) {
             inp.addEventListener('input', calcular);
@@ -289,17 +276,9 @@
         calcular();
     }
 
-    /**
-     * Calcula la proyección de notas y actualiza el DOM.
-     *
-     * Fórmula:
-     *   puntosExtra  = Σ( (notaEsperada_i / 100) × peso_i )
-     *   proyectada   = notaActual + puntosExtra
-     *   deltaMeta    = meta - proyectada
-     */
     function calcular() {
-        var notaActual = parseFloat(document.getElementById('notaActualInput').value) || 0;
-        var meta       = parseFloat(document.getElementById('metaInput').value)       || 70;
+        var notaActual = parseFloat((document.getElementById('notaActualInput') || {}).value) || 0;
+        var meta       = parseFloat((document.getElementById('metaInput') || {}).value) || 70;
 
         var puntosExtra = 0;
         document.querySelectorAll('#evalList .eval-row').forEach(function (row) {
@@ -312,72 +291,58 @@
         var deltaMeta  = meta - proyectada;
         var filas      = document.querySelectorAll('#evalList .eval-row').length;
 
-        // — Resultados de texto —
-        document.getElementById('resActual').textContent = notaActual.toFixed(1);
+        var el;
 
-        var elProy = document.getElementById('resProyectada');
-        elProy.textContent = proyectada.toFixed(1);
-        elProy.style.color = proyectada >= meta ? '#2f9e44' : (deltaMeta > 20 ? '#c92a2a' : '#3b5bdb');
+        el = document.getElementById('resActual');
+        if (el) el.textContent = notaActual.toFixed(1);
 
-        var elMeta = document.getElementById('resMeta');
-        if (deltaMeta <= 0) {
-            elMeta.textContent = '✅ Meta alcanzada';
-            elMeta.style.color = '#2f9e44';
-        } else {
-            elMeta.textContent = '+' + deltaMeta.toFixed(1) + ' pts';
-            elMeta.style.color = deltaMeta > 20 ? '#c92a2a' : '#e67700';
+        el = document.getElementById('resProyectada');
+        if (el) { el.textContent = proyectada.toFixed(1); el.style.color = proyectada >= meta ? '#2f9e44' : (deltaMeta > 20 ? '#c92a2a' : '#3b5bdb'); }
+
+        el = document.getElementById('resMeta');
+        if (el) {
+            if (deltaMeta <= 0) { el.textContent = '✅ Meta alcanzada'; el.style.color = '#2f9e44'; }
+            else { el.textContent = '+' + deltaMeta.toFixed(1) + ' pts'; el.style.color = deltaMeta > 20 ? '#c92a2a' : '#e67700'; }
         }
 
-        // — Barra de proyección (escala 0–100%) —
         var pActual = Math.min(notaActual, 100);
         var pExtra  = Math.min(puntosExtra, 100 - pActual);
         var pMeta   = Math.min(meta, 100);
 
-        document.getElementById('projFillActual').style.width = pActual.toFixed(1) + '%';
-        document.getElementById('projFillExtra').style.width  = Math.max(pExtra, 0).toFixed(1) + '%';
-        document.getElementById('projMarkerMeta').style.left  = pMeta.toFixed(1) + '%';
-        document.getElementById('projBarLabel').textContent   = 'Proyectado: ' + proyectada.toFixed(1);
+        el = document.getElementById('projFillActual');  if (el) el.style.width = pActual.toFixed(1) + '%';
+        el = document.getElementById('projFillExtra');   if (el) el.style.width = Math.max(pExtra, 0).toFixed(1) + '%';
+        el = document.getElementById('projMarkerMeta');  if (el) el.style.left  = pMeta.toFixed(1) + '%';
+        el = document.getElementById('projBarLabel');    if (el) el.textContent = 'Proyectado: ' + proyectada.toFixed(1);
 
-        // — Diagnóstico —
-        var diag = document.getElementById('calcDiagnosis');
-        if (filas === 0) {
-            diag.textContent = 'Agrega evaluaciones futuras para ver la proyección.';
-            diag.style.background = '#f1f3f5'; diag.style.color = '#6b6b7a';
-        } else if (proyectada >= meta) {
-            diag.textContent = '🎉 ¡Llegarás a la meta con esta proyección!';
-            diag.style.background = '#ebfbee'; diag.style.color = '#2f9e44';
-        } else if (deltaMeta <= 10) {
-            diag.textContent = '⚠️ Estás cerca. Necesitas ' + deltaMeta.toFixed(1) + ' pts más para llegar a ' + meta + '.';
-            diag.style.background = '#fff9db'; diag.style.color = '#e67700';
-        } else {
-            diag.textContent = '🔴 Te faltan ' + deltaMeta.toFixed(1) + ' pts. Revisa los pesos de tus evaluaciones restantes.';
-            diag.style.background = '#fff5f5'; diag.style.color = '#c92a2a';
+        el = document.getElementById('calcDiagnosis');
+        if (el) {
+            if (filas === 0) { el.textContent = 'Agrega evaluaciones futuras para ver la proyección.'; el.style.background = '#f1f3f5'; el.style.color = '#6b6b7a'; }
+            else if (proyectada >= meta) { el.textContent = '🎉 ¡Llegarás a la meta con esta proyección!'; el.style.background = '#ebfbee'; el.style.color = '#2f9e44'; }
+            else if (deltaMeta <= 10) { el.textContent = '⚠️ Estás cerca. Necesitas ' + deltaMeta.toFixed(1) + ' pts más para llegar a ' + meta + '.'; el.style.background = '#fff9db'; el.style.color = '#e67700'; }
+            else { el.textContent = '🔴 Te faltan ' + deltaMeta.toFixed(1) + ' pts. Revisa los pesos de tus evaluaciones restantes.'; el.style.background = '#fff5f5'; el.style.color = '#c92a2a'; }
         }
     }
 
-    // — Inicializar cuando el DOM esté listo —
-    document.addEventListener('DOMContentLoaded', function () {
-        var addBtn = document.getElementById('addEvalBtn');
-        if (addBtn) {
-            addBtn.addEventListener('click', function () { agregarFila('', '', ''); });
-        }
-
-        var inpActual = document.getElementById('notaActualInput');
-        var inpMeta   = document.getElementById('metaInput');
-        if (inpActual) inpActual.addEventListener('input', calcular);
-        if (inpMeta)   inpMeta.addEventListener('input', calcular);
-
-        // Al abrir el modal: agregar fila de ejemplo si está vacío y calcular
+    // Hookear modal y inputs — se llama desde onmodalshow o manualmente
+    function initModal() {
         var modal = document.getElementById('calcModal');
-        if (modal) {
+        if (modal && !modal._simHooked) {
+            modal._simHooked = true;
             modal.addEventListener('show.bs.modal', function () {
                 var list = document.getElementById('evalList');
-                if (list && list.children.length === 0) {
-                    agregarFila('Examen Final', '', '');
-                }
+                if (list && list.children.length === 0) agregarFila('Examen Final', '', '');
                 calcular();
             });
         }
-    });
+        var inp;
+        inp = document.getElementById('notaActualInput'); if (inp && !inp._simHooked) { inp._simHooked = true; inp.addEventListener('input', calcular); }
+        inp = document.getElementById('metaInput');       if (inp && !inp._simHooked) { inp._simHooked = true; inp.addEventListener('input', calcular); }
+    }
+
+    // Intentar hookear ahora y también en DOMContentLoaded
+    initModal();
+    document.addEventListener('DOMContentLoaded', initModal);
+
+    return { agregarFila: agregarFila, calcular: calcular, initModal: initModal };
 })();
 </script>

@@ -12,8 +12,13 @@ public class Evaluacion {
     private Long id;
 
     private String nombre;
+
     private double porcentaje; // % de la nota total
+
     private LocalDate fecha;
+
+    @Column(name = "nota_obtenida")
+    private Double notaObtenida; // 0–100, null = aún sin nota
 
     @ManyToOne
     @JoinColumn(name = "curso_id")
@@ -31,6 +36,9 @@ public class Evaluacion {
 
     public LocalDate getFecha() { return fecha; }
     public void setFecha(LocalDate fecha) { this.fecha = fecha; }
+
+    public Double getNotaObtenida() { return notaObtenida; }
+    public void setNotaObtenida(Double notaObtenida) { this.notaObtenida = notaObtenida; }
 
     public Curso getCurso() { return curso; }
     public void setCurso(Curso curso) { this.curso = curso; }
