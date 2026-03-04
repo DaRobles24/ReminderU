@@ -5,178 +5,693 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${tarea.id == null} ? 'Agregar Tarea' : 'Editar Tarea'">Agregar Tarea</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .card-section {
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            background-color: #f9f9f9;
-        }
-        .section-title {
-            font-weight: bold;
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-        }
-        #estadoSelect {
-            font-weight: bold;
-        }
-        .modalidad-container {
-            display: flex;
-            gap: 1rem;
-        }
-        .modalidad-option {
-            flex: 1;
-            text-align: center;
-            cursor: pointer;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 12px 0;
-            background: transparent;
-            transition: all 0.3s;
-        }
-        .modalidad-option:hover {
-            border-color: #007bff;
-            background-color: rgba(0,123,255,0.05);
-        }
-        .btn-check:checked + .modalidad-option {
-            border-color: #007bff;
-            background-color: rgba(0,123,255,0.2);
-        }
-        .modalidad-option .emoji {
-            font-size: 1.5rem;
-            display: block;
-        }
-    </style>
-
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+    <style>
+        body { background: #f0f2f5; font-family: Arial, sans-serif; }
+
+        .form-wrapper {
+            max-width: 680px;
+            margin: 2rem auto;
+            padding: 0 1rem 3rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0d3b66;
+            margin-bottom: 1.75rem;
+        }
+
+        /* ── Sección card ── */
+        .sec {
+            background: #fff;
+            border: 1px solid rgba(219,234,254,1);
+            border-radius: 1rem;
+            padding: 1.5rem 1.75rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.04);
+        }
+
+        .sec-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+
+        /* ── Select / Input base ── */
+        .form-control, .form-select {
+            border: 1px solid rgba(219,234,254,1);
+            border-radius: 0.65rem;
+            padding: 0.65rem 0.9rem;
+            font-size: 0.95rem;
+            transition: border 0.15s, box-shadow 0.15s;
+            background: #fff;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            outline: none;
+        }
+
+        /* ── Info del curso (aparece al seleccionar) ── */
+        .curso-info {
+            display: none;
+            margin-top: 0.85rem;
+            background: rgba(219,234,254,0.35);
+            border: 1px solid rgba(219,234,254,1);
+            border-radius: 0.65rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            color: #374151;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .curso-info.visible { display: flex; }
+        .ci-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-weight: 600;
+            color: #0d3b66;
+        }
+
+        /* ── Selector de semana ── */
+        .semana-wrapper {
+            position: relative;
+        }
+
+        .fecha-resultado {
+            display: none;
+            margin-top: 0.75rem;
+            background: rgba(219,234,254,0.35);
+            border: 1px solid rgba(219,234,254,1);
+            border-radius: 0.65rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.88rem;
+            color: #374151;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .fecha-resultado.visible { display: flex; }
+        .fecha-tag {
+            font-weight: 700;
+            color: #0d3b66;
+            font-size: 1rem;
+        }
+
+        /* ── Sin cuatrimestre configurado ── */
+        .no-config-warning {
+            background: #fff9db;
+            border: 1px solid #fde68a;
+            border-radius: 0.65rem;
+            padding: 0.85rem 1rem;
+            font-size: 0.85rem;
+            color: #92400e;
+            margin-bottom: 1rem;
+        }
+
+        /* ── Modalidad toggle ── */
+        .mod-group {
+            display: flex;
+            gap: 0.75rem;
+        }
+        .mod-option {
+            flex: 1;
+            text-align: center;
+            padding: 0.85rem 0.5rem;
+            border: 1px solid rgba(219,234,254,1);
+            border-radius: 0.75rem;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #6b7280;
+            background: #fff;
+            transition: all 0.15s;
+        }
+        .btn-check:checked + .mod-option {
+            background: rgba(219,234,254,0.45);
+            border-color: #3b82f6;
+            color: #0d3b66;
+        }
+        .mod-icon { font-size: 1.4rem; display: block; margin-bottom: 0.25rem; }
+
+        /* ── Estado select colores ── */
+        #estadoSelect { font-weight: 600; }
+
+        /* ── Momento de entrega ── */
+        .momento-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.65rem;
+        }
+        .momento-option {
+            text-align: center;
+            padding: 0.9rem 0.5rem 0.75rem;
+            border: 1.5px solid rgba(219,234,254,1);
+            border-radius: 0.85rem;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #6b7280;
+            background: #fff;
+            transition: all 0.15s;
+            line-height: 1.3;
+            user-select: none;
+        }
+        .btn-check:checked + .momento-option {
+            background: rgba(219,234,254,0.45);
+            border-color: #3b82f6;
+            color: #0d3b66;
+        }
+        .momento-icon { font-size: 1.5rem; display: block; margin-bottom: 0.3rem; }
+        .momento-time {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 400;
+            color: #9ca3af;
+            margin-top: 0.2rem;
+        }
+        .btn-check:checked + .momento-option .momento-time {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        @media (max-width: 480px) {
+            .momento-group { grid-template-columns: 1fr; }
+        }
+
+        /* ── Botones ── */
+        .btn-guardar {
+            background: #0d3b66;
+            color: #fff;
+            border: none;
+            border-radius: 0.75rem;
+            padding: 0.85rem 2rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+        }
+        .btn-guardar:hover { background: #0a2e52; transform: translateY(-1px); }
+
+        .btn-cancelar {
+            background: #f0f2f5;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            border-radius: 0.75rem;
+            padding: 0.85rem 1.5rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.15s;
+        }
+        .btn-cancelar:hover { background: #e5e7eb; color: #111; }
+
+        .actions-row {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 576px) {
+            .mod-group { flex-direction: column; }
+            .actions-row { flex-direction: column; }
+            .btn-guardar, .btn-cancelar { width: 100%; text-align: center; }
+        }
+    </style>
 </head>
 <body>
     <div th:replace="~{fragments/header :: HeaderPagina}"></div>
-    
-    <main class="container mt-5">
-        <h2 class="mb-4" th:text="${tarea.id == null} ? 'Agregar Tarea' : 'Editar Tarea'">Agregar Tarea</h2>
-        
-        <div th:if="${mensaje}" class="alert" th:classappend="' alert-' + ${tipo}" role="alert">
-            <span th:text="${mensaje}"></span>
-        </div>
-        
-        <!-- El form hace POST normal a /tareas/guardar — sin fetch, sin JavaScript que interfiera -->
+
+    <main class="form-wrapper">
+
+        <h2 class="page-title"
+            th:text="${tarea.id == null} ? '📝 Nueva Tarea' : '✏️ Editar Tarea'">
+            Nueva Tarea
+        </h2>
+
+        <!-- Alerta -->
+        <div th:if="${mensaje}" class="alert mb-3"
+             th:classappend="'alert-' + ${tipo}"
+             th:text="${mensaje}"></div>
+
         <form th:action="@{/tareas/guardar}" th:object="${tarea}" method="post">
             <input type="hidden" th:field="*{id}" />
-            
-            <!-- SECCIÓN CURSO -->
-            <div class="card p-3 mb-3 card-section">
-                <div class="section-title">📚 Curso</div>
-                <select class="form-select" th:field="*{curso.id}" required>
-                    <option value="" th:selected="${tarea.curso == null}" disabled>Seleccione un curso</option>
-                    <option th:each="c : ${cursos}" th:value="${c.id}" th:text="${c.nombre}" 
-                            th:selected="${tarea.curso != null} ? ${tarea.curso.id} == ${c.id} : false"></option>
+
+            <!-- ══════════════════════════════════════
+                 1. CURSO
+                 ══════════════════════════════════════ -->
+            <div class="sec">
+                <div class="sec-title">📚 Curso</div>
+
+                <!-- Datos de cursos en JSON para el JS -->
+                <script th:inline="javascript">
+                    const CURSOS_DATA = {};
+                    /*[# th:each="c : ${cursos}"]*/
+                    CURSOS_DATA[/*[[${c.id}]]*/ 0] = {
+                        nombre: /*[[${c.nombre}]]*/ '',
+                        dia:    /*[[${c.dia.name()}]]*/ '',
+                        hora:   /*[[${c.hora}]]*/ ''
+                    };
+                    /*[/]*/
+                </script>
+
+                <select class="form-select" id="cursoSelect" th:field="*{curso.id}" required>
+                    <option value="" disabled
+                            th:selected="${tarea.curso == null}">
+                        Selecciona un curso
+                    </option>
+                    <option th:each="c : ${cursos}"
+                            th:value="${c.id}"
+                            th:text="${c.nombre}"
+                            th:selected="${tarea.curso != null} ? ${tarea.curso.id} == ${c.id} : false">
+                    </option>
                 </select>
-            </div>
-            
-            <!-- SECCIÓN DATOS DE LA TAREA -->
-            <div class="card p-3 mb-3 card-section">
-                <div class="section-title">📝 Datos de la tarea</div>
-                
-                <div class="mb-3">
-                    <label class="form-label">Título</label>
-                    <input type="text" class="form-control" th:field="*{titulo}" placeholder="Ej: Entregar proyecto" required>
+
+                <!-- Info del curso seleccionado -->
+                <div class="curso-info" id="cursoInfo">
+                    <span class="ci-chip" id="ciDia">📅 —</span>
+                    <span class="ci-chip" id="ciHora">⏰ —</span>
                 </div>
-                
-                <!-- MODALIDAD -->
+            </div>
+
+            <!-- ══════════════════════════════════════
+                 2. DATOS DE LA TAREA
+                 ══════════════════════════════════════ -->
+            <div class="sec">
+                <div class="sec-title">📝 Datos de la tarea</div>
+
                 <div class="mb-3">
-                    <label class="form-label">Modalidad de trabajo</label>
-                    <div class="modalidad-container">
-                        <input type="radio" class="btn-check" th:field="*{modalidad}" value="INDIVIDUAL" id="individual" autocomplete="off">
-                        <label class="modalidad-option" for="individual">
-                            <span class="emoji">👤</span>
+                    <label class="form-label fw-semibold">Título</label>
+                    <input type="text" class="form-control" th:field="*{titulo}"
+                           placeholder="Ej: Proyecto final de Java" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Modalidad de trabajo</label>
+                    <div class="mod-group">
+                        <input type="radio" class="btn-check" th:field="*{modalidad}"
+                               value="INDIVIDUAL" id="modIndividual" autocomplete="off">
+                        <label class="mod-option" for="modIndividual">
+                            <span class="mod-icon">👤</span>
                             Individual
                         </label>
-                        
-                        <input type="radio" class="btn-check" th:field="*{modalidad}" value="GRUPAL" id="grupal" autocomplete="off">
-                        <label class="modalidad-option" for="grupal">
-                            <span class="emoji">👥</span>
+
+                        <input type="radio" class="btn-check" th:field="*{modalidad}"
+                               value="GRUPAL" id="modGrupal" autocomplete="off">
+                        <label class="mod-option" for="modGrupal">
+                            <span class="mod-icon">👥</span>
                             Grupal
                         </label>
                     </div>
                 </div>
-                
+
                 <div class="mb-3">
-                    <label class="form-label">Descripción</label>
-                    <textarea class="form-control" th:field="*{descripcion}" placeholder="Ej: Proyecto de Java" required></textarea>
+                    <label class="form-label fw-semibold">Descripción</label>
+                    <textarea class="form-control" th:field="*{descripcion}" rows="3"
+                              placeholder="¿En qué consiste esta tarea?" required></textarea>
                 </div>
-                
-                <div class="mb-3">
-                    <label class="form-label">Valor de la tarea (%)</label>
-                    <input type="number" class="form-control" th:field="*{porcentaje}" placeholder="Ej: 20" min="0" max="100" step="0.01" required>
+
+                <div>
+                    <label class="form-label fw-semibold">Valor (%)</label>
+                    <input type="number" class="form-control" th:field="*{porcentaje}"
+                           placeholder="Ej: 20" min="0" max="100" step="0.01" required
+                           style="max-width: 200px;">
                 </div>
             </div>
-            
-            <!-- SECCIÓN ENTREGA -->
-            <div class="card p-3 mb-3 card-section">
-                <div class="section-title">⏰ Entrega</div>
-                <div class="row g-2">
-                    <div class="col-md-6">
-                        <label class="form-label">Fecha de entrega</label>
-                        <input type="date" class="form-control" th:field="*{fechaEntrega}" required>
+
+            <!-- ══════════════════════════════════════
+                 3. FECHA DE ENTREGA
+                 ══════════════════════════════════════ -->
+            <div class="sec">
+                <div class="sec-title">⏰ Entrega</div>
+
+                <!-- Aviso si no hay cuatrimestre -->
+                <div class="no-config-warning" th:if="${fechaInicioCuatrimestre == null}">
+                    ⚠️ No tienes el cuatrimestre configurado. Ve al dashboard para configurarlo,
+                    o ingresa la fecha manualmente abajo.
+                </div>
+
+                <!-- Selector por semana (visible si hay cuatrimestre) -->
+                <div th:if="${fechaInicioCuatrimestre != null}">
+
+                    <!-- JS: pasar fechas del cuatrimestre -->
+                    <script th:inline="javascript">
+                        const CUATRI_INICIO = /*[[${fechaInicioCuatrimestre}]]*/ null;
+                        const CUATRI_FIN    = /*[[${fechaFinCuatrimestre}]]*/ null;
+                    </script>
+
+                    <div class="mb-3 semana-wrapper">
+                        <label class="form-label fw-semibold">Semana de entrega</label>
+                        <select class="form-select" id="semanaSelect">
+                            <option value="">— Selecciona la semana —</option>
+                            <!-- Generado por JS -->
+                        </select>
+
+                        <!-- Fecha resultante -->
+                        <div class="fecha-resultado" id="fechaResultado">
+                            <span>📅 Día de clase:</span>
+                            <span class="fecha-tag" id="fechaTag">—</span>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Hora máxima de entrega</label>
-                        <input type="time" class="form-control" th:field="*{horaEntrega}" required>
+
+                    <div class="mb-1">
+                        <label class="form-label fw-semibold">¿Cuándo se entrega?</label>
+
+                        <div class="momento-group" id="momentoGroup">
+                            <input type="radio" class="btn-check" name="momentoEntrega"
+                                   id="momentoAntes" value="antes" autocomplete="off">
+                            <label class="momento-option" for="momentoAntes">
+                                <span class="momento-icon">🌅</span>
+                                Antes de clase
+                                <span class="momento-time" id="timeAntes">—</span>
+                            </label>
+
+                            <input type="radio" class="btn-check" name="momentoEntrega"
+                                   id="momentoDurante" value="durante" autocomplete="off">
+                            <label class="momento-option" for="momentoDurante">
+                                <span class="momento-icon">🏫</span>
+                                Durante clase
+                                <span class="momento-time" id="timeDurante">—</span>
+                            </label>
+
+                            <input type="radio" class="btn-check" name="momentoEntrega"
+                                   id="momentoDespues" value="despues" autocomplete="off">
+                            <label class="momento-option" for="momentoDespues">
+                                <span class="momento-icon">🌙</span>
+                                Después de clase
+                                <span class="momento-time" id="timeDespues">11:59 pm</span>
+                            </label>
+                        </div>
+
+                        <!-- Campo oculto real que se envía al backend -->
+                        <input type="hidden" th:field="*{horaEntrega}" id="horaEntrega">
+                    </div>
+
+                    <!-- Campo oculto: la fecha calculada se escribe aquí -->
+                    <input type="hidden" th:field="*{fechaEntrega}" id="fechaEntregaHidden">
+
+                </div>
+
+                <!-- Fallback: modo manual si no hay cuatrimestre configurado -->
+                <div th:if="${fechaInicioCuatrimestre == null}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Fecha de entrega</label>
+                            <input type="date" class="form-control" th:field="*{fechaEntrega}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Hora máxima</label>
+                            <input type="time" class="form-control" th:field="*{horaEntrega}" required>
+                        </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- SECCIÓN ESTADO -->
-            <div class="card p-3 mb-3 card-section">
-                <div class="section-title">✅ Estado</div>
+
+            <!-- ══════════════════════════════════════
+                 4. ESTADO
+                 ══════════════════════════════════════ -->
+            <div class="sec">
+                <div class="sec-title">✅ Estado</div>
                 <select class="form-select" th:field="*{estado}" id="estadoSelect">
-                    <option value="PENDIENTE">Pendiente</option>
-                    <option value="ENTREGADA">Completada</option>
-                    <option value="VENCIDA">Atrasada</option>
+                    <option value="PENDIENTE">⏳ Pendiente</option>
+                    <option value="ENTREGADA">✅ Completada</option>
+                    <option value="VENCIDA">⚠️ Atrasada</option>
                 </select>
             </div>
-            
-            <!-- BOTONES -->
-            <button type="submit" class="btn btn-primary mt-3">
-                <span th:if="${tarea.id == null}">💾 Guardar Tarea</span>
-                <span th:if="${tarea.id != null}">✏️ Actualizar Tarea</span>
-            </button>
-            <a th:href="@{/tareas}" class="btn btn-secondary mt-3 ms-2">❌ Cancelar</a>
+
+            <!-- ── Botones ── -->
+            <div class="actions-row">
+                <button type="submit" class="btn-guardar">
+                    <span th:if="${tarea.id == null}">💾 Guardar Tarea</span>
+                    <span th:if="${tarea.id != null}">✏️ Actualizar Tarea</span>
+                </button>
+                <a th:href="@{/tareas}" class="btn-cancelar">Cancelar</a>
+            </div>
+
         </form>
     </main>
-    
+
     <div th:replace="~{fragments/footer :: FooterPagina}"></div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        /* Cambia el color del select de estado según la opción seleccionada */
-        document.addEventListener('DOMContentLoaded', function () {
-            const estadoSelect = document.getElementById('estadoSelect');
-            
-            function actualizarColor() {
-                switch (estadoSelect.value) {
-                    case 'PENDIENTE':
-                        estadoSelect.style.color = 'orange';
-                        estadoSelect.style.borderColor = 'orange';
-                        break;
-                    case 'ENTREGADA':
-                        estadoSelect.style.color = 'green';
-                        estadoSelect.style.borderColor = 'green';
-                        break;
-                    case 'VENCIDA':
-                        estadoSelect.style.color = 'red';
-                        estadoSelect.style.borderColor = 'red';
-                        break;
-                    default:
-                        estadoSelect.style.color = 'black';
-                        estadoSelect.style.borderColor = '#ced4da';
-                }
+    document.addEventListener('DOMContentLoaded', function () {
+
+        /* ══════════════════════════════════════════════
+           COLOR DEL SELECT DE ESTADO
+           ══════════════════════════════════════════════ */
+        var estadoSelect = document.getElementById('estadoSelect');
+        function colorEstado() {
+            if (!estadoSelect) return;
+            var colors = { PENDIENTE: '#f59e0b', ENTREGADA: '#10b981', VENCIDA: '#ef4444' };
+            var c = colors[estadoSelect.value] || '#374151';
+            estadoSelect.style.color = c;
+            estadoSelect.style.borderColor = c;
+        }
+        if (estadoSelect) { colorEstado(); estadoSelect.addEventListener('change', colorEstado); }
+
+        /* ══════════════════════════════════════════════
+           INFO DEL CURSO SELECCIONADO
+           ══════════════════════════════════════════════ */
+        var cursoSelect  = document.getElementById('cursoSelect');
+        var cursoInfo    = document.getElementById('cursoInfo');
+        var ciDia        = document.getElementById('ciDia');
+        var ciHora       = document.getElementById('ciHora');
+        var horaEntrada  = document.getElementById('horaEntrega'); // hidden
+
+        // Mapa franja → hora inicio clase y hora "antes"
+        var HORA_INICIO = { '8-11': '08:00', '11-2': '11:00', '2-5': '14:00', '6-9': '18:00' };
+        var HORA_ANTES  = { '8-11': '07:59', '11-2': '10:59', '2-5': '13:59', '6-9': '17:59' };
+        var HORA_FIN    = { '8-11': '11:00', '11-2': '14:00', '2-5': '17:00', '6-9': '21:00' };
+
+        var DIA_ES = { LUNES:'Lunes', MARTES:'Martes', MIERCOLES:'Miércoles',
+                       JUEVES:'Jueves', VIERNES:'Viernes', SABADO:'Sábado' };
+
+        function to12h(t) {
+            if (!t) return '—';
+            var parts = t.split(':');
+            var h = parseInt(parts[0]), m = parts[1];
+            var ampm = h >= 12 ? 'pm' : 'am';
+            h = h % 12 || 12;
+            return h + ':' + m + ' ' + ampm;
+        }
+
+        function actualizarMomento() {
+            var id   = cursoSelect ? cursoSelect.value : null;
+            var data = (id && typeof CURSOS_DATA !== 'undefined') ? CURSOS_DATA[id] : null;
+            var franja = data ? data.hora : null;
+
+            var tAntes   = document.getElementById('timeAntes');
+            var tDurante = document.getElementById('timeDurante');
+            var tDespues = document.getElementById('timeDespues');
+
+            if (franja) {
+                if (tAntes)   tAntes.textContent   = to12h(HORA_ANTES[franja]);
+                if (tDurante) tDurante.textContent = to12h(HORA_INICIO[franja]) + ' – ' + to12h(HORA_FIN[franja]);
+                if (tDespues) tDespues.textContent = '11:59 pm';
+            } else {
+                if (tAntes)   tAntes.textContent   = '—';
+                if (tDurante) tDurante.textContent = '—';
+                if (tDespues) tDespues.textContent = '11:59 pm';
             }
-            
-            actualizarColor();
-            estadoSelect.addEventListener('change', actualizarColor);
+
+            // Aplicar hora al hidden según la opción marcada
+            aplicarHoraMomento();
+        }
+
+        function aplicarHoraMomento() {
+            var id     = cursoSelect ? cursoSelect.value : null;
+            var data   = (id && typeof CURSOS_DATA !== 'undefined') ? CURSOS_DATA[id] : null;
+            var franja = data ? data.hora : null;
+
+            var checked = document.querySelector('input[name="momentoEntrega"]:checked');
+            if (!checked || !horaEntrada) return;
+
+            var hora24;
+            switch (checked.value) {
+                case 'antes':
+                    hora24 = franja ? HORA_ANTES[franja]  : '07:59'; break;
+                case 'durante':
+                    hora24 = franja ? HORA_INICIO[franja] : '08:00'; break;
+                case 'despues':
+                default:
+                    hora24 = '23:59'; break;
+            }
+            horaEntrada.value = hora24;
+        }
+
+        // Escuchar cambios en los radios de momento
+        document.querySelectorAll('input[name="momentoEntrega"]').forEach(function(r) {
+            r.addEventListener('change', aplicarHoraMomento);
         });
+
+        // Auto-seleccionar "despues" por defecto
+        var defaultMomento = document.getElementById('momentoDespues');
+        if (defaultMomento) {
+            defaultMomento.checked = true;
+            if (horaEntrada && !horaEntrada.value) horaEntrada.value = '23:59';
+        }
+
+        // Si hay hora guardada (edición), marcar el radio correcto
+        if (horaEntrada && horaEntrada.value) {
+            var hv = horaEntrada.value;
+            var radios = document.querySelectorAll('input[name="momentoEntrega"]');
+            // determinar cuál corresponde (comparar con las franjas posibles)
+            // Si es 23:59 → despues; si termina en :59 (no 23) → antes; resto → durante
+            if (hv === '23:59') {
+                document.getElementById('momentoDespues').checked = true;
+            } else if (hv.endsWith(':59')) {
+                document.getElementById('momentoAntes').checked = true;
+            } else {
+                document.getElementById('momentoDurante').checked = true;
+            }
+        }
+
+        function actualizarCursoInfo() {
+            var id   = cursoSelect ? cursoSelect.value : null;
+            var data = (id && typeof CURSOS_DATA !== 'undefined') ? CURSOS_DATA[id] : null;
+
+            if (data && cursoInfo) {
+                ciDia.textContent  = '📅 ' + (DIA_ES[data.dia] || data.dia);
+                ciHora.textContent = '⏰ ' + data.hora + ' hrs';
+                cursoInfo.classList.add('visible');
+                actualizarMomento();
+                calcularFecha();
+            } else if (cursoInfo) {
+                cursoInfo.classList.remove('visible');
+            }
+        }
+
+        if (cursoSelect) {
+            cursoSelect.addEventListener('change', actualizarCursoInfo);
+            if (cursoSelect.value) actualizarCursoInfo();
+        }
+
+        /* ══════════════════════════════════════════════
+           GENERADOR DE SEMANAS + CÁLCULO DE FECHA
+           ══════════════════════════════════════════════ */
+        var semanaSelect     = document.getElementById('semanaSelect');
+        var fechaResultado   = document.getElementById('fechaResultado');
+        var fechaTag         = document.getElementById('fechaTag');
+        var fechaHidden      = document.getElementById('fechaEntregaHidden');
+
+        // Índice de día (0=Lunes...6=Domingo según JS Date: 0=Dom, ajustamos)
+        var DIA_INDEX = { LUNES:1, MARTES:2, MIERCOLES:3, JUEVES:4, VIERNES:5, SABADO:6 };
+
+        var MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+        function formatDate(d) {
+            return d.getDate() + ' ' + MESES[d.getMonth()] + ' ' + d.getFullYear();
+        }
+
+        function toLocalDate(str) {
+            var p = str.split('-');
+            return new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
+        }
+
+        function addDays(date, n) {
+            var d = new Date(date); d.setDate(d.getDate() + n); return d;
+        }
+
+        // Calcular qué día de la semana cae la clase
+        function diaClaseEnSemana(inicioSemana, diaClase) {
+            // inicioSemana = lunes de esa semana
+            var idx = DIA_INDEX[diaClase];       // 1=Lun,...6=Sab
+            if (idx === undefined) return null;
+            return addDays(inicioSemana, idx - 1); // Lun+0, Mar+1, etc.
+        }
+
+        function generarSemanas() {
+            if (!semanaSelect || typeof CUATRI_INICIO === 'undefined' || !CUATRI_INICIO) return;
+
+            var inicio = toLocalDate(CUATRI_INICIO);
+            var fin    = toLocalDate(CUATRI_FIN);
+
+            // Ajustar inicio al lunes de esa semana
+            var dow = inicio.getDay(); // 0=Dom
+            var offsetLunes = (dow === 0) ? -6 : 1 - dow;
+            var lunesInicio = addDays(inicio, offsetLunes);
+
+            var semana = 1;
+            var cur = new Date(lunesInicio);
+
+            while (cur <= fin) {
+                var domingo = addDays(cur, 6);
+                var label = 'Semana ' + semana + '  (' + formatDate(cur) + ' – ' + formatDate(domingo) + ')';
+                var opt = document.createElement('option');
+                opt.value = cur.toISOString().split('T')[0]; // lunes de la semana
+                opt.textContent = label;
+                semanaSelect.appendChild(opt);
+                cur = addDays(cur, 7);
+                semana++;
+            }
+
+            // Si hay fecha ya guardada (edición), seleccionar la semana correcta
+            if (fechaHidden && fechaHidden.value) {
+                var fechaGuardada = toLocalDate(fechaHidden.value);
+                var opts = semanaSelect.options;
+                for (var i = 1; i < opts.length; i++) {
+                    var lunesSemana  = toLocalDate(opts[i].value);
+                    var domingoSem   = addDays(lunesSemana, 6);
+                    if (fechaGuardada >= lunesSemana && fechaGuardada <= domingoSem) {
+                        semanaSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+                calcularFecha();
+            }
+        }
+
+        function calcularFecha() {
+            if (!semanaSelect || !semanaSelect.value) {
+                if (fechaResultado) fechaResultado.classList.remove('visible');
+                return;
+            }
+
+            var lunesSemana = toLocalDate(semanaSelect.value);
+            var cursoId = cursoSelect ? cursoSelect.value : null;
+            var diaClase = (cursoId && typeof CURSOS_DATA !== 'undefined' && CURSOS_DATA[cursoId])
+                ? CURSOS_DATA[cursoId].dia
+                : null;
+
+            var fechaClase;
+            if (diaClase) {
+                fechaClase = diaClaseEnSemana(lunesSemana, diaClase);
+            } else {
+                // Sin curso seleccionado: usar el lunes de la semana
+                fechaClase = lunesSemana;
+            }
+
+            if (!fechaClase) {
+                if (fechaResultado) fechaResultado.classList.remove('visible');
+                return;
+            }
+
+            // Actualizar campo oculto con la fecha calculada
+            var y = fechaClase.getFullYear();
+            var m = String(fechaClase.getMonth()+1).padStart(2,'0');
+            var d = String(fechaClase.getDate()).padStart(2,'0');
+            if (fechaHidden) fechaHidden.value = y + '-' + m + '-' + d;
+
+            // Mostrar resultado
+            var diaES = diaClase ? (DIA_ES[diaClase] || diaClase) : 'Lunes';
+            if (fechaTag)      fechaTag.textContent = diaES + ' ' + formatDate(fechaClase);
+            if (fechaResultado) fechaResultado.classList.add('visible');
+        }
+
+        if (semanaSelect) {
+            generarSemanas();
+            semanaSelect.addEventListener('change', calcularFecha);
+        }
+
+    });
     </script>
 </body>
 </html>
