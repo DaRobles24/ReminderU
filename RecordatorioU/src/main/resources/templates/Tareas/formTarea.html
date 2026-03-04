@@ -24,7 +24,6 @@
             margin-bottom: 1.75rem;
         }
 
-        /* ── Sección card ── */
         .sec {
             background: #fff;
             border: 1px solid rgba(219,234,254,1);
@@ -43,7 +42,6 @@
             margin-bottom: 1rem;
         }
 
-        /* ── Select / Input base ── */
         .form-control, .form-select {
             border: 1px solid rgba(219,234,254,1);
             border-radius: 0.65rem;
@@ -58,7 +56,6 @@
             outline: none;
         }
 
-        /* ── Info del curso (aparece al seleccionar) ── */
         .curso-info {
             display: none;
             margin-top: 0.85rem;
@@ -80,10 +77,7 @@
             color: #0d3b66;
         }
 
-        /* ── Selector de semana ── */
-        .semana-wrapper {
-            position: relative;
-        }
+        .semana-wrapper { position: relative; }
 
         .fecha-resultado {
             display: none;
@@ -104,7 +98,6 @@
             font-size: 1rem;
         }
 
-        /* ── Sin cuatrimestre configurado ── */
         .no-config-warning {
             background: #fff9db;
             border: 1px solid #fde68a;
@@ -115,11 +108,7 @@
             margin-bottom: 1rem;
         }
 
-        /* ── Modalidad toggle ── */
-        .mod-group {
-            display: flex;
-            gap: 0.75rem;
-        }
+        .mod-group { display: flex; gap: 0.75rem; }
         .mod-option {
             flex: 1;
             text-align: center;
@@ -140,10 +129,8 @@
         }
         .mod-icon { font-size: 1.4rem; display: block; margin-bottom: 0.25rem; }
 
-        /* ── Estado select colores ── */
         #estadoSelect { font-weight: 600; }
 
-        /* ── Momento de entrega ── */
         .momento-group {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -184,7 +171,6 @@
             .momento-group { grid-template-columns: 1fr; }
         }
 
-        /* ── Botones ── */
         .btn-guardar {
             background: #0d3b66;
             color: #fff;
@@ -236,7 +222,6 @@
             Nueva Tarea
         </h2>
 
-        <!-- Alerta -->
         <div th:if="${mensaje}" class="alert mb-3"
              th:classappend="'alert-' + ${tipo}"
              th:text="${mensaje}"></div>
@@ -250,21 +235,12 @@
             <div class="sec">
                 <div class="sec-title">📚 Curso</div>
 
-                <!-- Datos de cursos en JSON para el JS -->
                 <script th:inline="javascript">
-                    const CURSOS_DATA = {};
-                    /*[# th:each="c : ${cursos}"]*/
-                    CURSOS_DATA[/*[[${c.id}]]*/ 0] = {
-                        nombre: /*[[${c.nombre}]]*/ '',
-                        dia:    /*[[${c.dia.name()}]]*/ '',
-                        hora:   /*[[${c.hora}]]*/ ''
-                    };
-                    /*[/]*/
+                    const CURSOS_DATA = /*[[${cursosMap}]]*/ {};
                 </script>
 
                 <select class="form-select" id="cursoSelect" th:field="*{curso.id}" required>
-                    <option value="" disabled
-                            th:selected="${tarea.curso == null}">
+                    <option value="" disabled th:selected="${tarea.curso == null}">
                         Selecciona un curso
                     </option>
                     <option th:each="c : ${cursos}"
@@ -278,6 +254,7 @@
                 <div class="curso-info" id="cursoInfo">
                     <span class="ci-chip" id="ciDia">📅 —</span>
                     <span class="ci-chip" id="ciHora">⏰ —</span>
+                    <span class="ci-chip" id="ciModalidad">📍 —</span>
                 </div>
             </div>
 
@@ -332,16 +309,13 @@
             <div class="sec">
                 <div class="sec-title">⏰ Entrega</div>
 
-                <!-- Aviso si no hay cuatrimestre -->
                 <div class="no-config-warning" th:if="${fechaInicioCuatrimestre == null}">
                     ⚠️ No tienes el cuatrimestre configurado. Ve al dashboard para configurarlo,
                     o ingresa la fecha manualmente abajo.
                 </div>
 
-                <!-- Selector por semana (visible si hay cuatrimestre) -->
                 <div th:if="${fechaInicioCuatrimestre != null}">
 
-                    <!-- JS: pasar fechas del cuatrimestre -->
                     <script th:inline="javascript">
                         const CUATRI_INICIO = /*[[${fechaInicioCuatrimestre}]]*/ null;
                         const CUATRI_FIN    = /*[[${fechaFinCuatrimestre}]]*/ null;
@@ -351,10 +325,8 @@
                         <label class="form-label fw-semibold">Semana de entrega</label>
                         <select class="form-select" id="semanaSelect">
                             <option value="">— Selecciona la semana —</option>
-                            <!-- Generado por JS -->
                         </select>
 
-                        <!-- Fecha resultante -->
                         <div class="fecha-resultado" id="fechaResultado">
                             <span>📅 Día de clase:</span>
                             <span class="fecha-tag" id="fechaTag">—</span>
@@ -390,16 +362,13 @@
                             </label>
                         </div>
 
-                        <!-- Campo oculto real que se envía al backend -->
                         <input type="hidden" th:field="*{horaEntrega}" id="horaEntrega">
                     </div>
 
-                    <!-- Campo oculto: la fecha calculada se escribe aquí -->
                     <input type="hidden" th:field="*{fechaEntrega}" id="fechaEntregaHidden">
 
                 </div>
 
-                <!-- Fallback: modo manual si no hay cuatrimestre configurado -->
                 <div th:if="${fechaInicioCuatrimestre == null}">
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -426,7 +395,6 @@
                 </select>
             </div>
 
-            <!-- ── Botones ── -->
             <div class="actions-row">
                 <button type="submit" class="btn-guardar">
                     <span th:if="${tarea.id == null}">💾 Guardar Tarea</span>
@@ -464,9 +432,9 @@
         var cursoInfo    = document.getElementById('cursoInfo');
         var ciDia        = document.getElementById('ciDia');
         var ciHora       = document.getElementById('ciHora');
-        var horaEntrada  = document.getElementById('horaEntrega'); // hidden
+        var ciModalidad  = document.getElementById('ciModalidad');
+        var horaEntrada  = document.getElementById('horaEntrega');
 
-        // Mapa franja → hora inicio clase y hora "antes"
         var HORA_INICIO = { '8-11': '08:00', '11-2': '11:00', '2-5': '14:00', '6-9': '18:00' };
         var HORA_ANTES  = { '8-11': '07:59', '11-2': '10:59', '2-5': '13:59', '6-9': '17:59' };
         var HORA_FIN    = { '8-11': '11:00', '11-2': '14:00', '2-5': '17:00', '6-9': '21:00' };
@@ -484,8 +452,8 @@
         }
 
         function actualizarMomento() {
-            var id   = cursoSelect ? cursoSelect.value : null;
-            var data = (id && typeof CURSOS_DATA !== 'undefined') ? CURSOS_DATA[id] : null;
+            var id     = cursoSelect ? cursoSelect.value : null;
+            var data   = (id && typeof CURSOS_DATA !== 'undefined') ? CURSOS_DATA[id] : null;
             var franja = data ? data.hora : null;
 
             var tAntes   = document.getElementById('timeAntes');
@@ -502,7 +470,6 @@
                 if (tDespues) tDespues.textContent = '11:59 pm';
             }
 
-            // Aplicar hora al hidden según la opción marcada
             aplicarHoraMomento();
         }
 
@@ -516,35 +483,26 @@
 
             var hora24;
             switch (checked.value) {
-                case 'antes':
-                    hora24 = franja ? HORA_ANTES[franja]  : '07:59'; break;
-                case 'durante':
-                    hora24 = franja ? HORA_INICIO[franja] : '08:00'; break;
+                case 'antes':   hora24 = franja ? HORA_ANTES[franja]  : '07:59'; break;
+                case 'durante': hora24 = franja ? HORA_INICIO[franja] : '08:00'; break;
                 case 'despues':
-                default:
-                    hora24 = '23:59'; break;
+                default:        hora24 = '23:59'; break;
             }
             horaEntrada.value = hora24;
         }
 
-        // Escuchar cambios en los radios de momento
         document.querySelectorAll('input[name="momentoEntrega"]').forEach(function(r) {
             r.addEventListener('change', aplicarHoraMomento);
         });
 
-        // Auto-seleccionar "despues" por defecto
         var defaultMomento = document.getElementById('momentoDespues');
         if (defaultMomento) {
             defaultMomento.checked = true;
             if (horaEntrada && !horaEntrada.value) horaEntrada.value = '23:59';
         }
 
-        // Si hay hora guardada (edición), marcar el radio correcto
         if (horaEntrada && horaEntrada.value) {
             var hv = horaEntrada.value;
-            var radios = document.querySelectorAll('input[name="momentoEntrega"]');
-            // determinar cuál corresponde (comparar con las franjas posibles)
-            // Si es 23:59 → despues; si termina en :59 (no 23) → antes; resto → durante
             if (hv === '23:59') {
                 document.getElementById('momentoDespues').checked = true;
             } else if (hv.endsWith(':59')) {
@@ -559,8 +517,9 @@
             var data = (id && typeof CURSOS_DATA !== 'undefined') ? CURSOS_DATA[id] : null;
 
             if (data && cursoInfo) {
-                ciDia.textContent  = '📅 ' + (DIA_ES[data.dia] || data.dia);
-                ciHora.textContent = '⏰ ' + data.hora + ' hrs';
+                ciDia.textContent       = '📅 ' + (DIA_ES[data.dia] || data.dia);
+                ciHora.textContent      = '⏰ ' + data.hora;
+                ciModalidad.textContent = '📍 ' + (data.modalidad === 'PRESENCIAL' ? 'Presencial' : 'Virtual');
                 cursoInfo.classList.add('visible');
                 actualizarMomento();
                 calcularFecha();
@@ -577,14 +536,12 @@
         /* ══════════════════════════════════════════════
            GENERADOR DE SEMANAS + CÁLCULO DE FECHA
            ══════════════════════════════════════════════ */
-        var semanaSelect     = document.getElementById('semanaSelect');
-        var fechaResultado   = document.getElementById('fechaResultado');
-        var fechaTag         = document.getElementById('fechaTag');
-        var fechaHidden      = document.getElementById('fechaEntregaHidden');
+        var semanaSelect   = document.getElementById('semanaSelect');
+        var fechaResultado = document.getElementById('fechaResultado');
+        var fechaTag       = document.getElementById('fechaTag');
+        var fechaHidden    = document.getElementById('fechaEntregaHidden');
 
-        // Índice de día (0=Lunes...6=Domingo según JS Date: 0=Dom, ajustamos)
         var DIA_INDEX = { LUNES:1, MARTES:2, MIERCOLES:3, JUEVES:4, VIERNES:5, SABADO:6 };
-
         var MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
         function formatDate(d) {
@@ -600,12 +557,10 @@
             var d = new Date(date); d.setDate(d.getDate() + n); return d;
         }
 
-        // Calcular qué día de la semana cae la clase
         function diaClaseEnSemana(inicioSemana, diaClase) {
-            // inicioSemana = lunes de esa semana
-            var idx = DIA_INDEX[diaClase];       // 1=Lun,...6=Sab
+            var idx = DIA_INDEX[diaClase];
             if (idx === undefined) return null;
-            return addDays(inicioSemana, idx - 1); // Lun+0, Mar+1, etc.
+            return addDays(inicioSemana, idx - 1);
         }
 
         function generarSemanas() {
@@ -614,8 +569,7 @@
             var inicio = toLocalDate(CUATRI_INICIO);
             var fin    = toLocalDate(CUATRI_FIN);
 
-            // Ajustar inicio al lunes de esa semana
-            var dow = inicio.getDay(); // 0=Dom
+            var dow = inicio.getDay();
             var offsetLunes = (dow === 0) ? -6 : 1 - dow;
             var lunesInicio = addDays(inicio, offsetLunes);
 
@@ -626,20 +580,19 @@
                 var domingo = addDays(cur, 6);
                 var label = 'Semana ' + semana + '  (' + formatDate(cur) + ' – ' + formatDate(domingo) + ')';
                 var opt = document.createElement('option');
-                opt.value = cur.toISOString().split('T')[0]; // lunes de la semana
+                opt.value = cur.toISOString().split('T')[0];
                 opt.textContent = label;
                 semanaSelect.appendChild(opt);
                 cur = addDays(cur, 7);
                 semana++;
             }
 
-            // Si hay fecha ya guardada (edición), seleccionar la semana correcta
             if (fechaHidden && fechaHidden.value) {
                 var fechaGuardada = toLocalDate(fechaHidden.value);
                 var opts = semanaSelect.options;
                 for (var i = 1; i < opts.length; i++) {
-                    var lunesSemana  = toLocalDate(opts[i].value);
-                    var domingoSem   = addDays(lunesSemana, 6);
+                    var lunesSemana = toLocalDate(opts[i].value);
+                    var domingoSem  = addDays(lunesSemana, 6);
                     if (fechaGuardada >= lunesSemana && fechaGuardada <= domingoSem) {
                         semanaSelect.selectedIndex = i;
                         break;
@@ -656,33 +609,24 @@
             }
 
             var lunesSemana = toLocalDate(semanaSelect.value);
-            var cursoId = cursoSelect ? cursoSelect.value : null;
+            var cursoId  = cursoSelect ? cursoSelect.value : null;
             var diaClase = (cursoId && typeof CURSOS_DATA !== 'undefined' && CURSOS_DATA[cursoId])
-                ? CURSOS_DATA[cursoId].dia
-                : null;
+                ? CURSOS_DATA[cursoId].dia : null;
 
-            var fechaClase;
-            if (diaClase) {
-                fechaClase = diaClaseEnSemana(lunesSemana, diaClase);
-            } else {
-                // Sin curso seleccionado: usar el lunes de la semana
-                fechaClase = lunesSemana;
-            }
+            var fechaClase = diaClase ? diaClaseEnSemana(lunesSemana, diaClase) : lunesSemana;
 
             if (!fechaClase) {
                 if (fechaResultado) fechaResultado.classList.remove('visible');
                 return;
             }
 
-            // Actualizar campo oculto con la fecha calculada
             var y = fechaClase.getFullYear();
             var m = String(fechaClase.getMonth()+1).padStart(2,'0');
             var d = String(fechaClase.getDate()).padStart(2,'0');
             if (fechaHidden) fechaHidden.value = y + '-' + m + '-' + d;
 
-            // Mostrar resultado
             var diaES = diaClase ? (DIA_ES[diaClase] || diaClase) : 'Lunes';
-            if (fechaTag)      fechaTag.textContent = diaES + ' ' + formatDate(fechaClase);
+            if (fechaTag)       fechaTag.textContent = diaES + ' ' + formatDate(fechaClase);
             if (fechaResultado) fechaResultado.classList.add('visible');
         }
 

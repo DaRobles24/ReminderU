@@ -5,6 +5,8 @@ import com.reminderU.reminderU.modelo.Tarea;
 import com.reminderU.reminderU.modelo.Usuario;
 import com.reminderU.reminderU.service.impl.CustomOAuth2User;
 import com.reminderU.reminderU.service.impl.CustomUserDetails;
+import com.reminderU.reminderU.modelo.ConfiguracionCuatrimestre;
+import com.reminderU.reminderU.service.ConfiguracionCuatrimestreService;
 import com.reminderU.reminderU.service.impl.CursoServiceImpl;
 import com.reminderU.reminderU.service.impl.TareaServiceImpl;
 import org.springframework.security.core.Authentication;
@@ -28,10 +30,14 @@ public class TareaController {
 
     private final TareaServiceImpl tareaService;
     private final CursoServiceImpl cursoService;
+    private final ConfiguracionCuatrimestreService cuatrimestreService;
 
-    public TareaController(TareaServiceImpl tareaService, CursoServiceImpl cursoService) {
+    public TareaController(TareaServiceImpl tareaService,
+                           CursoServiceImpl cursoService,
+                           ConfiguracionCuatrimestreService cuatrimestreService) {
         this.tareaService = tareaService;
         this.cursoService = cursoService;
+        this.cuatrimestreService = cuatrimestreService;
     }
 
     private Usuario obtenerUsuarioActual() {
@@ -43,6 +49,30 @@ public class TareaController {
             return ((CustomOAuth2User) principal).getUsuario();
         }
         throw new IllegalStateException("Tipo de principal desconocido: " + principal.getClass());
+    }
+
+    // ─── Método auxiliar: cargar fechas del cuatrimestre al modelo ───────────
+    private void cargarCuatrimestre(Model model, Usuario usuario) {
+        ConfiguracionCuatrimestre cuatri = cuatrimestreService.getConfiguracionPorUsuario(usuario);
+        if (cuatri != null && cuatri.getFechaInicio() != null && cuatri.getFechaFin() != null) {
+            model.addAttribute("fechaInicioCuatrimestre", cuatri.getFechaInicio().toString());
+            model.addAttribute("fechaFinCuatrimestre",    cuatri.getFechaFin().toString());
+        }
+        // Si es null, NO se agrega el atributo → th:if="${fechaInicioCuatrimestre != null}" queda false
+    }
+
+    // ─── Método auxiliar: construir cursosMap para el JS inline ──────────────
+    private Map<Long, Map<String, String>> buildCursosMap(List<Curso> cursos) {
+        Map<Long, Map<String, String>> cursosMap = new HashMap<>();
+        for (Curso c : cursos) {
+            Map<String, String> info = new HashMap<>();
+            info.put("nombre", c.getNombre());
+            info.put("dia", c.getDia() != null ? c.getDia().name() : "");
+            info.put("hora", c.getHora() != null ? c.getHora() : "");
+            info.put("modalidad", c.getModalidad() != null ? c.getModalidad().name() : "");
+            cursosMap.put(c.getId(), info);
+        }
+        return cursosMap;
     }
 
     // ─── LISTAR ──────────────────────────────────────────────────────────────
@@ -91,7 +121,15 @@ public class TareaController {
     public String verFormTarea(Model model) {
         model.addAttribute("tarea", new Tarea());
         Usuario usuarioLogueado = obtenerUsuarioActual();
-        model.addAttribute("cursos", cursoService.listarCursosPorUsuario(usuarioLogueado));
+        List<Curso> cursos = cursoService.listarCursosPorUsuario(usuarioLogueado);
+        model.addAttribute("cursos", cursos);
+
+        // ✅ FIX: mapa serializado por Thymeleaf, evita error de inline JS
+        model.addAttribute("cursosMap", buildCursosMap(cursos));
+
+        // ✅ FIX: fechas del cuatrimestre para el selector de semanas
+        cargarCuatrimestre(model, usuarioLogueado);
+
         return "Tareas/formTarea";
     }
 
@@ -120,7 +158,16 @@ public class TareaController {
             if (tarea.getFechaEntrega() == null) tarea.setFechaEntrega(LocalDate.now());
             if (tarea.getHoraEntrega() == null)  tarea.setHoraEntrega(LocalTime.of(23, 59));
             model.addAttribute("tarea", tarea);
-            model.addAttribute("cursos", cursoService.listarCursosPorUsuario(obtenerUsuarioActual()));
+
+            List<Curso> cursos = cursoService.listarCursosPorUsuario(obtenerUsuarioActual());
+            model.addAttribute("cursos", cursos);
+
+            // ✅ FIX: mapa serializado por Thymeleaf, evita error de inline JS
+            model.addAttribute("cursosMap", buildCursosMap(cursos));
+
+            // ✅ FIX: fechas del cuatrimestre para el selector de semanas
+            cargarCuatrimestre(model, obtenerUsuarioActual());
+
             return "Tareas/formTarea";
         }
         redirectAttributes.addFlashAttribute("mensaje", "Tarea no encontrada");
@@ -145,7 +192,7 @@ public class TareaController {
         return "redirect:/tareas";
     }
 
-    // ─── GUARDAR NOTA (POST, sin fetch, sin problema CSRF) ───────────────────
+    // ─── GUARDAR NOTA ────────────────────────────────────────────────────────
     @PostMapping("/nota/{id}")
     public String guardarNota(@PathVariable Long id,
                               @RequestParam("nota") Double nota,
@@ -169,7 +216,7 @@ public class TareaController {
         return "redirect:/tareas/ver/" + id;
     }
 
-    // ─── COMPLETAR TAREA (POST, sin fetch, sin problema CSRF) ────────────────
+    // ─── COMPLETAR TAREA ─────────────────────────────────────────────────────
     @PostMapping("/completar/{id}")
     public String completarTarea(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Optional<Tarea> opt = tareaService.buscarPorId(id);
@@ -195,7 +242,7 @@ public class TareaController {
         return "redirect:/tareas";
     }
 
-    // ─── MARCAR COMO HECHA (GET legacy, por si acaso) ────────────────────────
+    // ─── MARCAR COMO HECHA (GET legacy) ──────────────────────────────────────
     @GetMapping("/marcar/{id}")
     public String marcarComoHecha(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Optional<Tarea> opt = tareaService.buscarPorId(id);
