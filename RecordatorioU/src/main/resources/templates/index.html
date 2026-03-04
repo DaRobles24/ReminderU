@@ -4,32 +4,239 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ReminderU</title>
-
-  <!-- Bootstrap CSS (una sola vez) -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Tu CSS (sirve desde src/main/resources/static/css/estilos.css) -->
-  <!-- th:href respeta el context path si tu app no corre en raíz -->
   <link rel="stylesheet" th:href="@{/css/estilos.css(v=${#dates.createNow().time})}" href="/css/estilos.css">
 </head>
 
 <body class="reminder-app">
-  <!-- Header (fragmento sin <html>/<head>/<body> adentro) -->
+
   <div th:replace="fragments/header :: HeaderPagina"></div>
 
-  <!-- Main -->
   <main class="container mt-5">
     <h1>Bienvenido a ReminderU</h1>
     <p>Olvidate de las Sorpresas...</p>
-
-      <div th:replace="fragments/Body :: CuerpoPagina"></div>
-  
+    <div th:replace="fragments/Body :: CuerpoPagina"></div>
   </main>
 
-  <!-- Footer (sin anidar <footer> sobre otro footer) -->
   <div th:replace="fragments/footer :: FooterPagina"></div>
 
-  <!-- Bootstrap JS (una sola vez) -->
+  <!-- Bootstrap JS — debe ir ANTES del modal y el script del simulador -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- =====================================================
+       MODAL SIMULADOR DE NOTAS
+       Está aquí (en index.html) para que Bootstrap ya esté
+       cargado cuando el JS lo inicialice.
+       ===================================================== -->
+  <div class="modal fade" id="simModal" tabindex="-1" aria-labelledby="simModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content sim-modal-content">
+
+        <!-- Header -->
+        <div class="sim-modal-header">
+          <div>
+            <div class="sim-modal-title">🧮 Simulador de Notas</div>
+            <div class="sim-modal-subtitle">Proyecta tu nota final antes de recibir resultados</div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <!-- Body -->
+        <div class="sim-modal-body">
+
+          <!-- Nota acumulada -->
+          <div class="sim-section">
+            <label class="sim-label">📊 ¿Cuántos puntos llevas acumulados?</label>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <input type="number" id="simNotaActual" class="sim-input" style="max-width:160px;"
+                     placeholder="Ej: 45.5" min="0" max="100" step="0.01">
+              <span class="sim-hint">puntos de 100 posibles</span>
+            </div>
+            <small class="sim-hint mt-1 d-block">
+              Suma: (nota obtenida × peso%) ÷ 100 por cada evaluación ya calificada.
+            </small>
+          </div>
+
+          <div class="sim-divider"></div>
+
+          <!-- Evaluaciones futuras -->
+          <div class="sim-section">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="sim-label mb-0">📝 Evaluaciones que faltan</label>
+              <button class="sim-add-btn" type="button" id="simAgregarBtn">+ Agregar</button>
+            </div>
+            <small class="sim-hint d-block mb-2">
+              Ingresa la nota que <strong>esperas sacar</strong> y el peso de cada evaluación pendiente.
+            </small>
+
+            <div class="sim-cols-header">
+              <span>Evaluación</span>
+              <span style="text-align:center;">Nota esperada</span>
+              <span style="text-align:center;">Peso %</span>
+              <span></span>
+            </div>
+
+            <div id="simEvalList"></div>
+          </div>
+
+          <div class="sim-divider"></div>
+
+          <!-- Meta -->
+          <div class="sim-section">
+            <label class="sim-label">🎯 ¿Cuál es tu nota mínima para aprobar?</label>
+            <div class="d-flex align-items-center gap-2">
+              <input type="number" id="simMeta" class="sim-input" style="max-width:110px;"
+                     placeholder="70" min="0" max="100" step="1" value="70">
+              <span class="sim-hint">puntos</span>
+            </div>
+          </div>
+
+          <!-- Resultados -->
+          <div class="sim-results" id="simResults">
+            <div class="sim-results-grid">
+              <div class="sim-res-card">
+                <div class="sim-res-label">Acumulado actual</div>
+                <div class="sim-res-value" id="simResActual">—</div>
+              </div>
+              <div class="sim-res-card sim-res-highlight">
+                <div class="sim-res-label">Nota proyectada</div>
+                <div class="sim-res-value" id="simResProyectada" style="color:#3b5bdb;">—</div>
+              </div>
+              <div class="sim-res-card">
+                <div class="sim-res-label">Para llegar a la meta</div>
+                <div class="sim-res-value" id="simResMeta">—</div>
+              </div>
+            </div>
+
+            <div class="sim-bar-labels">
+              <span>Actual</span>
+              <span id="simBarLabel">Proyectado</span>
+              <span>Meta</span>
+            </div>
+            <div class="sim-bar-track">
+              <div class="sim-bar-fill-actual" id="simBarActual" style="width:0%"></div>
+              <div class="sim-bar-fill-extra"  id="simBarExtra"  style="width:0%"></div>
+              <div class="sim-bar-marker"       id="simBarMeta"   style="left:70%"></div>
+            </div>
+            <div class="sim-bar-scale">
+              <span>0</span><span></span><span>100</span>
+            </div>
+
+            <div class="sim-diagnosis" id="simDiagnosis">
+              Agrega evaluaciones futuras para ver la proyección.
+            </div>
+          </div>
+
+        </div><!-- /sim-modal-body -->
+      </div>
+    </div>
+  </div>
+  <!-- /modal simulador -->
+
+  <!-- ===== SCRIPT SIMULADOR ===== -->
+  <script>
+  (function () {
+    'use strict';
+
+    var evalList = document.getElementById('simEvalList');
+    var bsModal  = new bootstrap.Modal(document.getElementById('simModal'));
+
+    /* Abrir desde el botón del dashboard */
+    document.getElementById('abrirSimuladorBtn').addEventListener('click', function () {
+      if (evalList && evalList.children.length === 0) {
+        agregarFila('Examen Final', '', '');
+      }
+      calcular();
+      bsModal.show();
+    });
+
+    /* Botón agregar fila */
+    document.getElementById('simAgregarBtn').addEventListener('click', function () {
+      agregarFila('', '', '');
+    });
+
+    /* Recalcular al cambiar inputs globales */
+    document.getElementById('simNotaActual').addEventListener('input', calcular);
+    document.getElementById('simMeta').addEventListener('input', calcular);
+
+    /* ── Agregar fila ── */
+    function agregarFila(nombre, nota, peso) {
+      var row = document.createElement('div');
+      row.className = 'sim-eval-row';
+      row.innerHTML =
+        '<input type="text"   placeholder="Nombre (opcional)" class="sev-name" value="' + (nombre || '') + '">' +
+        '<input type="number" placeholder="0–100" min="0" max="100" step="0.01" class="sev-nota" value="' + (nota !== undefined && nota !== '' ? nota : '') + '">' +
+        '<input type="number" placeholder="0–100" min="0" max="100" step="0.01" class="sev-peso" value="' + (peso !== undefined && peso !== '' ? peso : '') + '">' +
+        '<button class="sim-del-btn" type="button" title="Eliminar">✕</button>';
+
+      row.querySelector('.sim-del-btn').addEventListener('click', function () {
+        row.remove(); calcular();
+      });
+      row.querySelectorAll('input').forEach(function (inp) {
+        inp.addEventListener('input', calcular);
+      });
+
+      evalList.appendChild(row);
+      calcular();
+    }
+
+    /* ── Calcular proyección ── */
+    function calcular() {
+      var notaActual  = parseFloat(document.getElementById('simNotaActual').value) || 0;
+      var meta        = parseFloat(document.getElementById('simMeta').value) || 70;
+      var puntosExtra = 0;
+
+      evalList.querySelectorAll('.sim-eval-row').forEach(function (row) {
+        var n = parseFloat(row.querySelector('.sev-nota').value) || 0;
+        var p = parseFloat(row.querySelector('.sev-peso').value) || 0;
+        puntosExtra += (n / 100) * p;
+      });
+
+      var proyectada = notaActual + puntosExtra;
+      var deltaMeta  = meta - proyectada;
+      var filas      = evalList.querySelectorAll('.sim-eval-row').length;
+
+      /* Tarjetas */
+      setText('simResActual', notaActual.toFixed(1));
+
+      var elProy = document.getElementById('simResProyectada');
+      elProy.textContent = proyectada.toFixed(1);
+      elProy.style.color = proyectada >= meta ? '#2f9e44' : (deltaMeta > 20 ? '#c92a2a' : '#3b5bdb');
+
+      var elMeta = document.getElementById('simResMeta');
+      if (deltaMeta <= 0) { elMeta.textContent = '✅ Meta lograda'; elMeta.style.color = '#2f9e44'; }
+      else { elMeta.textContent = '+' + deltaMeta.toFixed(1) + ' pts'; elMeta.style.color = deltaMeta > 20 ? '#c92a2a' : '#e67700'; }
+
+      /* Barra */
+      var pActual = Math.min(notaActual, 100);
+      var pExtra  = Math.max(0, Math.min(puntosExtra, 100 - pActual));
+      setStyle('simBarActual', 'width', pActual.toFixed(1) + '%');
+      setStyle('simBarExtra',  'width', pExtra.toFixed(1)  + '%');
+      setStyle('simBarMeta',   'left',  Math.min(meta, 100).toFixed(1) + '%');
+      setText ('simBarLabel', 'Proyectado: ' + proyectada.toFixed(1));
+
+      /* Diagnóstico */
+      var diag = document.getElementById('simDiagnosis');
+      if (filas === 0) {
+        diag.textContent = 'Agrega evaluaciones futuras para ver la proyección.';
+        diag.style.background = '#f1f3f5'; diag.style.color = '#6b6b7a';
+      } else if (proyectada >= meta) {
+        diag.textContent = '🎉 ¡Con esta proyección alcanzas la meta!';
+        diag.style.background = '#ebfbee'; diag.style.color = '#2f9e44';
+      } else if (deltaMeta <= 10) {
+        diag.textContent = '⚠️ Estás cerca. Necesitas ' + deltaMeta.toFixed(1) + ' pts más para llegar a ' + meta + '.';
+        diag.style.background = '#fff9db'; diag.style.color = '#e67700';
+      } else {
+        diag.textContent = '🔴 Te faltan ' + deltaMeta.toFixed(1) + ' pts. Revisa cuánto peso te queda.';
+        diag.style.background = '#fff5f5'; diag.style.color = '#c92a2a';
+      }
+    }
+
+    function setText(id, val)   { var e = document.getElementById(id); if (e) e.textContent = val; }
+    function setStyle(id, p, v) { var e = document.getElementById(id); if (e) e.style[p] = v; }
+
+  })();
+  </script>
+
 </body>
 </html>

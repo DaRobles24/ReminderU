@@ -1,5 +1,17 @@
 <div th:fragment="CuerpoPagina">
 
+    <!-- ===== BOTÓN SIMULADOR DE NOTAS ===== -->
+    <div class="sim-launcher-wrapper">
+        <button class="sim-launcher-btn" type="button" id="abrirSimuladorBtn">
+            <span class="sim-icon">🧮</span>
+            <span class="sim-text">
+                <span class="sim-title">Simulador de Notas</span>
+                <span class="sim-sub">Proyecta tu nota final</span>
+            </span>
+            <span class="sim-arrow">→</span>
+        </button>
+    </div>
+
     <!-- Título de la sección -->
     <h2 class="mb-5 mt-4 text-center">Tus próximos eventos</h2>
 
@@ -132,7 +144,307 @@
     </div>
 </div>
 
+<!-- =====================================================
+     MODAL SIMULADOR DE NOTAS (independiente del header,
+     colocado aquí para garantizar que Bootstrap ya cargó)
+     ===================================================== -->
+<div class="modal fade" id="simModal" tabindex="-1" aria-labelledby="simModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content sim-modal-content">
+
+            <!-- Header -->
+            <div class="sim-modal-header">
+                <div>
+                    <div class="sim-modal-title">🧮 Simulador de Notas</div>
+                    <div class="sim-modal-subtitle">Proyecta tu nota final antes de recibir resultados</div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="sim-modal-body">
+
+                <!-- Nota acumulada -->
+                <div class="sim-section">
+                    <label class="sim-label">📊 ¿Cuántos puntos llevas acumulados?</label>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <input type="number" id="simNotaActual" class="sim-input" style="max-width:160px;"
+                               placeholder="Ej: 45.5" min="0" max="100" step="0.01">
+                        <span class="sim-hint">puntos de 100 posibles</span>
+                    </div>
+                    <small class="sim-hint mt-1 d-block">
+                        Suma: (nota obtenida × peso%) / 100 por cada evaluación ya calificada.
+                    </small>
+                </div>
+
+                <div class="sim-divider"></div>
+
+                <!-- Evaluaciones futuras -->
+                <div class="sim-section">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label class="sim-label mb-0">📝 Evaluaciones que faltan</label>
+                        <button class="sim-add-btn" type="button" id="simAgregarBtn">+ Agregar evaluación</button>
+                    </div>
+                    <small class="sim-hint d-block mb-2">
+                        Ingresa la nota que <strong>esperas sacar</strong> y el peso de cada evaluación pendiente.
+                    </small>
+
+                    <!-- Cabecera columnas -->
+                    <div class="sim-cols-header">
+                        <span>Evaluación</span>
+                        <span style="text-align:center;">Nota esperada</span>
+                        <span style="text-align:center;">Peso %</span>
+                        <span></span>
+                    </div>
+
+                    <div id="simEvalList"></div>
+                </div>
+
+                <div class="sim-divider"></div>
+
+                <!-- Meta -->
+                <div class="sim-section">
+                    <label class="sim-label">🎯 ¿Cuál es tu nota mínima para aprobar?</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="number" id="simMeta" class="sim-input" style="max-width:110px;"
+                               placeholder="70" min="0" max="100" step="1" value="70">
+                        <span class="sim-hint">puntos</span>
+                    </div>
+                </div>
+
+                <!-- Resultados -->
+                <div class="sim-results" id="simResults">
+                    <div class="sim-results-grid">
+                        <div class="sim-res-card">
+                            <div class="sim-res-label">Acumulado actual</div>
+                            <div class="sim-res-value" id="simResActual">—</div>
+                        </div>
+                        <div class="sim-res-card sim-res-highlight">
+                            <div class="sim-res-label">Nota proyectada</div>
+                            <div class="sim-res-value" id="simResProyectada" style="color:#3b5bdb;">—</div>
+                        </div>
+                        <div class="sim-res-card">
+                            <div class="sim-res-label">Para llegar a la meta</div>
+                            <div class="sim-res-value" id="simResMeta">—</div>
+                        </div>
+                    </div>
+
+                    <!-- Barra visual -->
+                    <div class="sim-bar-labels">
+                        <span>Actual</span>
+                        <span id="simBarLabel">Proyectado</span>
+                        <span>Meta</span>
+                    </div>
+                    <div class="sim-bar-track">
+                        <div class="sim-bar-fill-actual" id="simBarActual" style="width:0%"></div>
+                        <div class="sim-bar-fill-extra" id="simBarExtra" style="width:0%"></div>
+                        <div class="sim-bar-marker" id="simBarMeta" style="left:70%"></div>
+                    </div>
+                    <div class="sim-bar-scale">
+                        <span>0</span><span></span><span>100</span>
+                    </div>
+
+                    <!-- Diagnóstico -->
+                    <div class="sim-diagnosis" id="simDiagnosis">
+                        Agrega evaluaciones futuras para ver la proyección.
+                    </div>
+                </div>
+
+            </div><!-- /sim-modal-body -->
+        </div>
+    </div>
+</div>
+<!-- /modal simulador -->
+
+
 <style>
+    /* ── Botón lanzador ── */
+    .sim-launcher-wrapper {
+        display: flex;
+        justify-content: center;
+        margin: 1.5rem 0 0.5rem;
+    }
+    .sim-launcher-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 1rem;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #fff;
+        border: none;
+        border-radius: 16px;
+        padding: 1rem 1.75rem;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 6px 24px rgba(26,26,46,0.25);
+        font-family: inherit;
+        max-width: 480px;
+        width: 100%;
+    }
+    .sim-launcher-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 32px rgba(26,26,46,0.35);
+    }
+    .sim-icon { font-size: 2rem; flex-shrink: 0; }
+    .sim-text { display: flex; flex-direction: column; text-align: left; flex: 1; }
+    .sim-title { font-size: 1rem; font-weight: 700; letter-spacing: 0.01em; }
+    .sim-sub   { font-size: 0.78rem; opacity: 0.65; margin-top: 2px; }
+    .sim-arrow { font-size: 1.25rem; opacity: 0.5; flex-shrink: 0; transition: transform 0.2s; }
+    .sim-launcher-btn:hover .sim-arrow { transform: translateX(4px); opacity: 1; }
+
+    /* ── Modal ── */
+    .sim-modal-content {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    .sim-modal-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #fff;
+        padding: 1.5rem 1.75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    .sim-modal-title    { font-size: 1.15rem; font-weight: 700; }
+    .sim-modal-subtitle { font-size: 0.78rem; opacity: 0.6; margin-top: 2px; }
+    .sim-modal-body     { padding: 1.5rem 1.75rem; background: #f9f9fb; }
+
+    /* ── Secciones ── */
+    .sim-section  { margin-bottom: 0.25rem; }
+    .sim-divider  { border: none; border-top: 1px solid #e5e7eb; margin: 1.1rem 0; }
+    .sim-label    { display: block; font-size: 0.82rem; font-weight: 700;
+                    text-transform: uppercase; letter-spacing: 0.05em;
+                    color: #374151; margin-bottom: 0.5rem; }
+    .sim-hint     { font-size: 0.78rem; color: #9ca3af; }
+    .sim-input    {
+        padding: 0.5rem 0.85rem; border-radius: 9px;
+        border: 1.5px solid #d1d5db; font-size: 0.95rem;
+        outline: none; transition: border 0.15s; background: #fff;
+        font-family: 'Courier New', monospace; width: 100%;
+    }
+    .sim-input:focus { border-color: #3b5bdb; box-shadow: 0 0 0 3px rgba(59,91,219,0.1); }
+
+    .sim-add-btn {
+        background: #3b5bdb; color: #fff; border: none;
+        padding: 0.35rem 0.9rem; border-radius: 8px;
+        font-size: 0.8rem; font-weight: 600; cursor: pointer;
+        transition: background 0.15s;
+    }
+    .sim-add-btn:hover { background: #2d46b9; }
+
+    /* ── Filas de evaluación ── */
+    .sim-cols-header {
+        display: grid;
+        grid-template-columns: 1fr 120px 100px 36px;
+        gap: 0.5rem;
+        padding: 0 0.65rem;
+        margin-bottom: 0.3rem;
+        font-size: 0.7rem;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .sim-eval-row {
+        display: grid;
+        grid-template-columns: 1fr 120px 100px 36px;
+        gap: 0.5rem;
+        align-items: center;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 0.55rem 0.65rem;
+        margin-bottom: 0.4rem;
+        transition: border-color 0.15s;
+    }
+    .sim-eval-row:focus-within { border-color: #3b5bdb; }
+    .sim-eval-row input[type="text"] {
+        border: none; outline: none; font-size: 0.88rem;
+        background: transparent; width: 100%; color: #374151;
+    }
+    .sim-eval-row input[type="number"] {
+        border: 1.5px solid #e5e7eb; border-radius: 7px;
+        padding: 0.3rem 0.45rem; width: 100%;
+        font-size: 0.85rem; text-align: center; outline: none;
+        transition: border 0.15s; background: #fff;
+        font-family: 'Courier New', monospace;
+    }
+    .sim-eval-row input[type="number"]:focus { border-color: #3b5bdb; }
+    .sim-del-btn {
+        background: none; border: none; color: #ef4444;
+        cursor: pointer; font-size: 1rem; padding: 0.2rem 0.35rem;
+        border-radius: 6px; transition: background 0.1s; line-height: 1;
+    }
+    .sim-del-btn:hover { background: #fee2e2; }
+
+    /* ── Resultados ── */
+    .sim-results {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin-top: 1rem;
+    }
+    .sim-results-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    .sim-res-card {
+        text-align: center;
+        padding: 0.85rem 0.5rem;
+        border-radius: 10px;
+        background: #f9fafb;
+        border: 1px solid #f3f4f6;
+    }
+    .sim-res-highlight { background: #eef2ff; border-color: #c5d3f8; }
+    .sim-res-label {
+        font-size: 0.7rem; color: #9ca3af;
+        text-transform: uppercase; letter-spacing: 0.05em;
+        margin-bottom: 0.3rem;
+    }
+    .sim-res-value {
+        font-size: 1.45rem; font-weight: 700;
+        font-family: 'Courier New', monospace; color: #1a1a2e;
+    }
+
+    /* ── Barra ── */
+    .sim-bar-labels {
+        display: flex; justify-content: space-between;
+        font-size: 0.72rem; color: #9ca3af; margin-bottom: 0.25rem;
+    }
+    .sim-bar-track {
+        height: 12px; background: #f1f3f5; border-radius: 6px;
+        overflow: visible; position: relative; display: flex;
+    }
+    .sim-bar-fill-actual {
+        height: 100%; background: #3b5bdb;
+        border-radius: 6px 0 0 6px; transition: width 0.4s ease;
+    }
+    .sim-bar-fill-extra {
+        height: 100%; background: #74c0fc;
+        transition: width 0.4s ease;
+    }
+    .sim-bar-marker {
+        position: absolute; top: -3px; bottom: -3px; width: 3px;
+        background: #f59f00; border-radius: 2px;
+        transition: left 0.4s ease;
+    }
+    .sim-bar-scale {
+        display: flex; justify-content: space-between;
+        font-size: 0.72rem; color: #9ca3af; margin-top: 0.2rem;
+    }
+
+    /* ── Diagnóstico ── */
+    .sim-diagnosis {
+        text-align: center; font-size: 0.88rem; font-weight: 500;
+        padding: 0.65rem 1rem; border-radius: 9px;
+        background: #f1f3f5; color: #6b6b7a;
+        margin-top: 0.85rem; transition: background 0.25s, color 0.25s;
+    }
+
+    /* ── Tooltip / semana styles (sin cambios) ── */
     .semana .info {
         visibility: hidden; opacity: 0; width: 280px;
         background-color: #111827; color: #fff; text-align: left;
@@ -156,5 +468,149 @@
     .semana .info::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -8px; border-width: 8px; border-style: solid; border-color: #111827 transparent transparent transparent; }
     .semana:hover .info { visibility: visible; opacity: 1; bottom: 55px; }
     .barra-progreso { padding: 20px 0; }
-    @media (max-width: 768px) { .semana .info { width: 250px; font-size: 0.8rem; } }
+    @media (max-width: 768px) {
+        .semana .info { width: 250px; font-size: 0.8rem; }
+        .sim-results-grid { grid-template-columns: 1fr !important; }
+        .sim-cols-header, .sim-eval-row { grid-template-columns: 1fr 90px 85px 32px; }
+        .sim-launcher-btn { padding: 0.85rem 1.25rem; }
+    }
 </style>
+
+<script>
+(function () {
+    'use strict';
+
+    /* ── Esperar a que Bootstrap esté disponible ── */
+    function esperarBootstrap(callback) {
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            callback();
+        } else {
+            setTimeout(function () { esperarBootstrap(callback); }, 50);
+        }
+    }
+
+    esperarBootstrap(function () {
+        var modalEl  = document.getElementById('simModal');
+        var btnAbrir = document.getElementById('abrirSimuladorBtn');
+        var btnAdd   = document.getElementById('simAgregarBtn');
+        var evalList = document.getElementById('simEvalList');
+
+        if (!modalEl || !btnAbrir) return;
+
+        var bsModal = new bootstrap.Modal(modalEl);
+
+        /* Abrir modal al hacer clic en el botón lanzador */
+        btnAbrir.addEventListener('click', function () {
+            /* Agregar fila inicial si la lista está vacía */
+            if (evalList && evalList.children.length === 0) {
+                agregarFila('Examen Final', '', '');
+            }
+            calcular();
+            bsModal.show();
+        });
+
+        /* Botón agregar fila dentro del modal */
+        if (btnAdd) {
+            btnAdd.addEventListener('click', function () {
+                agregarFila('', '', '');
+            });
+        }
+
+        /* Recalcular cuando cambian los inputs globales */
+        ['simNotaActual', 'simMeta'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) el.addEventListener('input', calcular);
+        });
+
+        /* ── Agregar fila de evaluación ── */
+        function agregarFila(nombre, nota, peso) {
+            if (!evalList) return;
+            var row = document.createElement('div');
+            row.className = 'sim-eval-row';
+            row.innerHTML =
+                '<input type="text" placeholder="Nombre (opcional)" class="sev-name" value="' + (nombre || '') + '">' +
+                '<input type="number" placeholder="0–100" min="0" max="100" step="0.01" class="sev-nota" value="' + (nota !== undefined && nota !== '' ? nota : '') + '">' +
+                '<input type="number" placeholder="0–100" min="0" max="100" step="0.01" class="sev-peso" value="' + (peso !== undefined && peso !== '' ? peso : '') + '">' +
+                '<button class="sim-del-btn" type="button" title="Eliminar">✕</button>';
+
+            row.querySelector('.sim-del-btn').addEventListener('click', function () {
+                row.remove();
+                calcular();
+            });
+            row.querySelectorAll('input').forEach(function (inp) {
+                inp.addEventListener('input', calcular);
+            });
+
+            evalList.appendChild(row);
+            calcular();
+        }
+
+        /* ── Calcular y actualizar resultados ── */
+        function calcular() {
+            var notaActual = parseFloat(document.getElementById('simNotaActual').value) || 0;
+            var meta       = parseFloat(document.getElementById('simMeta').value) || 70;
+
+            var puntosExtra = 0;
+            var totalPesoFuturo = 0;
+            if (evalList) {
+                evalList.querySelectorAll('.sim-eval-row').forEach(function (row) {
+                    var n = parseFloat(row.querySelector('.sev-nota').value) || 0;
+                    var p = parseFloat(row.querySelector('.sev-peso').value) || 0;
+                    puntosExtra    += (n / 100) * p;
+                    totalPesoFuturo += p;
+                });
+            }
+
+            var proyectada = notaActual + puntosExtra;
+            var deltaMeta  = meta - proyectada;
+            var filas      = evalList ? evalList.querySelectorAll('.sim-eval-row').length : 0;
+
+            /* Actualizar tarjetas */
+            setText('simResActual', notaActual.toFixed(1));
+
+            var elProy = document.getElementById('simResProyectada');
+            if (elProy) {
+                elProy.textContent = proyectada.toFixed(1);
+                elProy.style.color = proyectada >= meta ? '#2f9e44' : (deltaMeta > 20 ? '#c92a2a' : '#3b5bdb');
+            }
+
+            var elMeta = document.getElementById('simResMeta');
+            if (elMeta) {
+                if (deltaMeta <= 0) { elMeta.textContent = '✅ Meta lograda'; elMeta.style.color = '#2f9e44'; }
+                else { elMeta.textContent = '+' + deltaMeta.toFixed(1) + ' pts'; elMeta.style.color = deltaMeta > 20 ? '#c92a2a' : '#e67700'; }
+            }
+
+            /* Barra */
+            var pActual = Math.min(notaActual, 100);
+            var pExtra  = Math.max(0, Math.min(puntosExtra, 100 - pActual));
+            var pMeta   = Math.min(meta, 100);
+
+            setStyle('simBarActual', 'width', pActual.toFixed(1) + '%');
+            setStyle('simBarExtra',  'width', pExtra.toFixed(1)  + '%');
+            setStyle('simBarMeta',   'left',  pMeta.toFixed(1)   + '%');
+            setText('simBarLabel', 'Proyectado: ' + proyectada.toFixed(1));
+
+            /* Diagnóstico */
+            var diag = document.getElementById('simDiagnosis');
+            if (diag) {
+                if (filas === 0) {
+                    diag.textContent  = 'Agrega evaluaciones futuras para ver la proyección.';
+                    diag.style.background = '#f1f3f5'; diag.style.color = '#6b6b7a';
+                } else if (proyectada >= meta) {
+                    diag.textContent  = '🎉 ¡Con esta proyección alcanzas la meta!';
+                    diag.style.background = '#ebfbee'; diag.style.color = '#2f9e44';
+                } else if (deltaMeta <= 10) {
+                    diag.textContent  = '⚠️ Estás cerca. Necesitas ' + deltaMeta.toFixed(1) + ' pts más para llegar a ' + meta + '.';
+                    diag.style.background = '#fff9db'; diag.style.color = '#e67700';
+                } else {
+                    diag.textContent  = '🔴 Te faltan ' + deltaMeta.toFixed(1) + ' pts. Revisa cuánto peso te queda por evaluar.';
+                    diag.style.background = '#fff5f5'; diag.style.color = '#c92a2a';
+                }
+            }
+        }
+
+        function setText(id, val)    { var e = document.getElementById(id); if (e) e.textContent = val; }
+        function setStyle(id, p, v)  { var e = document.getElementById(id); if (e) e.style[p] = v; }
+    });
+})();
+</script>

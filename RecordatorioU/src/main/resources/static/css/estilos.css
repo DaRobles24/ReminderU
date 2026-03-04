@@ -203,12 +203,13 @@ main {
 }
 
 .custom-card-btn.done {
-    background-color: #10b981; /* verde para acción “hecha” */
+    background-color: #10b981; /* verde para acción "hecha" */
 }
 
 .custom-card-btn.done:hover {
     background-color: #059669;
 }
+
 .task-status {
     width: 12px;
     height: 12px;
@@ -239,7 +240,7 @@ main {
     text-align: center;
 }
 
-.horario-table th, 
+.horario-table th,
 .horario-table td {
     border: 1px solid #ccc;
     padding: 14px 10px; /* aumenté el padding vertical de 10px a 14px */
@@ -247,7 +248,6 @@ main {
     font-weight: bold;
     line-height: 1.4; /* opcional, para más espacio entre líneas */
 }
-
 
 .horario-table td.virtual {
     background-color: #0d3b66;
@@ -276,4 +276,294 @@ main {
     display: inline-block;
 }
 
+/* ========================== */
+/* SIMULADOR DE NOTAS         */
+/* ========================== */
 
+/* Botón lanzador */
+.sim-launcher-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: 1.5rem 0 0.5rem;
+}
+
+.sim-launcher-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: #0d3b66; /* mismo azul profundo de tu paleta */
+    color: #fff;
+    border: none;
+    border-radius: 1rem;
+    padding: 1rem 1.75rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    font-family: Arial, sans-serif;
+    max-width: 480px;
+    width: 100%;
+}
+
+.sim-launcher-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.sim-icon  { font-size: 2rem; flex-shrink: 0; }
+.sim-text  { display: flex; flex-direction: column; text-align: left; flex: 1; }
+.sim-title { font-size: 1rem; font-weight: 700; }
+.sim-sub   { font-size: 0.78rem; opacity: 0.65; margin-top: 2px; }
+.sim-arrow { font-size: 1.25rem; opacity: 0.5; flex-shrink: 0; transition: transform 0.2s; }
+.sim-launcher-btn:hover .sim-arrow { transform: translateX(4px); opacity: 1; }
+
+/* Modal */
+.sim-modal-content {
+    border: none;
+    border-radius: 1rem;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
+
+.sim-modal-header {
+    background-color: #0d3b66; /* azul profundo de tu paleta */
+    color: #fff;
+    padding: 1.5rem 1.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.sim-modal-title    { font-size: 1.15rem; font-weight: 700; }
+.sim-modal-subtitle { font-size: 0.78rem; opacity: 0.6; margin-top: 2px; }
+.sim-modal-body     { padding: 1.5rem 1.75rem; background-color: #f0f2f5; /* tu fondo claro */ }
+
+/* Secciones internas */
+.sim-section { margin-bottom: 0.25rem; }
+
+.sim-divider {
+    border: 0;
+    border-top: 2px solid #e0e0e0; /* igual que separador-card */
+    margin: 1.1rem 0;
+}
+
+.sim-label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.sim-hint { font-size: 0.78rem; color: #6b7280; } /* tu color de texto secundario */
+
+.sim-input {
+    padding: 0.5rem 0.85rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(219, 234, 254, 1); /* igual que custom-card */
+    font-size: 0.95rem;
+    outline: none;
+    transition: border 0.15s, box-shadow 0.15s;
+    background: #fff;
+    width: 100%;
+    font-family: Arial, sans-serif;
+}
+.sim-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.sim-add-btn {
+    background-color: #3b82f6; /* tu azul de acción */
+    color: #fff;
+    border: none;
+    padding: 0.35rem 0.9rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.sim-add-btn:hover { background-color: #2563eb; }
+
+/* Cabecera columnas evaluaciones */
+.sim-cols-header {
+    display: grid;
+    grid-template-columns: 1fr 120px 100px 36px;
+    gap: 0.5rem;
+    padding: 0 0.65rem;
+    margin-bottom: 0.3rem;
+    font-size: 0.7rem;
+    color: #6b7280;
+    text-transform: uppercase;
+}
+
+/* Fila de evaluación — igual que custom-card */
+.sim-eval-row {
+    display: grid;
+    grid-template-columns: 1fr 120px 100px 36px;
+    gap: 0.5rem;
+    align-items: center;
+    background: #fff;
+    border: 1px solid rgba(219, 234, 254, 1);
+    border-radius: 1rem;
+    padding: 0.55rem 0.65rem;
+    margin-bottom: 0.4rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s;
+}
+.sim-eval-row:focus-within {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+}
+
+.sim-eval-row input[type="text"] {
+    border: none;
+    outline: none;
+    font-size: 0.88rem;
+    background: transparent;
+    width: 100%;
+    color: #374151;
+    font-family: Arial, sans-serif;
+}
+.sim-eval-row input[type="number"] {
+    border: 1px solid rgba(219, 234, 254, 1);
+    border-radius: 0.5rem;
+    padding: 0.3rem 0.45rem;
+    width: 100%;
+    font-size: 0.85rem;
+    text-align: center;
+    outline: none;
+    transition: border 0.15s;
+    background: #fff;
+    font-family: Arial, sans-serif;
+}
+.sim-eval-row input[type="number"]:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.sim-del-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0.2rem 0.35rem;
+    border-radius: 0.5rem;
+    transition: background 0.1s;
+    line-height: 1;
+}
+.sim-del-btn:hover { background-color: #fee2e2; }
+
+/* Panel de resultados — igual que custom-card */
+.sim-results {
+    background: #fff;
+    border: 1px solid rgba(219, 234, 254, 1);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    margin-top: 1rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.sim-results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.sim-res-card {
+    text-align: center;
+    padding: 0.85rem 0.5rem;
+    border-radius: 0.5rem;
+    background: #f0f2f5; /* tu fondo claro */
+    border: 1px solid #e0e0e0;
+}
+.sim-res-highlight {
+    background: rgba(219, 234, 254, 0.5);
+    border-color: rgba(219, 234, 254, 1);
+}
+
+.sim-res-label {
+    font-size: 0.7rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+}
+.sim-res-value {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #0d3b66; /* tu azul profundo */
+}
+
+/* Barra del simulador */
+.sim-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+}
+
+.sim-bar-track {
+    height: 12px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: visible;
+    position: relative;
+    display: flex;
+}
+
+.sim-bar-fill-actual {
+    height: 100%;
+    background-color: #3b82f6; /* tu azul de acción */
+    border-radius: 4px 0 0 4px;
+    transition: width 0.4s ease;
+}
+
+.sim-bar-fill-extra {
+    height: 100%;
+    background-color: #93c5fd; /* azul claro */
+    transition: width 0.4s ease;
+}
+
+.sim-bar-marker {
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    width: 3px;
+    background-color: #f1c40f; /* tu amarillo de presencial */
+    border-radius: 2px;
+    transition: left 0.4s ease;
+}
+
+.sim-bar-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: #6b7280;
+    margin-top: 0.2rem;
+}
+
+/* Diagnóstico */
+.sim-diagnosis {
+    text-align: center;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 0.65rem 1rem;
+    border-radius: 0.5rem;
+    background: #f0f2f5;
+    color: #6b7280;
+    margin-top: 0.85rem;
+    transition: background 0.25s, color 0.25s;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sim-results-grid { grid-template-columns: 1fr; }
+    .sim-cols-header,
+    .sim-eval-row     { grid-template-columns: 1fr 90px 85px 32px; }
+    .sim-launcher-btn { padding: 0.85rem 1.25rem; }
+}
