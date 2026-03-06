@@ -3,359 +3,533 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Curso</title>
+        <title>ReminderU — Mis Cursos</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
         <link rel="stylesheet" th:href="@{/css/estilos.css(v=${#dates.createNow().time})}" href="/css/estilos.css">
+
         <style>
-            /* ===== ESTILOS PRINCIPALES ===== */
-            .circulo-modalidad {
-                width: 15px;
-                height: 15px;
-                border-radius: 50%;
-                display: inline-block;
-                margin-right: 8px;
+            .page-body {
+                padding: 0 1rem 3rem;
+                max-width: 1100px;
+                margin: 0 auto;
             }
-            .circulo-virtual {
-                background-color: #007bff;
+            @media (min-width: 768px) {
+                .page-body {
+                    padding: 0 1.5rem 3rem;
+                }
             }
-            .circulo-presencial {
-                background-color: #28a745;
-            }
-            .virtual {
-                background-color: #007bff;
-                color: white;
-                border-radius: 8px;
-                font-size: 0.85rem;
-            }
-            .presencial {
-                background-color: #28a745;
-                color: white;
-                border-radius: 8px;
-                font-size: 0.85rem;
-            }
-            .cards-row {
-                margin-bottom: 20px;
-            }
-            .custom-card {
-                margin-bottom: 20px;
-            }
-            .horario-container {
-                overflow-x: auto;
-                margin: 20px 0;
-            }
-            .table td, .table th {
-                vertical-align: middle;
-                min-width: 120px;
-            }
-            .curso-celda {
-                min-height: 60px;
+
+            /* ── Page header ── */
+            .page-header {
+                padding: 2rem 0 1.5rem;
                 display: flex;
-                flex-direction: column;
-                justify-content: center;
+                align-items: flex-start;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 1rem;
             }
-            .leyenda-cursos {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: 20px;
-                margin-bottom: 20px;
+            .page-header h1 {
+                font-size: clamp(1.4rem, 3.5vw, 1.9rem);
+                font-weight: 800;
+                letter-spacing: -.4px;
             }
-            .evaluacion-section {
-                background: #fafafa;
-                border-radius: 8px;
-                padding: 20px;
-                margin-top: 20px;
-                border: 1px solid #e9ecef;
+            .page-header p {
+                font-size: .9rem;
+                color: var(--navy-muted);
+                margin-top: .25rem;
             }
-            .evaluacion-header {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                margin-bottom: 16px;
-                color: #495057;
-                font-weight: 500;
-                font-size: 0.95rem;
-                border-bottom: 1px solid #e9ecef;
-                padding-bottom: 8px;
+
+            /* ── Section label ── */
+            .section-label {
+                font-size: .72rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: .08em;
+                color: var(--navy-muted);
+                margin-bottom: .9rem;
             }
-            .evaluacion-icon {
-                font-size: 1rem;
-                color: #6c757d;
-            }
-            .sin-rubros {
-                text-align: center;
-                color: #868e96;
-                font-style: italic;
-                padding: 20px;
-                background: #f8f9fa;
-                border-radius: 4px;
-                border: 1px dashed #ced4da;
-                font-size: 0.9rem;
-            }
-            .rubros-container {
-                display: flex;
-                flex-direction: column;
-                gap: 1px;
-                background: #dee2e6;
-                border-radius: 4px;
+
+            /* ── Curso card ── */
+            .curso-card {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-lg);
+                padding: 1.25rem 1.4rem;
+                box-shadow: var(--shadow-sm);
+                transition: var(--transition);
+                position: relative;
                 overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                gap: .75rem;
+                height: 100%;
             }
-            .rubro-item {
-                background: white;
-                border: none;
-                padding: 14px 16px;
+            .curso-card::before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 4px;
+                border-radius: 4px 0 0 4px;
+                background: var(--indigo);
+            }
+            .curso-card.presencial::before {
+                background: var(--emerald);
+            }
+            .curso-card:hover {
+                box-shadow: var(--shadow-md);
+                transform: translateY(-2px);
+            }
+
+            .curso-card-name {
+                font-size: 1rem;
+                font-weight: 700;
+                color: var(--navy);
+                padding-left: .25rem;
+            }
+            .curso-card-meta {
+                display: flex;
+                flex-direction: column;
+                gap: .35rem;
+                padding-left: .25rem;
+            }
+            .curso-card-meta span {
+                font-size: .8rem;
+                color: var(--navy-muted);
+                display: flex;
+                align-items: center;
+                gap: .45rem;
+            }
+            .curso-card-meta strong {
+                color: var(--navy);
+            }
+
+            .curso-card-rubros {
+                background: var(--bg);
+                border-radius: var(--radius-sm);
+                padding: .75rem;
+                margin-top: .25rem;
+            }
+            .rubros-title {
+                font-size: .68rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: .06em;
+                color: var(--navy-muted);
+                margin-bottom: .5rem;
+            }
+            .rubro-line {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                transition: background-color 0.2s ease;
+                padding: .3rem 0;
+                border-bottom: 1px solid var(--border);
+                font-size: .8rem;
             }
-            .rubro-item:hover {
-                background: #f8f9fa;
+            .rubro-line:last-child {
+                border-bottom: none;
             }
-            .rubro-nombre {
+            .rubro-line-name {
+                color: var(--navy);
                 font-weight: 500;
-                color: #495057;
-                font-size: 0.9rem;
             }
-            .rubro-porcentaje {
-                background: #495057;
-                color: white;
-                padding: 4px 10px;
-                border-radius: 3px;
-                font-weight: 600;
-                font-size: 0.8rem;
-                min-width: 45px;
+            .rubro-line-pct {
+                font-weight: 700;
+                color: var(--indigo);
+                font-size: .75rem;
+            }
+            .sin-rubros {
+                font-size: .78rem;
+                color: var(--navy-muted);
+                font-style: italic;
+                text-align: center;
+                padding: .35rem 0;
+            }
+
+            .curso-card-actions {
+                display: flex;
+                gap: .5rem;
+                flex-wrap: wrap;
+                margin-top: auto;
+                padding-top: .5rem;
+                border-top: 1px solid var(--border);
+            }
+
+            /* ── Grid cursos ── */
+            .cursos-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 1.25rem;
+                margin-bottom: 2.5rem;
+            }
+            @media (max-width: 480px) {
+                .cursos-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            /* ── Horario ── */
+            .horario-panel {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-xl);
+                padding: 1.5rem;
+                box-shadow: var(--shadow-sm);
+                margin-bottom: 2rem;
+                overflow-x: auto;
+            }
+            .horario-panel-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: .75rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .horario-table {
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 4px;
+                min-width: 520px;
+            }
+            .horario-table th {
+                background: var(--navy);
+                color: #fff;
+                font-size: .75rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: .06em;
+                padding: .65rem .75rem;
+                border-radius: var(--radius-sm);
                 text-align: center;
             }
-            .porcentaje-total {
-                margin-top: 12px;
-                padding-top: 12px;
-                border-top: 1px solid #e9ecef;
-                text-align: right;
-                font-size: 0.85rem;
-                color: #6c757d;
-                font-weight: 500;
+            .horario-table th:first-child {
+                min-width: 80px;
+            }
+
+            .horario-table td {
+                padding: .4rem;
+                vertical-align: middle;
+                text-align: center;
+            }
+            .horario-table td:first-child {
+                font-size: .75rem;
+                font-weight: 700;
+                color: var(--navy-muted);
+                white-space: nowrap;
+                text-align: center;
+                padding: .4rem .5rem;
+                min-width: 72px;
+            }
+
+            .celda-vacia {
+                background: var(--bg);
+                border-radius: var(--radius-sm);
+                height: 56px;
+                border: 1px dashed var(--border);
+            }
+            .celda-curso {
+                border-radius: var(--radius-sm);
+                padding: .55rem .65rem;
+                height: 56px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: .15rem;
+                cursor: pointer;
+                transition: var(--transition);
+                text-decoration: none;
+            }
+            .celda-curso.virtual {
+                background: var(--indigo-light);
+                border: 1px solid #c7d2fe;
+            }
+            .celda-curso.presencial {
+                background: var(--emerald-light);
+                border: 1px solid #6ee7b7;
+            }
+            .celda-curso:hover {
+                transform: scale(1.03);
+                box-shadow: var(--shadow-sm);
+            }
+            .celda-curso-name {
+                font-size: .73rem;
+                font-weight: 700;
+                color: var(--navy);
+                line-height: 1.2;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 110px;
+            }
+            .celda-curso-prof {
+                font-size: .65rem;
+                color: var(--navy-muted);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 110px;
+            }
+
+            /* ── Leyenda ── */
+            .horario-leyenda {
+                display: flex;
+                align-items: center;
+                gap: 1.25rem;
+                flex-wrap: wrap;
+                font-size: .8rem;
+                font-weight: 600;
+                color: var(--navy-muted);
+                margin-top: .75rem;
+            }
+            .leyenda-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                display: inline-block;
+                margin-right: 5px;
+            }
+            .leyenda-dot.virtual    {
+                background: var(--indigo);
+            }
+            .leyenda-dot.presencial {
+                background: var(--emerald);
             }
         </style>
     </head>
     <body>
 
-        <!-- Header -->
         <div th:replace="~{fragments/header :: HeaderPagina}"></div>
 
-        <main class="container mt-4">
+        <main>
+            <div class="page-body">
 
-            <!-- ALERTA DINÁMICA -->
-            <div th:if="${mensaje}" 
-                 class="alert alert-dismissible fade show"
-                 th:classappend="' alert-' + ${tipo}" role="alert">
-                <span th:text="${mensaje}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3>Bienvenido a tus cursos</h3>
-
-                <!-- Dropdown Agregar/Editar Curso -->
-                <div class="dropdown">
-                    <button class="btn btn-primary dropdown-toggle" type="button" id="agregarCursoDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        Cursos
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="agregarCursoDropdown">
-                        <li><a class="dropdown-item" th:href="@{/cursos/form}">Agregar Curso</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li th:each="curso : ${cursosExistentes}">
-                            <a class="dropdown-item" th:href="@{/cursos/editar/{id}(id=${curso.id})}">
-                                Editar [[${curso.nombre}]]
-                            </a>
-                        </li>
-                    </ul>
+                <!-- Alert -->
+                <div th:if="${mensaje}"
+                     class="alert alert-dismissible fade show mt-3"
+                     th:classappend="'alert-' + ${tipo}" role="alert">
+                    <span th:text="${mensaje}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
-            </div>
 
-            <!-- Cards de cursos -->
-            <div class="row">
-                <div class="col-md-4" th:each="curso : ${cursosExistentes}">
-                    <div class="custom-card p-3 border rounded shadow-sm">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <p class="mb-0" th:text="${curso.modalidad.name()}"></p>
-                            <span class="circulo-modalidad"
-                                  th:classappend="${curso.modalidad.name() == 'VIRTUAL'} ? ' circulo-virtual' : ' circulo-presencial'"></span>
-                        </div>
-                        <hr>
-                        <p class="mb-1"><b th:text="${curso.nombre}"></b></p>
-                        <p class="mb-1">Profesor: <b th:text="${curso.profesor}"></b></p>
-                        <p class="mb-1">Correo: <b th:text="${curso.correo}"></b></p>
-                        <p class="mb-1">Horario: <b th:text="|${curso.dia.name()} ${curso.hora}|"></b></p>
+                <!-- ── Page header ── -->
+                <div class="page-header">
+                    <div>
+                        <h1>📚 Mis Cursos</h1>
+                        <p>Gestiona tus cursos y revisa tu horario semanal</p>
+                    </div>
+                    <a th:href="@{/cursos/form}" class="ru-btn ru-btn-primary">+ Agregar Curso</a>
+                </div>
 
-                        <!-- Estrategia de evaluación -->
-                        <div class="evaluacion-section">
-                            <div class="evaluacion-header">
-                                <span class="evaluacion-icon">📊</span>
-                                <span>Estrategia de Evaluación</span>
+                <!-- ══ CARDS DE CURSOS ══ -->
+                <div th:if="${#lists.isEmpty(cursosExistentes)}" class="ru-empty mb-4">
+                    <div class="ru-empty-icon">📭</div>
+                    <div class="ru-empty-title">Sin cursos aún</div>
+                    <div class="ru-empty-text">Agrega tu primer curso para comenzar.</div>
+                </div>
+
+                <div class="cursos-grid" th:unless="${#lists.isEmpty(cursosExistentes)}">
+                    <div th:each="curso : ${cursosExistentes}">
+                        <div class="curso-card"
+                             th:classappend="${curso.modalidad.name() == 'PRESENCIAL'} ? 'presencial' : ''">
+
+                            <!-- Nombre + badge modalidad -->
+                            <div class="d-flex align-items-start justify-content-between gap-2">
+                                <div class="curso-card-name" th:text="${curso.nombre}">Nombre</div>
+                                <span class="ru-badge"
+                                      th:classappend="${curso.modalidad.name() == 'PRESENCIAL'} ? 'ru-badge-emerald' : 'ru-badge-indigo'">
+                                    <span th:text="${curso.modalidad.name() == 'PRESENCIAL'} ? '🏫' : '🖥'"></span>
+                                    <span th:text="${curso.modalidad.name() == 'PRESENCIAL'} ? 'Presencial' : 'Virtual'"></span>
+                                </span>
                             </div>
 
-                            <div th:if="${#lists.isEmpty(curso.rubros)}" class="sin-rubros">
-                                Sin rubros definidos
+                            <!-- Meta info -->
+                            <div class="curso-card-meta">
+                                <span>👨‍🏫 <strong th:text="${curso.profesor}">Profesor</strong></span>
+                                <span th:if="${curso.correo != null and curso.correo != ''}">
+                                    ✉️ <strong th:text="${curso.correo}">correo</strong>
+                                </span>
+                                <span>📅 <strong th:text="${curso.dia.name()} + ' · ' + ${curso.hora}">Horario</strong></span>
+                                <span th:if="${curso.sede != null and curso.sede != ''}">
+                                    📍 <strong th:text="${curso.sede}">Sede</strong>
+                                </span>
                             </div>
 
-                            <div th:unless="${#lists.isEmpty(curso.rubros)}">
-                                <div class="rubros-container">
-                                    <div th:each="rubro : ${curso.rubros}" class="rubro-item">
-                                        <div class="rubro-nombre" th:text="${rubro.nombre}"></div>
-                                        <div class="rubro-porcentaje" th:text="|${rubro.porcentaje}%|"></div>
+                            <!-- Rubros -->
+                            <div class="curso-card-rubros">
+                                <div class="rubros-title">📊 Evaluación</div>
+                                <div th:if="${#lists.isEmpty(curso.rubros)}" class="sin-rubros">
+                                    Sin rubros definidos
+                                </div>
+                                <div th:unless="${#lists.isEmpty(curso.rubros)}">
+                                    <div th:each="rubro : ${curso.rubros}" class="rubro-line">
+                                        <span class="rubro-line-name" th:text="${rubro.nombre}">Rubro</span>
+                                        <span class="rubro-line-pct" th:text="${rubro.porcentaje} + '%'">0%</span>
+                                    </div>
+                                    <!-- NUEVO: fila total -->
+                                    <div class="rubro-line"
+                                         style="border-top: 2px solid var(--border); margin-top: .25rem; padding-top: .45rem;">
+                                        <span class="rubro-line-name" style="font-weight:700; color:var(--navy);">Total</span>
+                                        <span class="rubro-line-pct" style="color:var(--emerald);">100%</span>
                                     </div>
                                 </div>
-                                <div class="porcentaje-total">
-                                    Total: 100%
-                                </div>
                             </div>
-                        </div>
 
-                        <div class="mt-2 d-flex justify-content-between">
-                            <a class="btn btn-sm btn-secondary" th:href="@{/cursos/editar/{id}(id=${curso.id})}">Editar</a>
-                            <a class="btn btn-sm btn-primary" th:href="@{/cursos/ver/{id}(id=${curso.id})}">Ir a Curso</a>
-                            <!-- NUEVO BOTÓN ELIMINAR CON MODAL -->
-                            <a class="btn btn-sm btn-danger" href="#"
-                               data-bs-toggle="modal" 
-                               th:attr="data-id=${curso.id}, data-nombre=${curso.nombre}"
-                               data-bs-target="#eliminarCursoModal">
-                                🗑️ Eliminar
-                            </a>
+                            <!-- Acciones -->
+                            <div class="curso-card-actions">
+                                <a th:href="@{/cursos/ver/{id}(id=${curso.id})}"
+                                   class="ru-btn ru-btn-primary ru-btn-sm" style="flex:1; justify-content:center;">
+                                    Ver curso →
+                                </a>
+                                <a th:href="@{/cursos/editar/{id}(id=${curso.id})}"
+                                   class="ru-btn ru-btn-ghost ru-btn-sm">✏️</a>
+                                <button class="ru-btn ru-btn-danger ru-btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#eliminarCursoModal"
+                                        th:attr="data-id=${curso.id}, data-nombre=${curso.nombre}">
+                                    🗑
+                                </button>
+                            </div>
+
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <hr/>
-
-            <!-- Tabla de horarios -->
-            <h2 class="text-center mb-4">Horario de Clases</h2>
-            <div class="leyenda-cursos">
-                <div><span class="circulo-virtual"></span> Virtual</div>
-                <div><span class="circulo-presencial"></span> Presencial</div>
-            </div>
-
-            <div class="alert alert-info" th:if="${#lists.isEmpty(cursosExistentes)}">
-                <p class="mb-0">No hay cursos agregados aún. <a th:href="@{/cursos/form}">Agregar primer curso</a></p>
-            </div>
-
-            <div class="horario-container" th:unless="${#lists.isEmpty(cursosExistentes)}">
-                <table class="table table-bordered text-center">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Horario</th>
-                            <th th:each="dia : ${dias}" th:text="${dia}">Día</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="hora : ${franjasHorarias}">
-                            <td class="fw-bold" th:text="${hora} + ' '">Hora</td>
-                            <td th:each="dia : ${dias}">
-                    <th:block th:with="diaMap=${mapaCursos.get(dia)}">
-                        <th:block th:with="curso=${diaMap != null ? diaMap.get(hora) : null}">
-                            <div th:if="${curso != null}">
-                                <div class="curso-celda p-2"
-                                     th:classappend="${curso.modalidad.name() == 'VIRTUAL'} ? ' virtual' : ' presencial'">
-                                    <div class="fw-bold" th:text="${curso.nombre}"></div>
-                                    <small th:text="${curso.profesor}"></small>
-                                </div>
+                <!-- ══ HORARIO ══ -->
+                <div th:unless="${#lists.isEmpty(cursosExistentes)}">
+                    <div class="horario-panel">
+                        <div class="horario-panel-header">
+                            <div>
+                                <p class="section-label mb-0">📅 Horario semanal</p>
                             </div>
-                            <div th:unless="${curso != null}" class="text-muted">
-                                <small>-</small>
+                            <div class="horario-leyenda">
+                                <span><span class="leyenda-dot virtual"></span>Virtual</span>
+                                <span><span class="leyenda-dot presencial"></span>Presencial</span>
                             </div>
-                        </th:block>
-                    </th:block>
-                    </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+                        </div>
 
-            <!-- Modal curso agregado -->
-            <div th:if="${cursoAgregado != null}" class="modal fade" id="cursoAgregadoModal" tabindex="-1" aria-labelledby="cursoAgregadoModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="cursoAgregadoModalLabel">Curso Agregado</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        <div style="overflow-x:auto;">
+                            <table class="horario-table">
+                                <thead>
+                                    <tr>
+                                        <th>Hora</th>
+                                        <th th:each="dia : ${dias}" th:text="${dia}">DÍA</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="hora : ${franjasHorarias}">
+                                        <td th:text="${hora}">8-11</td>
+                                        <td th:each="dia : ${dias}">
+                                <th:block th:with="diaMap=${mapaCursos.get(dia)}">
+                                    <th:block th:with="curso=${diaMap != null ? diaMap.get(hora) : null}">
+
+                                        <a th:if="${curso != null}"
+                                           th:href="@{/cursos/ver/{id}(id=${curso.id})}"
+                                           class="celda-curso"
+                                           th:classappend="${curso.modalidad.name() == 'PRESENCIAL'} ? 'presencial' : 'virtual'">
+                                            <div class="celda-curso-name" th:text="${curso.nombre}">Curso</div>
+                                            <div class="celda-curso-prof" th:text="${curso.profesor}">Profesor</div>
+                                        </a>
+
+                                        <div th:unless="${curso != null}" class="celda-vacia"></div>
+
+                                    </th:block>
+                                </th:block>
+                                </td>
+                                </tr>
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="modal-body">
-                            <p><b>Nombre:</b> <span th:text="${cursoAgregado.nombre}"></span></p>
-                            <p><b>Profesor:</b> <span th:text="${cursoAgregado.profesor}"></span></p>
-                            <p><b>Correo:</b> <span th:text="${cursoAgregado.correo}"></span></p>
-                            <p><b>Modalidad:</b> <span th:text="${cursoAgregado.modalidad.name()}"></span></p>
-                            <p><b>Horario:</b> <span th:text="|${cursoAgregado.dia.name()} ${cursoAgregado.hora}|"></span></p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                            <a th:href="@{/cursos}" class="btn btn-primary">Ir a Mis Cursos</a>
-                        </div>
+
                     </div>
                 </div>
-            </div>
 
-            <!-- NUEVO MODAL ELIMINAR CURSO -->
-            <div class="modal fade" id="eliminarCursoModal" tabindex="-1" aria-labelledby="eliminarCursoModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="eliminarCursoModalLabel">Eliminar Curso</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>⚠️ ¿Estás seguro que deseas eliminar el curso <b id="nombreCursoEliminar"></b>?</p>
-                            <p>Se eliminarán también todas sus tareas y evaluaciones asociadas.</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <a href="#" class="btn btn-danger" id="confirmarEliminarCurso">Eliminar</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            </div><!-- /page-body -->
         </main>
 
+        <!-- Modal eliminar -->
+        <div class="modal fade" id="eliminarCursoModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border:none; border-radius:var(--radius-xl); overflow:hidden;">
+                    <div style="background:var(--rose-light); padding:1.5rem 1.75rem; border-bottom:1px solid #fda4af;">
+                        <h5 style="font-weight:800; color:#9f1239; margin:0;">🗑 Eliminar Curso</h5>
+                    </div>
+                    <div style="padding:1.5rem 1.75rem;">
+                        <p style="color:var(--navy); margin-bottom:.5rem;">
+                            ¿Eliminar el curso <strong id="nombreCursoEliminar"></strong>?
+                        </p>
+                        <p style="font-size:.85rem; color:var(--navy-muted); margin:0;">
+                            Se eliminarán también todas las tareas y evaluaciones asociadas. Esta acción es irreversible.
+                        </p>
+                    </div>
+                    <div style="padding:0 1.75rem 1.5rem; display:flex; gap:.75rem; justify-content:flex-end;">
+                        <button type="button" class="ru-btn ru-btn-ghost" data-bs-dismiss="modal">Cancelar</button>
+                        <a href="#" class="ru-btn ru-btn-danger" id="confirmarEliminarCurso">Sí, eliminar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        <!-- Footer -->
-        <div th:replace="fragments/footer :: footer"></div>
+        <!-- Modal curso agregado -->
+        <div th:if="${cursoAgregado != null}"
+             class="modal fade" id="cursoAgregadoModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border:none; border-radius:var(--radius-xl); overflow:hidden;">
+                    <div style="background:var(--emerald-light); padding:1.5rem 1.75rem; border-bottom:1px solid #6ee7b7;">
+                        <h5 style="font-weight:800; color:#065f46; margin:0;">✅ Curso agregado</h5>
+                    </div>
+                    <div style="padding:1.5rem 1.75rem;">
+                        <p><strong>Nombre:</strong> <span th:text="${cursoAgregado.nombre}"></span></p>
+                        <p><strong>Profesor:</strong> <span th:text="${cursoAgregado.profesor}"></span></p>
+                        <p><strong>Horario:</strong>
+                            <span th:text="${cursoAgregado.dia.name()} + ' ' + ${cursoAgregado.hora}"></span>
+                        </p>
+                        <p style="margin:0;"><strong>Modalidad:</strong>
+                            <span th:text="${cursoAgregado.modalidad.name()}"></span>
+                        </p>
+                    </div>
+                    <div style="padding:0 1.75rem 1.5rem; display:flex; gap:.75rem; justify-content:flex-end;">
+                        <button type="button" class="ru-btn ru-btn-ghost" data-bs-dismiss="modal">Cerrar</button>
+                        <a th:href="@{/cursos}" class="ru-btn ru-btn-primary">Ver mis cursos</a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        <!-- Script Bootstrap y modal -->
+        <div th:replace="~{fragments/footer :: FooterPagina}"></div>
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-        <!-- Script alert y modales -->
-        <script th:inline="javascript">
+        <script>
             document.addEventListener('DOMContentLoaded', function () {
-                // ALERTA DINÁMICA
+
+                // Auto-cerrar alertas
                 var alerta = document.querySelector('.alert-dismissible');
                 if (alerta) {
                     setTimeout(function () {
-                        var alert = bootstrap.Alert.getOrCreateInstance(alerta);
-                        alert.close();
+                        bootstrap.Alert.getOrCreateInstance(alerta).close();
                     }, 3000);
                 }
 
-                // MODAL CURSO AGREGADO
+                // Modal curso agregado
                 var tieneCursoAgregado = /*[[${cursoAgregado != null}]]*/ false;
                 if (tieneCursoAgregado) {
-                    var modalEl = document.getElementById('cursoAgregadoModal');
-                    if (modalEl) {
-                        var modal = new bootstrap.Modal(modalEl, {backdrop: 'static', keyboard: false});
-                        modal.show();
-                    }
+                    var modalAgregado = document.getElementById('cursoAgregadoModal');
+                    if (modalAgregado)
+                        new bootstrap.Modal(modalAgregado, {backdrop: 'static'}).show();
                 }
 
-                // MODAL ELIMINAR CURSO
-                var eliminarModal = document.getElementById('eliminarCursoModal');
-                eliminarModal.addEventListener('show.bs.modal', function (event) {
-                    var button = event.relatedTarget;
-                    var cursoId = button.getAttribute('data-id');
-                    var cursoNombre = button.getAttribute('data-nombre');
-
-                    document.getElementById('nombreCursoEliminar').textContent = cursoNombre;
-                    document.getElementById('confirmarEliminarCurso').setAttribute('href', '/cursos/eliminar/' + cursoId);
+                // Modal eliminar
+                var modalEliminar = document.getElementById('eliminarCursoModal');
+                modalEliminar.addEventListener('show.bs.modal', function (e) {
+                    var btn = e.relatedTarget;
+                    document.getElementById('nombreCursoEliminar').textContent = btn.getAttribute('data-nombre');
+                    document.getElementById('confirmarEliminarCurso').setAttribute('href', '/cursos/eliminar/' + btn.getAttribute('data-id'));
                 });
+
             });
         </script>
 

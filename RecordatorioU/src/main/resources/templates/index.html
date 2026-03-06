@@ -8,26 +8,21 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" th:href="@{/css/estilos.css(v=${#dates.createNow().time})}" href="/css/estilos.css">
 
-  <style>
+<style>
+    /* ── Page padding ── */
+    .page-body { padding: 0 1rem 3rem; max-width: 1100px; margin: 0 auto; }
+    @media (min-width: 768px) { .page-body { padding: 0 1.5rem 3rem; } }
+
     /* ── Hero greeting ── */
-    .hero-greeting {
-      padding: 2rem 0 1.5rem;
-    }
+    .hero-greeting { padding: 2rem 0 1.5rem; }
     .hero-greeting h1 {
       font-size: clamp(1.6rem, 4vw, 2.2rem);
-      font-weight: 800;
-      letter-spacing: -.5px;
+      font-weight: 800; letter-spacing: -.5px;
     }
-    .hero-greeting p {
-      font-size: .95rem;
-      color: var(--navy-muted);
-      margin-top: .3rem;
-    }
+    .hero-greeting p { font-size: .95rem; color: var(--navy-muted); margin-top: .3rem; }
 
     /* ── Stat pills ── */
-    .stat-row {
-      display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 2rem;
-    }
+    .stat-row { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 2rem; }
     .stat-pill {
       display: flex; align-items: center; gap: .5rem;
       background: var(--surface); border: 1px solid var(--border);
@@ -43,41 +38,10 @@
       letter-spacing: .08em; color: var(--navy-muted); margin-bottom: .9rem;
     }
 
-    /* ── Course card ── */
-    .course-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 1.25rem 1.4rem;
-      box-shadow: var(--shadow-sm);
-      transition: var(--transition);
-      display: flex; flex-direction: column; gap: .9rem;
-      text-decoration: none; color: inherit;
-      position: relative; overflow: hidden;
-    }
-    .course-card::before {
-      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-      width: 4px; border-radius: 4px 0 0 4px;
-      background: var(--indigo);
-    }
-    .course-card.presencial::before { background: var(--emerald); }
-    .course-card:hover {
-      box-shadow: var(--shadow-md);
-      border-color: var(--indigo);
-      transform: translateY(-2px);
-    }
-    .course-card.presencial:hover { border-color: var(--emerald); }
-    .course-card-name { font-size: 1rem; font-weight: 700; line-height: 1.3; }
-    .course-card-meta { display: flex; flex-direction: column; gap: .3rem; }
-    .course-card-meta span { font-size: .8rem; color: var(--navy-muted); display: flex; align-items: center; gap: .4rem; }
-    .course-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: .2rem; }
-
     /* ── Task alert card ── */
     .task-alert-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 1rem 1.25rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 1rem 1.25rem;
       box-shadow: var(--shadow-sm);
       display: flex; align-items: flex-start; gap: 1rem;
       transition: var(--transition);
@@ -89,29 +53,87 @@
       font-size: 1.1rem; flex-shrink: 0;
     }
     .task-alert-content { flex: 1; min-width: 0; }
-    .task-alert-title { font-size: .88rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .task-alert-title {
+      font-size: .88rem; font-weight: 700;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
     .task-alert-sub { font-size: .76rem; color: var(--navy-muted); margin-top: .15rem; }
     .task-alert-days { font-size: .78rem; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
 
     /* ── Cuatrimestre panel ── */
     .cuatri-panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      padding: 1.5rem;
-      box-shadow: var(--shadow-sm);
-      margin-bottom: 2rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-xl); padding: 1.5rem;
+      box-shadow: var(--shadow-sm); margin-bottom: 1.5rem;
     }
-    .cuatri-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; margin-bottom: 1.25rem; }
-    .cuatri-config-form { display: flex; gap: .75rem; flex-wrap: wrap; align-items: flex-end; }
-    .cuatri-config-form .ru-form-control { width: auto; max-width: 170px; }
+    .cuatri-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: .75rem; margin-bottom: 1.25rem;
+    }
 
-    /* ── Tooltip semana ── */
-    .semana .info { font-size: .76rem; line-height: 1.45; }
+    /* ── Barra de semanas ── */
+    .barra-progreso {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 5px;
+      padding: .5rem 0 .75rem;
+    }
+    .semana {
+      position: relative;
+      width: 42px; height: 42px;
+      border-radius: 8px;
+      background: var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .65rem; font-weight: 700; color: var(--navy-muted);
+      cursor: pointer;
+      transition: var(--transition);
+      flex-shrink: 0;
+      user-select: none;
+    }
+    .semana.completada { background: var(--indigo); color: #fff; }
+    .semana.actual {
+      background: var(--emerald); color: #fff;
+      box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--emerald);
+    }
+    .semana:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
-    /* ── Page padding ── */
-    .page-body { padding: 0 1rem 3rem; max-width: 1100px; margin: 0 auto; }
-    @media (min-width: 768px) { .page-body { padding: 0 1.5rem 3rem; } }
+    /* ── Tooltip de semana ── */
+    .semana .info {
+      visibility: hidden; opacity: 0;
+      width: 260px;
+      background: #1E293B; color: #fff;
+      text-align: left; padding: 12px 14px;
+      border-radius: var(--radius-md);
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%; transform: translateX(-50%);
+      transition: opacity .2s;
+      z-index: 200;
+      font-size: .76rem; line-height: 1.5;
+      box-shadow: var(--shadow-lg);
+      pointer-events: none;
+      white-space: normal;
+    }
+    .semana .info::after {
+      content: ""; position: absolute;
+      top: 100%; left: 50%; margin-left: -6px;
+      border-width: 6px; border-style: solid;
+      border-color: #1E293B transparent transparent transparent;
+    }
+    .semana:hover .info { visibility: visible; opacity: 1; }
+
+    /* ── Responsive ── */
+    @media (max-width: 576px) {
+      .semana { width: 34px; height: 34px; font-size: .58rem; }
+      .semana .info { width: 220px; font-size: .72rem; }
+      .task-alert-card { flex-wrap: wrap; }
+      .task-alert-days { width: 100%; }
+    }
+
+    @media (max-width: 360px) {
+      .semana { width: 30px; height: 30px; font-size: .55rem; }
+    }
   </style>
 </head>
 
@@ -187,19 +209,7 @@
         <div class="ru-empty-text">No tienes tareas que venzan en los próximos 7 días.</div>
       </div>
 
-      <!-- ══════════════════════════════════
-           SIMULADOR DE NOTAS
-           ══════════════════════════════════ -->
-      <div class="sim-launcher-wrapper mb-4">
-        <button class="sim-launcher-btn" type="button" id="abrirSimuladorBtn">
-          <span class="sim-icon">🧮</span>
-          <span class="sim-text">
-            <span class="sim-title">Simulador de Notas</span>
-            <span class="sim-sub">Proyecta tu nota final antes de exámenes</span>
-          </span>
-          <span class="sim-arrow">→</span>
-        </button>
-      </div>
+
 
       <!-- ══════════════════════════════════
            PROGRESO CUATRIMESTRE
@@ -270,6 +280,21 @@
             </div>
           </div>
         </div>
+      </div>
+      
+
+      <!-- ══════════════════════════════════
+           SIMULADOR DE NOTAS
+           ══════════════════════════════════ -->
+      <div class="sim-launcher-wrapper mb-4">
+        <button class="sim-launcher-btn" type="button" id="abrirSimuladorBtn">
+          <span class="sim-icon">🧮</span>
+          <span class="sim-text">
+            <span class="sim-title">Simulador de Notas</span>
+            <span class="sim-sub">Proyecta tu nota final antes de exámenes</span>
+          </span>
+          <span class="sim-arrow">→</span>
+        </button>
       </div>
 
     </div><!-- /page-body -->

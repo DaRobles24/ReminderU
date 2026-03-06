@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
   <title>ReminderU — Ver Curso</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -35,35 +37,85 @@
     }
     .curso-hero::before {
       content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-      width: 5px;
-      background: var(--indigo);
+      width: 5px; background: var(--indigo);
       border-radius: 5px 0 0 5px;
     }
     .curso-hero.presencial::before { background: var(--emerald); }
-    .curso-hero-top { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
-    .curso-hero-name { font-size: clamp(1.3rem, 3vw, 1.75rem); font-weight: 800; letter-spacing: -.4px; }
+    .curso-hero-top {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .curso-hero-name {
+      font-size: clamp(1.3rem, 3vw, 1.75rem);
+      font-weight: 800; letter-spacing: -.4px;
+    }
     .curso-hero-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+
     .curso-meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: .75rem;
-      margin-top: 1.25rem;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: .75rem; margin-top: 1.25rem;
     }
     .curso-meta-item {
       background: var(--bg);
       border-radius: var(--radius-sm);
       padding: .7rem 1rem;
     }
-    .curso-meta-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--navy-muted); margin-bottom: .2rem; }
+    .curso-meta-label {
+      font-size: .7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; color: var(--navy-muted); margin-bottom: .2rem;
+    }
     .curso-meta-value { font-size: .92rem; font-weight: 600; color: var(--navy); }
 
-    /* Section tabs-like label */
+    /* Section label */
     .section-label {
       font-size: .72rem; font-weight: 700; text-transform: uppercase;
       letter-spacing: .08em; color: var(--navy-muted); margin-bottom: .9rem;
     }
 
-    /* Tareas list */
+    /* Rubros */
+    .rubros-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.4rem;
+      margin-bottom: 1.75rem;
+    }
+    .rubro-line {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: .4rem 0; border-bottom: 1px solid var(--border);
+      font-size: .85rem;
+    }
+    .rubro-line:last-child { border-bottom: none; }
+    .rubro-total {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: .5rem 0; margin-top: .25rem;
+      border-top: 2px solid var(--border);
+      font-size: .85rem; font-weight: 700;
+    }
+
+    /* Score panel */
+    .score-panel {
+      background: linear-gradient(135deg, #1E293B, #0f172a);
+      color: #fff;
+      border-radius: var(--radius-xl);
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.75rem;
+      position: relative; overflow: hidden;
+    }
+    .progress-track {
+      height: 8px; background: rgba(255,255,255,.15);
+      border-radius: 4px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: var(--emerald);
+      border-radius: 4px; transition: width .5s ease;
+    }
+
+    /* Simulador launcher */
+    .sim-launcher-wrapper { display: flex; justify-content: center; margin: .5rem 0 1.75rem; }
+
+    /* Tareas */
     .tarea-row {
       display: flex; align-items: center; gap: 1rem;
       padding: .9rem 1.1rem;
@@ -74,33 +126,108 @@
       transition: var(--transition);
     }
     .tarea-row:hover { box-shadow: var(--shadow-sm); border-color: var(--border-hover); }
-    .tarea-row-status { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
     .tarea-row-title { font-size: .9rem; font-weight: 600; flex: 1; min-width: 0; }
-    .tarea-row-date { font-size: .78rem; color: var(--navy-muted); white-space: nowrap; }
+    .tarea-row-meta { font-size: .78rem; color: var(--navy-muted); white-space: nowrap; }
     .tarea-row-actions { display: flex; gap: .4rem; flex-shrink: 0; }
 
-    /* Notas panel */
+    /* Notas */
     .nota-item {
       display: flex; align-items: center; justify-content: space-between;
       padding: .75rem 1rem;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      margin-bottom: .5rem;
-      gap: 1rem;
+      margin-bottom: .5rem; gap: 1rem;
     }
     .nota-nombre { font-size: .88rem; font-weight: 600; flex: 1; }
     .nota-valor { font-size: 1rem; font-weight: 700; min-width: 60px; text-align: right; }
     .nota-valor.aprobado { color: var(--emerald); }
     .nota-valor.reprobado { color: var(--rose); }
 
-    /* Simulador launcher */
-    .sim-launcher-wrapper { display: flex; justify-content: center; margin: .5rem 0 1.75rem; }
+    /* Prioridad badges */
+    .prio-alta   { background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .prio-media  { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; }
+    .prio-baja   { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
+
+    /* Correo con truncado y copy */
+    .correo-cell {
+      display: flex; align-items: center; gap: .4rem; max-width: 100%;
+    }
+    .correo-text {
+      font-size: .92rem; font-weight: 600; color: var(--navy);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 130px;
+    }
+    .copy-btn {
+      flex-shrink: 0; background: none; border: none; cursor: pointer;
+      padding: .15rem .3rem; border-radius: 4px;
+      color: var(--navy-muted); font-size: .75rem;
+      transition: background .15s;
+    }
+    .copy-btn:hover { background: var(--border); color: var(--navy); }
+    .copy-btn.copied { color: var(--emerald); }
+
+    /* Barra de progreso del curso */
+    .curso-progress-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 1.4rem 1.75rem;
+      margin-bottom: 1.75rem;
+    }
+    .cp-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      flex-wrap: wrap; gap: .75rem; margin-bottom: 1rem;
+    }
+    .cp-title { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--navy-muted); }
+    .cp-score { font-size: 2rem; font-weight: 800; letter-spacing: -1px; color: var(--navy); }
+    .cp-score span { font-size: .85rem; font-weight: 500; color: var(--navy-muted); }
+    .cp-track {
+      height: 12px; background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px; overflow: visible;
+      position: relative; margin-bottom: .5rem;
+    }
+    .cp-fill {
+      height: 100%; border-radius: 6px;
+      transition: width .6s ease;
+    }
+    .cp-fill.aprobando { background: var(--emerald); }
+    .cp-fill.en-riesgo { background: var(--rose); }
+    .cp-fill.advertencia { background: var(--amber); }
+    .cp-marker {
+      position: absolute; top: -4px; bottom: -4px;
+      width: 3px; background: var(--amber);
+      border-radius: 2px;
+    }
+    .cp-marker-label {
+      position: absolute; top: -20px; transform: translateX(-50%);
+      font-size: .65rem; font-weight: 700; color: var(--amber);
+      white-space: nowrap;
+    }
+    .cp-labels {
+      display: flex; justify-content: space-between;
+      font-size: .72rem; color: var(--navy-muted); margin-top: .3rem;
+    }
+    .cp-falta {
+      margin-top: .75rem; padding: .6rem 1rem;
+      border-radius: var(--radius-sm);
+      font-size: .82rem; font-weight: 600;
+      text-align: center;
+    }
+    .cp-falta.ok   { background: #ecfdf5; color: #047857; }
+    .cp-falta.warn { background: #fffbeb; color: #b45309; }
+    .cp-falta.bad  { background: #fff1f2; color: #be123c; }
+
+    /* Nota color en entregadas */
+    .nota-verde   { color: #15803d; font-weight: 700; }
+    .nota-amarill { color: #b45309; font-weight: 700; }
+    .nota-roja    { color: #b91c1c; font-weight: 700; }
   </style>
 </head>
 
 <body>
-  <div th:replace="fragments/header :: HeaderPagina"></div>
+  <div th:replace="~{fragments/header :: HeaderPagina}"></div>
 
   <main>
     <div class="page-body">
@@ -109,78 +236,125 @@
       <nav class="ru-breadcrumb">
         <a th:href="@{/}">Inicio</a>
         <span class="ru-breadcrumb-sep">›</span>
-        <span>Cursos</span>
+        <a th:href="@{/cursos}">Cursos</a>
         <span class="ru-breadcrumb-sep">›</span>
         <span th:text="${curso.nombre}">Nombre del curso</span>
       </nav>
 
       <!-- ══ HERO ══ -->
-      <div class="curso-hero" th:classappend="${curso.modalidad == 'PRESENCIAL'} ? 'presencial' : ''">
+      <div class="curso-hero"
+           th:classappend="${curso.modalidad.name() == 'PRESENCIAL'} ? 'presencial' : ''">
         <div class="curso-hero-top">
           <div>
             <div class="curso-hero-name" th:text="${curso.nombre}">Nombre del Curso</div>
             <div class="mt-2 d-flex gap-2 flex-wrap">
               <span class="ru-badge ru-badge-indigo"
-                    th:if="${curso.modalidad == 'VIRTUAL'}">🖥 Virtual</span>
+                    th:if="${curso.modalidad.name() == 'VIRTUAL'}">🖥 Virtual</span>
               <span class="ru-badge ru-badge-emerald"
-                    th:if="${curso.modalidad == 'PRESENCIAL'}">🏫 Presencial</span>
-              <span class="ru-badge ru-badge-gray"
-                    th:text="${curso.creditos} + ' créditos'"
-                    th:if="${curso.creditos != null}">3 créditos</span>
+                    th:if="${curso.modalidad.name() == 'PRESENCIAL'}">🏫 Presencial</span>
             </div>
           </div>
           <div class="curso-hero-actions">
-            <a th:href="@{/cursos/editar/{id}(id=${curso.id})}" class="ru-btn ru-btn-ghost ru-btn-sm">✏️ Editar</a>
-            <a th:href="@{/cursos/eliminar/{id}(id=${curso.id})}"
-               class="ru-btn ru-btn-danger ru-btn-sm"
-               onclick="return confirm('¿Eliminar este curso y todas sus tareas?')">🗑 Eliminar</a>
+            <a th:href="@{/cursos/editar/{id}(id=${curso.id})}"
+               class="ru-btn ru-btn-ghost ru-btn-sm">✏️ Editar</a>
+            <button class="ru-btn ru-btn-danger ru-btn-sm"
+                    data-bs-toggle="modal" data-bs-target="#modalEliminarCurso">
+              🗑 Eliminar
+            </button>
           </div>
         </div>
 
         <div class="curso-meta-grid">
-          <div class="curso-meta-item" th:if="${curso.profesor != null}">
+          <div class="curso-meta-item">
             <div class="curso-meta-label">Profesor</div>
             <div class="curso-meta-value" th:text="${curso.profesor}">—</div>
           </div>
-          <div class="curso-meta-item" th:if="${curso.aula != null}">
-            <div class="curso-meta-label">Aula</div>
-            <div class="curso-meta-value" th:text="${curso.aula}">—</div>
+          <div class="curso-meta-item" th:if="${curso.correo != null and curso.correo != ''}">
+            <div class="curso-meta-label">Correo</div>
+            <div class="correo-cell">
+              <span class="correo-text" th:text="${curso.correo}" th:title="${curso.correo}">—</span>
+              <button class="copy-btn" type="button"
+                      th:attr="data-correo=${curso.correo}"
+                      onclick="copiarCorreo(this)" title="Copiar correo">📋</button>
+            </div>
+          </div>
+          <div class="curso-meta-item">
+            <div class="curso-meta-label">Día</div>
+            <div class="curso-meta-value" th:text="${curso.dia.name()}">—</div>
+          </div>
+          <div class="curso-meta-item">
+            <div class="curso-meta-label">Hora</div>
+            <div class="curso-meta-value hora-ampm" th:text="${curso.hora}">—</div>
+          </div>
+          <div class="curso-meta-item" th:if="${curso.sede != null and curso.sede != ''}">
+            <div class="curso-meta-label">Sede</div>
+            <div class="curso-meta-value" th:text="${curso.sede}">—</div>
           </div>
           <div class="curso-meta-item">
             <div class="curso-meta-label">Tareas pendientes</div>
-            <div class="curso-meta-value"
-                 th:text="${#lists.size(tareasPendientes)}">0</div>
+            <div class="curso-meta-value" th:text="${#lists.size(tareasPendientes)}">0</div>
           </div>
           <div class="curso-meta-item">
             <div class="curso-meta-label">Tareas entregadas</div>
-            <div class="curso-meta-value"
-                 th:text="${#lists.size(tareasEntregadas)}">0</div>
+            <div class="curso-meta-value" th:text="${#lists.size(tareasEntregadas)}">0</div>
           </div>
         </div>
       </div>
 
-      <!-- ══ SCORE PANEL ══ -->
-      <div class="score-panel mb-4" th:if="${notaPromedio != null}">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; position:relative; z-index:1;">
-          <div>
-            <div style="font-size:.75rem; font-weight:600; opacity:.55; text-transform:uppercase; letter-spacing:.07em; margin-bottom:.3rem;">Nota acumulada</div>
-            <div style="font-size:2.5rem; font-weight:800; letter-spacing:-1px;"
-                 th:text="${#numbers.formatDecimal(notaPromedio, 1, 2)}">0.00</div>
-            <div style="font-size:.8rem; opacity:.55; margin-top:.3rem;">de 100 puntos</div>
-          </div>
-          <div style="text-align:right;">
-            <span class="ru-badge"
-                  th:classappend="${notaPromedio >= 70} ? 'ru-badge-emerald' : 'ru-badge-rose'"
-                  style="font-size:.85rem; padding:.4rem 1rem;"
-                  th:text="${notaPromedio >= 70} ? '✅ Aprobando' : '⚠️ En riesgo'">Estado</span>
-          </div>
+      <!-- ══ RUBROS ══ -->
+      <div class="rubros-panel" th:if="${!#lists.isEmpty(curso.rubros)}">
+        <p class="section-label mb-2">📊 Rubros de evaluación</p>
+        <div th:each="rubro : ${curso.rubros}" class="rubro-line">
+          <span style="color:var(--navy); font-weight:500;" th:text="${rubro.nombre}">Rubro</span>
+          <span style="font-weight:700; color:var(--indigo);" th:text="${rubro.porcentaje} + '%'">0%</span>
         </div>
-        <div class="progress-track mt-3" style="position:relative; z-index:1;">
-          <div class="progress-fill"
+        <div class="rubro-total">
+          <span>Total</span>
+          <span style="color:var(--emerald);">100%</span>
+        </div>
+      </div>
+
+      <!-- ══ PROGRESO DEL CURSO ══ -->
+      <div class="curso-progress-panel" th:if="${notaPromedio != null}">
+        <div class="cp-header">
+          <div>
+            <div class="cp-title">📈 Progreso del curso</div>
+            <div class="cp-score">
+              <span th:text="${#numbers.formatDecimal(notaPromedio, 1, 2)}">0.00</span>
+              <span>/ 100 pts</span>
+            </div>
+          </div>
+          <span class="ru-badge"
+                th:classappend="${notaPromedio >= 70} ? 'ru-badge-emerald' : 'ru-badge-rose'"
+                style="font-size:.85rem; padding:.4rem 1rem;"
+                th:text="${notaPromedio >= 70} ? '✅ Aprobando' : '⚠️ En riesgo'">Estado</span>
+        </div>
+
+        <div class="cp-track">
+          <div class="cp-marker" style="left:70%;">
+            <div class="cp-marker-label">Meta 70</div>
+          </div>
+          <div class="cp-fill"
+               th:classappend="${notaPromedio >= 70} ? 'aprobando' : (${notaPromedio >= 55} ? 'advertencia' : 'en-riesgo')"
                th:style="'width:' + ${notaPromedio} + '%'"></div>
         </div>
-        <div style="display:flex; justify-content:space-between; font-size:.72rem; opacity:.45; margin-top:.35rem; position:relative; z-index:1;">
-          <span>0</span><span>Meta: 70</span><span>100</span>
+
+        <div class="cp-labels">
+          <span>0</span>
+          <span>50</span>
+          <span>100</span>
+        </div>
+
+        <div class="cp-falta"
+             th:classappend="${notaPromedio >= 70} ? 'ok' : (${notaPromedio >= 55} ? 'warn' : 'bad')">
+          <th:block th:if="${notaPromedio >= 70}">
+            🎉 ¡Ya alcanzaste la nota mínima! Te sobran
+            <strong th:text="${#numbers.formatDecimal(notaPromedio - 70, 1, 2)}">0</strong> puntos.
+          </th:block>
+          <th:block th:unless="${notaPromedio >= 70}">
+            ⚠️ Te faltan <strong th:text="${#numbers.formatDecimal(70 - notaPromedio, 1, 2)}">0</strong>
+            puntos para alcanzar la nota mínima de 70.
+          </th:block>
         </div>
       </div>
 
@@ -197,33 +371,30 @@
       </div>
 
       <!-- ══ NOTAS ══ -->
-      <div class="mb-4" th:if="${notas != null and !#lists.isEmpty(notas)}">
+      <div class="mb-4">
         <div class="ru-section-header">
-          <div>
-            <p class="section-label mb-0">📊 Notas registradas</p>
-          </div>
-          <a th:href="@{/notas/agregar/{id}(id=${curso.id})}" class="ru-btn ru-btn-primary ru-btn-sm">+ Agregar nota</a>
+          <p class="section-label mb-0">📝 Notas registradas</p>
+          <!-- FIX: etiqueta <a> completa y correcta -->
+          <a th:href="@{/notas/agregar/{id}(id=${curso.id})}"
+             class="ru-btn ru-btn-primary ru-btn-sm">+ Agregar nota</a>
         </div>
-        <div th:each="nota : ${notas}" class="nota-item">
-          <span class="nota-nombre" th:text="${nota.nombre}">Examen 1</span>
-          <div class="d-flex align-items-center gap-3">
-            <span class="nota-valor"
-                  th:classappend="${nota.valor >= 70} ? 'aprobado' : 'reprobado'"
-                  th:text="${#numbers.formatDecimal(nota.valor, 1, 2)}">0.00</span>
-            <a th:href="@{/notas/eliminar/{id}(id=${nota.id})}"
-               class="ru-btn ru-btn-ghost ru-btn-sm"
-               onclick="return confirm('¿Eliminar esta nota?')"
-               style="padding:.2rem .6rem; color:var(--rose);">✕</a>
-          </div>
-        </div>
-      </div>
 
-      <div class="mb-4" th:if="${notas == null or #lists.isEmpty(notas)}">
-        <div class="ru-section-header">
-          <p class="section-label mb-0">📊 Notas registradas</p>
-          <a th:href="@{/notas/agregar/{id}(id=${curso.id})}" class="ru-btn ru-btn-primary ru-btn-sm">+ Agregar nota</a>
+        <div th:if="${notas != null and !#lists.isEmpty(notas)}">
+          <div th:each="nota : ${notas}" class="nota-item">
+            <span class="nota-nombre" th:text="${nota.nombre}">Examen 1</span>
+            <div class="d-flex align-items-center gap-3">
+              <span class="nota-valor"
+                    th:classappend="${nota.valor >= 70} ? 'aprobado' : 'reprobado'"
+                    th:text="${#numbers.formatDecimal(nota.valor, 1, 2)}">0.00</span>
+              <a th:href="@{/notas/eliminar/{id}(id=${nota.id})}"
+                 class="ru-btn ru-btn-ghost ru-btn-sm"
+                 onclick="return confirm('¿Eliminar esta nota?')"
+                 style="padding:.2rem .6rem; color:var(--rose);">🗑</a>
+            </div>
+          </div>
         </div>
-        <div class="ru-empty">
+
+        <div class="ru-empty" th:if="${notas == null or #lists.isEmpty(notas)}">
           <div class="ru-empty-icon">📋</div>
           <div class="ru-empty-title">Sin notas aún</div>
           <div class="ru-empty-text">Agrega tus notas para calcular el promedio y usar el simulador.</div>
@@ -233,23 +404,44 @@
       <!-- ══ TAREAS PENDIENTES ══ -->
       <div class="mb-4">
         <div class="ru-section-header">
-          <div>
-            <p class="section-label mb-0">⏳ Tareas pendientes</p>
-          </div>
-          <a th:href="@{/tareas/agregar/{id}(id=${curso.id})}" class="ru-btn ru-btn-success ru-btn-sm">+ Nueva tarea</a>
+          <p class="section-label mb-0">⏳ Tareas pendientes</p>
+          <a th:href="@{/tareas/form(cursoId=${curso.id})}"
+             class="ru-btn ru-btn-success ru-btn-sm">+ Nueva tarea</a>
         </div>
 
         <div th:if="${!#lists.isEmpty(tareasPendientes)}">
           <div class="tarea-row" th:each="tarea : ${tareasPendientes}">
-            <div class="tarea-row-status ru-dot"
-                 th:classappend="${tarea.diasRestantes <= 1} ? 'ru-dot-rose' :
-                                  (${tarea.diasRestantes} <= 3 ? 'ru-dot-amber' : 'ru-dot-indigo')"></div>
-            <div class="tarea-row-title" th:text="${tarea.titulo}">Tarea</div>
-            <div class="tarea-row-date"
-                 th:text="${#temporals.format(tarea.fechaEntrega, 'dd MMM yyyy')}">Fecha</div>
+
+            <div class="ru-dot"
+                 th:classappend="${tarea.prioridad.name() == 'ALTA'} ? 'ru-dot-rose' :
+                                  (${tarea.prioridad.name() == 'MEDIA'} ? 'ru-dot-amber' : 'ru-dot-indigo')"></div>
+
+            <div style="flex:1; min-width:0;">
+              <div class="tarea-row-title" th:text="${tarea.titulo}">Tarea</div>
+              <div class="tarea-row-meta">
+                📅 <span th:text="${#temporals.format(tarea.fechaEntrega, 'dd MMM yyyy')}">Fecha</span>
+                <span th:if="${tarea.porcentaje != null}">
+                  · <span th:text="${tarea.porcentaje} + '%'">0%</span>
+                </span>
+                <span th:if="${tarea.modalidad != null}">
+                  · <span th:text="${tarea.modalidad.name() == 'GRUPAL'} ? '👥 Grupal' : '👤 Individual'">Modalidad</span>
+                </span>
+              </div>
+            </div>
+
+            <span class="ru-badge"
+                  th:classappend="${tarea.prioridad.name() == 'ALTA'} ? 'prio-alta' :
+                                   (${tarea.prioridad.name() == 'MEDIA'} ? 'prio-media' : 'prio-baja')"
+                  th:text="${tarea.prioridad.name()}">MEDIA</span>
+
             <div class="tarea-row-actions">
-              <a th:href="@{/tareas/ver/{id}(id=${tarea.id})}" class="ru-btn ru-btn-ghost ru-btn-sm">Ver</a>
-              <a th:href="@{/tareas/entregar/{id}(id=${tarea.id})}" class="ru-btn ru-btn-success ru-btn-sm">✓</a>
+              <a th:href="@{/tareas/ver/{id}(id=${tarea.id})}"
+                 class="ru-btn ru-btn-ghost ru-btn-sm">Ver</a>
+              <!-- FIX: tareaId DENTRO del @{} -->
+              <a th:href="@{/notas/agregar/{id}(id=${curso.id}, tareaId=${tarea.id})}"
+                 class="ru-btn ru-btn-ghost ru-btn-sm" title="Agregar nota" style="color:var(--indigo);">📝</a>
+              <a th:href="@{/tareas/entregar/{id}(id=${tarea.id})}"
+                 class="ru-btn ru-btn-success ru-btn-sm" title="Marcar entregada">✓</a>
             </div>
           </div>
         </div>
@@ -265,56 +457,58 @@
       <div class="mb-4" th:if="${!#lists.isEmpty(tareasEntregadas)}">
         <p class="section-label">✅ Tareas entregadas</p>
         <div class="tarea-row" th:each="tarea : ${tareasEntregadas}">
-          <div class="tarea-row-status ru-dot ru-dot-emerald"></div>
-          <div class="tarea-row-title"
-               style="text-decoration:line-through; opacity:.55;"
-               th:text="${tarea.titulo}">Tarea</div>
-          <div class="tarea-row-date"
-               th:text="${#temporals.format(tarea.fechaEntrega, 'dd MMM yyyy')}">Fecha</div>
-          <div class="tarea-row-actions">
-            <a th:href="@{/tareas/ver/{id}(id=${tarea.id})}" class="ru-btn ru-btn-ghost ru-btn-sm">Ver</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ HORARIO ══ -->
-      <div class="mb-4" th:if="${horario != null and !#lists.isEmpty(horario)}">
-        <p class="section-label">📅 Horario del curso</p>
-        <div class="ru-card">
-          <div class="ru-card-body p-0">
-            <div class="horario-container">
-              <table class="horario-table">
-                <thead>
-                  <tr>
-                    <th>Hora</th>
-                    <th>Lunes</th>
-                    <th>Martes</th>
-                    <th>Miércoles</th>
-                    <th>Jueves</th>
-                    <th>Viernes</th>
-                    <th>Sábado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr th:each="fila : ${horario}">
-                    <td style="font-weight:600; color:var(--navy-muted);" th:text="${fila.hora}">07:00</td>
-                    <td th:each="dia : ${fila.dias}"
-                        th:class="${dia.clase}"
-                        th:text="${dia.contenido}"></td>
-                  </tr>
-                </tbody>
-              </table>
+          <div class="ru-dot ru-dot-emerald"></div>
+          <div style="flex:1; min-width:0;">
+            <div class="tarea-row-title"
+                 style="text-decoration:line-through; opacity:.6;"
+                 th:text="${tarea.titulo}">Tarea</div>
+            <div class="tarea-row-meta">
+              📅 <span th:text="${#temporals.format(tarea.fechaEntrega, 'dd MMM yyyy')}">Fecha</span>
+              <span th:if="${tarea.notaObtenida != null}">
+                · Nota:
+                <span th:classappend="${tarea.notaObtenida >= 85} ? 'nota-verde' :
+                                       (${tarea.notaObtenida >= 70} ? 'nota-amarill' : 'nota-roja')"
+                      th:text="${tarea.notaObtenida}">—</span>
+              </span>
             </div>
           </div>
-        </div>
-        <div class="leyenda-cursos mt-2">
-          <span><span class="circulo-modalidad circulo-virtual"></span> Virtual</span>
-          <span><span class="circulo-modalidad circulo-presencial"></span> Presencial</span>
+          <div class="tarea-row-actions">
+            <!-- FIX: tareaId DENTRO del @{} -->
+            <a th:if="${tarea.notaObtenida == null}"
+               th:href="@{/notas/agregar/{id}(id=${curso.id}, tareaId=${tarea.id})}"
+               class="ru-btn ru-btn-primary ru-btn-sm">+ Nota</a>
+            <a th:href="@{/tareas/ver/{id}(id=${tarea.id})}"
+               class="ru-btn ru-btn-ghost ru-btn-sm">Ver</a>
+          </div>
         </div>
       </div>
 
     </div><!-- /page-body -->
   </main>
+
+  <!-- Modal eliminar curso -->
+  <div class="modal fade" id="modalEliminarCurso" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border:none; border-radius:var(--radius-xl); overflow:hidden;">
+        <div style="background:var(--rose-light); padding:1.5rem 1.75rem; border-bottom:1px solid #fda4af;">
+          <h5 style="font-weight:800; color:#9f1239; margin:0;">🗑 Eliminar Curso</h5>
+        </div>
+        <div style="padding:1.5rem 1.75rem;">
+          <p style="color:var(--navy); margin-bottom:.5rem;">
+            ¿Eliminar el curso <strong th:text="${curso.nombre}"></strong>?
+          </p>
+          <p style="font-size:.85rem; color:var(--navy-muted); margin:0;">
+            Se eliminarán también todas las tareas asociadas. Esta acción es irreversible.
+          </p>
+        </div>
+        <div style="padding:0 1.75rem 1.5rem; display:flex; gap:.75rem; justify-content:flex-end;">
+          <button type="button" class="ru-btn ru-btn-ghost" data-bs-dismiss="modal">Cancelar</button>
+          <a th:href="@{/cursos/eliminar/{id}(id=${curso.id})}"
+             class="ru-btn ru-btn-danger">Sí, eliminar</a>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal Simulador -->
   <div class="modal fade" id="simModal" tabindex="-1" aria-hidden="true">
@@ -386,57 +580,86 @@
     </div>
   </div>
 
-  <div th:replace="fragments/footer :: FooterPagina"></div>
+  <div th:replace="~{fragments/footer :: FooterPagina}"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+  // ── Copiar correo ──
+  function copiarCorreo(btn) {
+    var correo = btn.getAttribute('data-correo');
+    navigator.clipboard.writeText(correo).then(function(){
+      btn.textContent = '✅';
+      btn.classList.add('copied');
+      setTimeout(function(){ btn.textContent = '📋'; btn.classList.remove('copied'); }, 1500);
+    });
+  }
+
+  // ── Formatear horas a AM/PM ──
+  document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.hora-ampm').forEach(function(el){
+      var raw = el.textContent.trim();
+      var match = raw.match(/^(\d+)[:\-](\d+)$/);
+      if(match){
+        var h1 = parseInt(match[1]);
+        var h2 = parseInt(match[2]);
+        var fmt = function(h){ return h < 12 ? h + ' AM' : (h === 12 ? '12 PM' : (h-12) + ' PM'); };
+        el.textContent = fmt(h1) + ' – ' + fmt(h2);
+      }
+    });
+  });
   (function(){
     var evalList = document.getElementById('simEvalList');
     var bsModal  = new bootstrap.Modal(document.getElementById('simModal'));
-    document.getElementById('abrirSimuladorBtn').addEventListener('click',function(){
-      if(evalList&&evalList.children.length===0) agregarFila('Examen Final','','');
+
+    document.getElementById('abrirSimuladorBtn').addEventListener('click', function(){
+      if(evalList && evalList.children.length === 0) agregarFila('Examen Final','','');
       calcular(); bsModal.show();
     });
-    document.getElementById('simAgregarBtn').addEventListener('click',function(){ agregarFila('','',''); });
-    document.getElementById('simNotaActual').addEventListener('input',calcular);
-    document.getElementById('simMeta').addEventListener('input',calcular);
-    function agregarFila(n,nota,peso){
-      var row=document.createElement('div');
-      row.style.cssText='display:grid;grid-template-columns:1fr 110px 100px 36px;gap:.5rem;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:.5rem .65rem;margin-bottom:.4rem;';
-      row.innerHTML='<input type="text" placeholder="Nombre" style="border:none;outline:none;font-size:.88rem;background:transparent;width:100%;" value="'+(n||'')+'">'
+    document.getElementById('simAgregarBtn').addEventListener('click', function(){ agregarFila('','',''); });
+    document.getElementById('simNotaActual').addEventListener('input', calcular);
+    document.getElementById('simMeta').addEventListener('input', calcular);
+
+    function agregarFila(n, nota, peso){
+      var row = document.createElement('div');
+      row.style.cssText = 'display:grid;grid-template-columns:1fr 110px 100px 36px;gap:.5rem;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:.5rem .65rem;margin-bottom:.4rem;';
+      row.innerHTML = '<input type="text" placeholder="Nombre" style="border:none;outline:none;font-size:.88rem;background:transparent;width:100%;" value="'+(n||'')+'">'
         +'<input type="number" placeholder="0–100" min="0" max="100" step="0.01" style="border:1px solid #e2e8f0;border-radius:6px;padding:.3rem .4rem;width:100%;font-size:.85rem;text-align:center;outline:none;" value="'+(nota!==undefined&&nota!==''?nota:'')+'">'
         +'<input type="number" placeholder="0–100" min="0" max="100" step="0.01" style="border:1px solid #e2e8f0;border-radius:6px;padding:.3rem .4rem;width:100%;font-size:.85rem;text-align:center;outline:none;" value="'+(peso!==undefined&&peso!==''?peso:'')+'">'
         +'<button type="button" style="background:none;border:none;color:#f43f5e;cursor:pointer;font-size:.9rem;padding:.2rem .3rem;border-radius:5px;" title="Eliminar">✕</button>';
-      row.querySelector('button').addEventListener('click',function(){ row.remove(); calcular(); });
-      row.querySelectorAll('input').forEach(function(i){ i.addEventListener('input',calcular); });
+      row.querySelector('button').addEventListener('click', function(){ row.remove(); calcular(); });
+      row.querySelectorAll('input').forEach(function(i){ i.addEventListener('input', calcular); });
       evalList.appendChild(row); calcular();
     }
+
     function calcular(){
-      var na=parseFloat(document.getElementById('simNotaActual').value)||0;
-      var mt=parseFloat(document.getElementById('simMeta').value)||70;
-      var pe=0;
+      var na = parseFloat(document.getElementById('simNotaActual').value) || 0;
+      var mt = parseFloat(document.getElementById('simMeta').value) || 70;
+      var pe = 0;
       evalList.querySelectorAll('div').forEach(function(r){
-        var ins=r.querySelectorAll('input[type="number"]');
-        if(ins.length>=2){ var n=parseFloat(ins[0].value)||0; var p=parseFloat(ins[1].value)||0; pe+=(n/100)*p; }
+        var ins = r.querySelectorAll('input[type="number"]');
+        if(ins.length >= 2){ var n = parseFloat(ins[0].value)||0; var p = parseFloat(ins[1].value)||0; pe += (n/100)*p; }
       });
-      var pr=na+pe, dm=mt-pr, fi=evalList.children.length;
-      var s=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
-      s('simResActual',na.toFixed(1));
-      var ep=document.getElementById('simResProyectada');
-      if(ep){ep.textContent=pr.toFixed(1);ep.style.color=pr>=mt?'#10b981':(dm>20?'#f43f5e':'#4f46e5');}
-      var em=document.getElementById('simResMeta');
-      if(em){if(dm<=0){em.textContent='✅ Meta';em.style.color='#10b981';}else{em.textContent='+'+dm.toFixed(1)+' pts';em.style.color=dm>20?'#f43f5e':'#f59e0b';}}
-      var pa=Math.min(na,100),px=Math.max(0,Math.min(pe,100-pa));
-      var sa=document.getElementById('simBarActual'),se=document.getElementById('simBarExtra'),sm=document.getElementById('simBarMeta');
-      if(sa)sa.style.width=pa.toFixed(1)+'%';if(se)se.style.width=px.toFixed(1)+'%';if(sm)sm.style.left=Math.min(mt,100).toFixed(1)+'%';
-      var dg=document.getElementById('simDiagnosis');
+      var pr = na + pe, dm = mt - pr;
+      var s = function(id,v){ var e = document.getElementById(id); if(e) e.textContent = v; };
+      s('simResActual', na.toFixed(1));
+      var ep = document.getElementById('simResProyectada');
+      if(ep){ ep.textContent = pr.toFixed(1); ep.style.color = pr >= mt ? '#10b981' : (dm > 20 ? '#f43f5e' : '#4f46e5'); }
+      var em = document.getElementById('simResMeta');
+      if(em){ if(dm <= 0){ em.textContent = '✅ Meta'; em.style.color = '#10b981'; } else { em.textContent = '+'+dm.toFixed(1)+' pts'; em.style.color = dm > 20 ? '#f43f5e' : '#f59e0b'; } }
+      var pa = Math.min(na,100), px = Math.max(0, Math.min(pe, 100-pa));
+      var sa = document.getElementById('simBarActual'), se = document.getElementById('simBarExtra'), sm = document.getElementById('simBarMeta');
+      if(sa) sa.style.width = pa.toFixed(1)+'%';
+      if(se) se.style.width = px.toFixed(1)+'%';
+      if(sm) sm.style.left  = Math.min(mt,100).toFixed(1)+'%';
+      var dg = document.getElementById('simDiagnosis');
       if(dg){
-        if(fi===0){dg.textContent='Agrega evaluaciones para ver la proyección.';dg.style.background='#f8fafc';dg.style.color='#64748b';}
-        else if(pr>=mt){dg.textContent='🎉 ¡Con esta proyección alcanzas la meta!';dg.style.background='#ecfdf5';dg.style.color='#047857';}
-        else if(dm<=10){dg.textContent='⚠️ Estás cerca. Necesitas '+dm.toFixed(1)+' pts más.';dg.style.background='#fffbeb';dg.style.color='#b45309';}
-        else{dg.textContent='🔴 Te faltan '+dm.toFixed(1)+' pts. Revisa tu estrategia.';dg.style.background='#fff1f2';dg.style.color='#be123c';}
+        if(evalList.children.length === 0){ dg.textContent='Agrega evaluaciones para ver la proyección.'; dg.style.background='#f8fafc'; dg.style.color='#64748b'; }
+        else if(pr >= mt){ dg.textContent='🎉 ¡Con esta proyección alcanzas la meta!'; dg.style.background='#ecfdf5'; dg.style.color='#047857'; }
+        else if(dm <= 10){ dg.textContent='⚠️ Estás cerca. Necesitas '+dm.toFixed(1)+' pts más.'; dg.style.background='#fffbeb'; dg.style.color='#b45309'; }
+        else { dg.textContent='🔴 Te faltan '+dm.toFixed(1)+' pts. Revisa tu estrategia.'; dg.style.background='#fff1f2'; dg.style.color='#be123c'; }
       }
     }
+    
     calcular();
   })();
   </script>

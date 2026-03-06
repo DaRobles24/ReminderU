@@ -27,7 +27,7 @@ public class CursoController {
     private final EvaluacionServiceImpl evaluacionService;
     private final UsuarioService usuarioService;
 
-    private final List<String> franjasHorarias = List.of("8-11", "11-2", "2-5", "6-9");
+    private final List<String> franjasHorarias = List.of("8-11 AM", "11-2 PM", "2-5 PM", "6-9 PM");
     private final List<String> dias = List.of("LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO");
 
     public CursoController(CursoServiceImpl cursoService, TareaServiceImpl tareaService, 

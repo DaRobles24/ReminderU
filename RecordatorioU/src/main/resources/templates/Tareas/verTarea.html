@@ -3,260 +3,224 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ReminderU — Mi Perfil</title>
+  <title>ReminderU — Ver Tarea</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" th:href="@{/css/estilos.css(v=${#dates.createNow().time})}" href="/css/estilos.css">
 
   <style>
-    .page-body { padding: 0 1rem 3rem; max-width: 680px; margin: 0 auto; }
+    .page-body { padding: 0 1rem 3rem; max-width: 720px; margin: 0 auto; }
     @media (min-width: 768px) { .page-body { padding: 0 1.5rem 3rem; } }
 
-    /* Section label */
-    .section-label {
-      font-size:.72rem; font-weight:700; text-transform:uppercase;
-      letter-spacing:.08em; color:var(--navy-muted); margin-bottom:.9rem;
+    .ru-breadcrumb {
+      display: flex; align-items: center; gap: .5rem;
+      font-size: .8rem; color: var(--navy-muted);
+      padding: 1.25rem 0 .25rem; flex-wrap: wrap;
     }
+    .ru-breadcrumb a { color: var(--indigo); text-decoration: none; font-weight: 600; }
+    .ru-breadcrumb a:hover { text-decoration: underline; }
+    .ru-breadcrumb-sep { opacity: .4; }
 
-    /* Avatar */
-    .perfil-avatar {
-      width: 72px; height: 72px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--indigo), #818cf8);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.75rem; font-weight: 800; color: #fff;
-      flex-shrink: 0;
-      box-shadow: 0 4px 16px rgba(79,70,229,.3);
-    }
-
-    /* Hero card */
-    .perfil-hero {
+    .tarea-hero {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-xl);
       padding: 1.75rem;
       box-shadow: var(--shadow-sm);
-      display: flex; align-items: center; gap: 1.25rem;
-      flex-wrap: wrap;
-      margin-bottom: 1.75rem;
+      margin-bottom: 1.5rem;
+      position: relative; overflow: hidden;
     }
-    .perfil-hero-info { flex: 1; min-width: 0; }
-    .perfil-hero-name { font-size: 1.5rem; font-weight: 800; letter-spacing: -.4px; }
-    .perfil-hero-email { font-size: .85rem; color: var(--navy-muted); margin-top: .2rem; }
+    .tarea-hero::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 5px; border-radius: 5px 0 0 5px;
+    }
+    .tarea-hero.pendiente::before  { background: var(--amber); }
+    .tarea-hero.entregada::before  { background: var(--emerald); }
+    .tarea-hero.vencida::before    { background: var(--rose); }
 
-    /* Stats row */
-    .perfil-stats {
+    .tarea-hero-title {
+      font-size: clamp(1.2rem, 3vw, 1.6rem);
+      font-weight: 800; letter-spacing: -.3px;
+      margin-bottom: .75rem;
+    }
+
+    .meta-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: .75rem;
-      margin-bottom: 1.75rem;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: .75rem; margin-top: 1.25rem;
     }
-    .perfil-stat {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 1rem;
-      text-align: center;
-      box-shadow: var(--shadow-sm);
+    .meta-item {
+      background: var(--bg); border-radius: var(--radius-sm);
+      padding: .7rem 1rem;
     }
-    .perfil-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--navy); }
-    .perfil-stat-label { font-size: .72rem; color: var(--navy-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-top: .2rem; }
+    .meta-label { font-size: .68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; color: var(--navy-muted); margin-bottom: .2rem; }
+    .meta-value { font-size: .9rem; font-weight: 600; color: var(--navy); }
 
-    /* Form section */
-    .perfil-form-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      padding: 1.5rem 1.75rem;
-      box-shadow: var(--shadow-sm);
-      margin-bottom: 1.75rem;
+    .countdown-box {
+      display: flex; align-items: center; justify-content: center;
+      gap: .5rem; padding: .85rem 1.25rem;
+      border-radius: var(--radius-md); font-size: 1rem; font-weight: 700;
+      margin-bottom: 1.5rem; flex-wrap: wrap; text-align: center;
     }
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-    @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
-    .form-group-full { grid-column: 1 / -1; }
+    .countdown-box.urgente  { background: var(--rose-light);   color: #9f1239; border: 1px solid #fda4af; }
+    .countdown-box.proximo  { background: var(--amber-light);  color: #92400e; border: 1px solid #fcd34d; }
+    .countdown-box.ok       { background: var(--emerald-light);color: #065f46; border: 1px solid #6ee7b7; }
+    .countdown-box.entregada{ background: var(--indigo-light); color: #3730a3; border: 1px solid #a5b4fc; }
 
-    /* Password toggle */
-    .pass-wrapper { position: relative; }
-    .pass-toggle {
-      position: absolute; right: .75rem; top: 50%; transform: translateY(-50%);
-      background: none; border: none; cursor: pointer;
-      color: var(--navy-muted); font-size: .85rem; padding: .2rem;
+    .section-label {
+      font-size: .72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--navy-muted); margin-bottom: .75rem;
     }
 
-    /* Danger zone */
-    .danger-zone {
-      background: var(--rose-light);
-      border: 1px solid #fda4af;
-      border-radius: var(--radius-xl);
-      padding: 1.5rem 1.75rem;
-      margin-bottom: 2rem;
-    }
-    .danger-zone-title {
-      font-size: .95rem; font-weight: 700; color: #9f1239;
-      margin-bottom: .4rem;
-    }
-    .danger-zone-desc {
-      font-size: .82rem; color: #be123c; margin-bottom: 1rem; line-height: 1.5;
+    .desc-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 1.25rem 1.5rem;
+      box-shadow: var(--shadow-sm); margin-bottom: 1.5rem;
+      font-size: .92rem; line-height: 1.7; color: var(--navy);
+      white-space: pre-line;
     }
 
-    /* Confirm modal */
-    .confirm-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,.45); z-index: 9999;
-      align-items: center; justify-content: center;
+    .actions-row {
+      display: flex; gap: .75rem; flex-wrap: wrap; margin-top: 1rem;
     }
-    .confirm-overlay.show { display: flex; }
-    .confirm-box {
-      background: var(--surface); border-radius: var(--radius-xl);
-      padding: 2rem; max-width: 420px; width: 90%;
-      box-shadow: var(--shadow-lg); text-align: center;
+    @media (max-width: 480px) {
+      .actions-row { flex-direction: column; }
+      .actions-row a, .actions-row form, .actions-row button { width: 100%; text-align: center; }
     }
-    .confirm-icon { font-size: 2.5rem; margin-bottom: 1rem; }
-    .confirm-title { font-size: 1.2rem; font-weight: 800; margin-bottom: .5rem; }
-    .confirm-desc { font-size: .88rem; color: var(--navy-muted); margin-bottom: 1.5rem; line-height: 1.55; }
-    .confirm-actions { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
   </style>
 </head>
-
 <body>
   <div th:replace="fragments/header :: HeaderPagina"></div>
 
   <main>
     <div class="page-body">
 
-      <!-- ══ HERO PERFIL ══ -->
-      <div style="padding: 2rem 0 0;"></div>
-      <div class="perfil-hero">
-        <div class="perfil-avatar"
-             th:text="${#strings.substring(usuario.nombre, 0, 1).toUpperCase()}">U</div>
-        <div class="perfil-hero-info">
-          <div class="perfil-hero-name" th:text="${usuario.nombre}">Nombre</div>
-          <div class="perfil-hero-email" th:text="${usuario.email}">correo@ejemplo.com</div>
-          <div class="mt-2">
-            <span class="ru-badge ru-badge-indigo">Estudiante</span>
+      <!-- Breadcrumb -->
+      <nav class="ru-breadcrumb">
+        <a th:href="@{/}">Inicio</a>
+        <span class="ru-breadcrumb-sep">›</span>
+        <a th:href="@{/tareas}">Tareas</a>
+        <span class="ru-breadcrumb-sep">›</span>
+        <span th:text="${tarea.titulo}">Tarea</span>
+      </nav>
+
+      <!-- Countdown -->
+      <div class="countdown-box"
+           th:classappend="${tarea.estado.name() == 'ENTREGADA'} ? 'entregada' :
+                           (${diasRestantes} < 0 ? 'urgente' :
+                           (${diasRestantes} <= 2 ? 'urgente' :
+                           (${diasRestantes} <= 4 ? 'proximo' : 'ok')))">
+        <span th:if="${tarea.estado.name() == 'ENTREGADA'}">✅ Tarea entregada</span>
+        <span th:if="${tarea.estado.name() != 'ENTREGADA' and diasRestantes < 0}">
+          ⚠️ Venció hace <b th:text="${diasRestantes * -1}">0</b> día(s)
+        </span>
+        <span th:if="${tarea.estado.name() != 'ENTREGADA' and diasRestantes == 0}">
+          🔴 ¡Vence hoy!
+        </span>
+        <span th:if="${tarea.estado.name() != 'ENTREGADA' and diasRestantes > 0}">
+          ⏳ Vence en <b th:text="${diasRestantes}">0</b> día(s)
+        </span>
+      </div>
+
+      <!-- Hero -->
+      <div class="tarea-hero"
+           th:classappend="${tarea.estado.name() == 'ENTREGADA'} ? 'entregada' :
+                           (${tarea.estado.name() == 'VENCIDA'} ? 'vencida' : 'pendiente')">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+          <div class="tarea-hero-title" th:text="${tarea.titulo}">Título</div>
+          <div class="d-flex gap-2 flex-wrap">
+            <span class="ru-badge"
+                  th:classappend="${tarea.estado.name() == 'ENTREGADA'} ? 'ru-badge-emerald' :
+                                  (${tarea.estado.name() == 'VENCIDA'} ? 'ru-badge-rose' : 'ru-badge-amber')"
+                  th:text="${tarea.estado.name() == 'ENTREGADA'} ? '✅ Entregada' :
+                            (${tarea.estado.name() == 'VENCIDA'} ? '⚠️ Vencida' : '⏳ Pendiente')">
+              Estado
+            </span>
+            <span class="ru-badge ru-badge-indigo"
+                  th:if="${tarea.prioridad != null}"
+                  th:text="${tarea.prioridad.name() == 'ALTA'} ? '🔴 Alta' :
+                            (${tarea.prioridad.name() == 'MEDIA'} ? '🟡 Media' : '🟢 Baja')">
+              Prioridad
+            </span>
+          </div>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Curso</div>
+            <div class="meta-value" th:text="${tarea.curso.nombre}">—</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Fecha entrega</div>
+            <div class="meta-value"
+                 th:text="${tarea.fechaEntrega != null} ? ${#temporals.format(tarea.fechaEntrega, 'dd MMM yyyy')} : '—'">—</div>
+          </div>
+          <div class="meta-item" th:if="${tarea.horaEntrega != null}">
+            <div class="meta-label">Hora límite</div>
+            <div class="meta-value" th:text="${#temporals.format(tarea.horaEntrega, 'HH:mm')}">—</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Valor</div>
+            <div class="meta-value" th:text="${tarea.porcentaje} + '%'">—</div>
+          </div>
+          <div class="meta-item" th:if="${tarea.modalidad != null}">
+            <div class="meta-label">Modalidad</div>
+            <div class="meta-value"
+                 th:text="${tarea.modalidad.name() == 'GRUPAL'} ? '👥 Grupal' : '👤 Individual'">—</div>
+          </div>
+          <div class="meta-item" th:if="${tarea.notaObtenida != null}">
+            <div class="meta-label">Nota obtenida</div>
+            <div class="meta-value"
+                 th:style="${tarea.notaObtenida >= 70} ? 'color:var(--emerald)' : 'color:var(--rose)'"
+                 th:text="${tarea.notaObtenida} + ' / 100'">—</div>
           </div>
         </div>
       </div>
 
-      <!-- ══ STATS ══ -->
-      <div class="perfil-stats">
-        <div class="perfil-stat">
-          <div class="perfil-stat-value" th:text="${totalCursos}">0</div>
-          <div class="perfil-stat-label">Cursos</div>
-        </div>
-        <div class="perfil-stat">
-          <div class="perfil-stat-value" th:text="${tareasPendientes}">0</div>
-          <div class="perfil-stat-label">Pendientes</div>
-        </div>
-        <div class="perfil-stat">
-          <div class="perfil-stat-value" th:text="${tareasEntregadas}">0</div>
-          <div class="perfil-stat-label">Entregadas</div>
+      <!-- Descripción -->
+      <p class="section-label">📝 Descripción</p>
+      <div class="desc-card" th:text="${tarea.descripcion}">Sin descripción.</div>
+
+      <!-- Registrar nota -->
+      <div th:if="${tarea.estado.name() == 'ENTREGADA'}" class="mb-4">
+        <p class="section-label">🎯 Nota obtenida</p>
+        <div class="ru-card ru-card-body">
+          <form th:action="@{/tareas/nota/{id}(id=${tarea.id})}" method="post"
+                class="d-flex gap-2 align-items-end flex-wrap">
+            <div>
+              <label class="ru-form-label">Nota (0–100)</label>
+              <input type="number" name="nota" class="ru-form-control" style="max-width:140px;"
+                     min="0" max="100" step="0.01"
+                     th:value="${tarea.notaObtenida}" placeholder="Ej: 85">
+            </div>
+            <button type="submit" class="ru-btn ru-btn-primary">💾 Guardar nota</button>
+          </form>
         </div>
       </div>
 
-      <!-- ══ FORM EDICIÓN ══ -->
-      <div class="perfil-form-card">
-        <p class="section-label">✏️ Editar información</p>
+      <!-- Acciones -->
+      <div class="actions-row">
+        <a th:href="@{/tareas/editar/{id}(id=${tarea.id})}" class="ru-btn ru-btn-ghost">✏️ Editar</a>
 
-        <!-- Alert éxito -->
-        <div class="ru-alert ru-alert-success mb-3"
-             th:if="${mensajeExito != null}"
-             th:text="${mensajeExito}"></div>
-
-        <!-- Alert error -->
-        <div class="ru-alert ru-alert-danger mb-3"
-             th:if="${mensajeError != null}"
-             th:text="${mensajeError}"></div>
-
-        <form th:action="@{/perfil/actualizar}" method="post">
-          <div class="form-grid">
-            <div>
-              <label class="ru-form-label">Nombre</label>
-              <input type="text" name="nombre" class="ru-form-control"
-                     th:value="${usuario.nombre}" required>
-            </div>
-            <div>
-              <label class="ru-form-label">Correo electrónico</label>
-              <input type="email" name="email" class="ru-form-control"
-                     th:value="${usuario.email}" required>
-            </div>
-            <div class="form-group-full">
-              <label class="ru-form-label">Nueva contraseña <span style="font-weight:400; color:var(--navy-muted);">(dejar en blanco para no cambiar)</span></label>
-              <div class="pass-wrapper">
-                <input type="password" name="password" id="passInput" class="ru-form-control"
-                       placeholder="••••••••" autocomplete="new-password">
-                <button type="button" class="pass-toggle" onclick="togglePass()">👁</button>
-              </div>
-            </div>
-          </div>
-          <div class="mt-3 d-flex gap-2 flex-wrap">
-            <button type="submit" class="ru-btn ru-btn-primary">💾 Guardar cambios</button>
-            <a th:href="@{/}" class="ru-btn ru-btn-ghost">Cancelar</a>
-          </div>
+        <form th:if="${tarea.estado.name() != 'ENTREGADA'}"
+              th:action="@{/tareas/completar/{id}(id=${tarea.id})}" method="post">
+          <button type="submit" class="ru-btn ru-btn-success">✅ Marcar como entregada</button>
         </form>
+
+        <a th:href="@{/cursos/ver/{id}(id=${tarea.curso.id})}" class="ru-btn ru-btn-ghost">
+          📚 Ir al curso
+        </a>
+
+        <a th:href="@{/tareas/eliminar/{id}(id=${tarea.id})}"
+           class="ru-btn ru-btn-danger"
+           onclick="return confirm('¿Eliminar esta tarea?')">🗑 Eliminar</a>
       </div>
 
-      <!-- ══ ZONA DE PELIGRO ══ -->
-      <div class="danger-zone">
-        <div class="danger-zone-title">⚠️ Zona de peligro</div>
-        <div class="danger-zone-desc">
-          Eliminar tu perfil es una acción irreversible. Se borrarán permanentemente
-          tu cuenta, todos tus cursos y tareas asociadas.
-        </div>
-        <button type="button" class="ru-btn ru-btn-danger" onclick="mostrarConfirmacion()">
-          🗑 Eliminar perfil permanentemente
-        </button>
-      </div>
-
-    </div><!-- /page-body -->
+    </div>
   </main>
 
-  <!-- ══ MODAL CONFIRMACIÓN ELIMINAR ══ -->
-  <div class="confirm-overlay" id="confirmOverlay">
-    <div class="confirm-box">
-      <div class="confirm-icon">⚠️</div>
-      <div class="confirm-title">¿Eliminar perfil?</div>
-      <div class="confirm-desc">
-        Esta acción es <strong>permanente e irreversible</strong>.<br>
-        Se eliminarán tu cuenta, todos tus cursos y tareas.<br>
-        ¿Estás completamente seguro/a?
-      </div>
-      <div class="confirm-actions">
-        <button type="button" class="ru-btn ru-btn-ghost" onclick="cerrarConfirmacion()">
-          Cancelar
-        </button>
-        <form th:action="@{/perfil/eliminar}" method="post" style="display:inline;">
-          <button type="submit" class="ru-btn ru-btn-danger">
-            Sí, eliminar mi perfil
-          </button>
-        </form>
-      </div>
-    </div>
-  </div>
-
   <div th:replace="fragments/footer :: FooterPagina"></div>
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    function togglePass() {
-      var inp = document.getElementById('passInput');
-      inp.type = inp.type === 'password' ? 'text' : 'password';
-    }
-    function mostrarConfirmacion() {
-      document.getElementById('confirmOverlay').classList.add('show');
-      document.body.style.overflow = 'hidden';
-    }
-    function cerrarConfirmacion() {
-      document.getElementById('confirmOverlay').classList.remove('show');
-      document.body.style.overflow = '';
-    }
-    // Cerrar al hacer click fuera del box
-    document.getElementById('confirmOverlay').addEventListener('click', function(e){
-      if(e.target === this) cerrarConfirmacion();
-    });
-  </script>
 </body>
 </html>
