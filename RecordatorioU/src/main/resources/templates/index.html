@@ -3,240 +3,397 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ReminderU</title>
+  <title>ReminderU — Inicio</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" th:href="@{/css/estilos.css(v=${#dates.createNow().time})}" href="/css/estilos.css">
+
+  <style>
+    /* ── Hero greeting ── */
+    .hero-greeting {
+      padding: 2rem 0 1.5rem;
+    }
+    .hero-greeting h1 {
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-weight: 800;
+      letter-spacing: -.5px;
+    }
+    .hero-greeting p {
+      font-size: .95rem;
+      color: var(--navy-muted);
+      margin-top: .3rem;
+    }
+
+    /* ── Stat pills ── */
+    .stat-row {
+      display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 2rem;
+    }
+    .stat-pill {
+      display: flex; align-items: center; gap: .5rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 50px; padding: .45rem 1rem;
+      font-size: .82rem; font-weight: 600; color: var(--navy);
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-pill .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: .72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--navy-muted); margin-bottom: .9rem;
+    }
+
+    /* ── Course card ── */
+    .course-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.4rem;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      display: flex; flex-direction: column; gap: .9rem;
+      text-decoration: none; color: inherit;
+      position: relative; overflow: hidden;
+    }
+    .course-card::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 4px; border-radius: 4px 0 0 4px;
+      background: var(--indigo);
+    }
+    .course-card.presencial::before { background: var(--emerald); }
+    .course-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--indigo);
+      transform: translateY(-2px);
+    }
+    .course-card.presencial:hover { border-color: var(--emerald); }
+    .course-card-name { font-size: 1rem; font-weight: 700; line-height: 1.3; }
+    .course-card-meta { display: flex; flex-direction: column; gap: .3rem; }
+    .course-card-meta span { font-size: .8rem; color: var(--navy-muted); display: flex; align-items: center; gap: .4rem; }
+    .course-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: .2rem; }
+
+    /* ── Task alert card ── */
+    .task-alert-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+      box-shadow: var(--shadow-sm);
+      display: flex; align-items: flex-start; gap: 1rem;
+      transition: var(--transition);
+    }
+    .task-alert-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+    .task-alert-icon {
+      width: 38px; height: 38px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+    }
+    .task-alert-content { flex: 1; min-width: 0; }
+    .task-alert-title { font-size: .88rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .task-alert-sub { font-size: .76rem; color: var(--navy-muted); margin-top: .15rem; }
+    .task-alert-days { font-size: .78rem; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+
+    /* ── Cuatrimestre panel ── */
+    .cuatri-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 2rem;
+    }
+    .cuatri-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; margin-bottom: 1.25rem; }
+    .cuatri-config-form { display: flex; gap: .75rem; flex-wrap: wrap; align-items: flex-end; }
+    .cuatri-config-form .ru-form-control { width: auto; max-width: 170px; }
+
+    /* ── Tooltip semana ── */
+    .semana .info { font-size: .76rem; line-height: 1.45; }
+
+    /* ── Page padding ── */
+    .page-body { padding: 0 1rem 3rem; max-width: 1100px; margin: 0 auto; }
+    @media (min-width: 768px) { .page-body { padding: 0 1.5rem 3rem; } }
+  </style>
 </head>
 
-<body class="reminder-app">
-
+<body>
   <div th:replace="fragments/header :: HeaderPagina"></div>
 
-  <main class="container mt-5">
-    <h1>Bienvenido a ReminderU</h1>
-    <p>Olvidate de las Sorpresas...</p>
-    <div th:replace="fragments/Body :: CuerpoPagina"></div>
-  </main>
+  <main>
+    <div class="page-body">
 
-  <div th:replace="fragments/footer :: FooterPagina"></div>
+      <!-- ── Hero ── -->
+      <div class="hero-greeting">
+        <h1>Hola,
+          <span th:if="${usuario != null}" th:text="${usuario.nombre}">Estudiante</span>
+          <span th:if="${usuario == null}">Estudiante</span> 👋
+        </h1>
+        <p>Aquí tienes un resumen de tu semana académica.</p>
+      </div>
 
-  <!-- Bootstrap JS — debe ir ANTES del modal y el script del simulador -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+      <!-- ── Stat pills ── -->
+      <div class="stat-row">
+        <div class="stat-pill">
+          <span class="dot" style="background:var(--indigo)"></span>
+          <span th:text="${#lists.size(tareasProximas)} + ' tareas esta semana'">0 tareas esta semana</span>
+        </div>
+        <div class="stat-pill" th:unless="${sinConfiguracion}">
+          <span class="dot" style="background:var(--emerald)"></span>
+          <span>Cuatrimestre activo</span>
+        </div>
+        <div class="stat-pill" th:if="${sinConfiguracion}">
+          <span class="dot" style="background:var(--amber)"></span>
+          <span>Sin cuatrimestre configurado</span>
+        </div>
+      </div>
 
-  <!-- =====================================================
-       MODAL SIMULADOR DE NOTAS
-       Está aquí (en index.html) para que Bootstrap ya esté
-       cargado cuando el JS lo inicialice.
-       ===================================================== -->
-  <div class="modal fade" id="simModal" tabindex="-1" aria-labelledby="simModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content sim-modal-content">
+      <!-- ══════════════════════════════════
+           TAREAS PRÓXIMAS
+           ══════════════════════════════════ -->
+      <div class="mb-4" th:if="${tareasProximas != null and !#lists.isEmpty(tareasProximas)}">
+        <p class="section-label">⚡ Tareas próximas a vencer</p>
+        <div class="ru-grid-courses" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
 
-        <!-- Header -->
-        <div class="sim-modal-header">
-          <div>
-            <div class="sim-modal-title">🧮 Simulador de Notas</div>
-            <div class="sim-modal-subtitle">Proyecta tu nota final antes de recibir resultados</div>
+          <div class="task-alert-card" th:each="mapa : ${tareasProximas}">
+            <!-- Color del ícono según urgencia -->
+            <div class="task-alert-icon"
+                 th:style="${mapa['diasRestantes'] <= 1} ? 'background:var(--rose-light)' :
+                           (${mapa['diasRestantes']} <= 3 ? 'background:var(--amber-light)' : 'background:var(--indigo-light)')">
+              <span th:text="${mapa['diasRestantes'] <= 1} ? '🔴' : (${mapa['diasRestantes']} <= 3 ? '🟡' : '📝')">📝</span>
+            </div>
+            <div class="task-alert-content">
+              <div class="task-alert-title" th:text="${mapa['tarea']['titulo']}">Título</div>
+              <div class="task-alert-sub"
+                   th:text="${mapa['tarea']['curso']['nombre']} + ' · ' + ${#temporals.format(mapa['tarea']['fechaEntrega'], 'dd MMM')}">
+                Curso · Fecha
+              </div>
+            </div>
+            <div class="task-alert-days"
+                 th:style="${mapa['diasRestantes'] <= 1} ? 'color:var(--rose)' :
+                           (${mapa['diasRestantes']} <= 3 ? 'color:var(--amber)' : 'color:var(--indigo)')">
+              <th:block th:if="${mapa['diasRestantes']} == 0">Hoy</th:block>
+              <th:block th:unless="${mapa['diasRestantes']} == 0">
+                <span th:text="${mapa['diasRestantes']} + 'd'">3d</span>
+              </th:block>
+            </div>
+            <a th:href="@{/tareas/ver/{id}(id=${mapa['tarea']['id']})}" class="ru-btn ru-btn-ghost ru-btn-sm" style="flex-shrink:0">Ver</a>
           </div>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+
+        </div>
+      </div>
+
+      <div class="ru-empty mb-4" th:if="${tareasProximas == null or #lists.isEmpty(tareasProximas)}">
+        <div class="ru-empty-icon">🎉</div>
+        <div class="ru-empty-title">Sin tareas urgentes</div>
+        <div class="ru-empty-text">No tienes tareas que venzan en los próximos 7 días.</div>
+      </div>
+
+      <!-- ══════════════════════════════════
+           SIMULADOR DE NOTAS
+           ══════════════════════════════════ -->
+      <div class="sim-launcher-wrapper mb-4">
+        <button class="sim-launcher-btn" type="button" id="abrirSimuladorBtn">
+          <span class="sim-icon">🧮</span>
+          <span class="sim-text">
+            <span class="sim-title">Simulador de Notas</span>
+            <span class="sim-sub">Proyecta tu nota final antes de exámenes</span>
+          </span>
+          <span class="sim-arrow">→</span>
+        </button>
+      </div>
+
+      <!-- ══════════════════════════════════
+           PROGRESO CUATRIMESTRE
+           ══════════════════════════════════ -->
+      <div class="cuatri-panel">
+        <div class="cuatri-header">
+          <div>
+            <p class="section-label mb-0">📅 Progreso del Cuatrimestre</p>
+            <p style="font-size:.8rem; color:var(--navy-muted); margin-top:.2rem;"
+               th:unless="${sinConfiguracion}"
+               th:text="'Del ' + ${#temporals.format(fechaInicioCuatrimestre,'dd MMM yyyy')} + ' al ' + ${#temporals.format(fechaFinCuatrimestre,'dd MMM yyyy')}">
+            </p>
+          </div>
+          <!-- Config dropdown -->
+          <div class="dropdown">
+            <button class="ru-btn ru-btn-ghost ru-btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              ⚙️ Configurar
+            </button>
+            <div class="dropdown-menu p-3 shadow border-0" style="min-width:280px; border-radius:var(--radius-lg)!important;">
+              <form th:action="@{/configurar-cuatrimestre}" method="post">
+                <div class="mb-2">
+                  <label class="ru-form-label">Fecha de inicio</label>
+                  <input type="date" name="inicio" class="ru-form-control" th:value="${fechaInicioCuatrimestre}" required>
+                </div>
+                <div class="mb-3">
+                  <label class="ru-form-label">Fecha final</label>
+                  <input type="date" name="fin" class="ru-form-control" th:value="${fechaFinCuatrimestre}" required>
+                </div>
+                <button type="submit" class="ru-btn ru-btn-primary ru-btn-block ru-btn-sm">💾 Guardar</button>
+              </form>
+            </div>
+          </div>
         </div>
 
-        <!-- Body -->
-        <div class="sim-modal-body">
+        <div th:if="${sinConfiguracion}" class="ru-alert ru-alert-info">
+          <span>📅</span>
+          <span>Configura las fechas de tu cuatrimestre usando el botón <strong>⚙️ Configurar</strong> para ver tu progreso.</span>
+        </div>
 
-          <!-- Nota acumulada -->
-          <div class="sim-section">
-            <label class="sim-label">📊 ¿Cuántos puntos llevas acumulados?</label>
-            <div class="d-flex align-items-center gap-2 flex-wrap">
-              <input type="number" id="simNotaActual" class="sim-input" style="max-width:160px;"
-                     placeholder="Ej: 45.5" min="0" max="100" step="0.01">
-              <span class="sim-hint">puntos de 100 posibles</span>
+        <div th:unless="${sinConfiguracion}">
+          <div class="barra-progreso">
+            <div th:each="semana : ${semanas}"
+                 th:class="'semana ' + (${semana['completada']} ? 'completada' : '') + (${semana['actual']} ? ' actual' : '')"
+                 th:attr="data-semana=${semana['numero']}">
+              S<span th:text="${semana['numero']}">1</span>
+              <div class="info">
+                <div class="tooltip-header-mejorado">
+                  📅 Semana <span th:text="${semana['numero']}">1</span>
+                  <span th:if="${semana['actual']}" class="badge-actual">Actual</span>
+                </div>
+                <hr class="separador-header-hr">
+                <div th:if="${semana['tareas'] != null and !#lists.isEmpty(semana['tareas'])}">
+                  <div th:each="tarea, iterStat : ${semana['tareas']}" class="tarea-separada">
+                    <div class="tarea-nombre">📝 <span th:text="${tarea['titulo']}">Título</span></div>
+                    <div class="tarea-curso">📚 <span th:text="${tarea['curso']['nombre']}">Curso</span></div>
+                    <div class="tarea-fecha">📅 <span th:text="${#temporals.format(tarea['fechaEntrega'], 'dd/MM/yyyy')}">Fecha</span></div>
+                    <div class="tarea-estado">
+                      <span th:if="${tarea['estado'].name() == 'ENTREGADA'}" class="estado-ok">✅ Completada</span>
+                      <span th:unless="${tarea['estado'].name() == 'ENTREGADA'}" class="estado-pendiente">⏳ Pendiente</span>
+                    </div>
+                    <hr th:unless="${iterStat.last}" class="separador-tarea-hr">
+                  </div>
+                </div>
+                <div th:if="${semana['tareas'] == null or #lists.isEmpty(semana['tareas'])}" class="sin-tareas-mensaje">
+                  Sin tareas asignadas
+                </div>
+              </div>
             </div>
-            <small class="sim-hint mt-1 d-block">
-              Suma: (nota obtenida × peso%) ÷ 100 por cada evaluación ya calificada.
-            </small>
           </div>
+        </div>
+      </div>
 
-          <div class="sim-divider"></div>
+    </div><!-- /page-body -->
+  </main>
 
-          <!-- Evaluaciones futuras -->
-          <div class="sim-section">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <label class="sim-label mb-0">📝 Evaluaciones que faltan</label>
-              <button class="sim-add-btn" type="button" id="simAgregarBtn">+ Agregar</button>
+  <!-- ── Modal Simulador (mismo de siempre, ubicado aquí para que Bootstrap ya cargue) ── -->
+  <div class="modal fade" id="simModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content" style="border:none; border-radius:var(--radius-xl); overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#1E293B,#0f172a); color:#fff; padding:1.5rem 1.75rem; display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <div style="font-size:1.1rem; font-weight:700;">🧮 Simulador de Notas</div>
+            <div style="font-size:.78rem; opacity:.6; margin-top:2px;">Proyecta tu nota final antes de recibir resultados</div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div style="padding:1.5rem 1.75rem; background:#f9f9fb; overflow-y:auto; max-height:75vh;">
+          <div class="mb-3">
+            <label class="ru-form-label">📊 Puntos acumulados hasta ahora</label>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <input type="number" id="simNotaActual" class="ru-form-control" style="max-width:160px;" placeholder="Ej: 45.5" min="0" max="100" step="0.01">
+              <span style="font-size:.8rem; color:var(--navy-muted);">puntos de 100</span>
             </div>
-            <small class="sim-hint d-block mb-2">
-              Ingresa la nota que <strong>esperas sacar</strong> y el peso de cada evaluación pendiente.
-            </small>
-
-            <div class="sim-cols-header">
-              <span>Evaluación</span>
-              <span style="text-align:center;">Nota esperada</span>
-              <span style="text-align:center;">Peso %</span>
-              <span></span>
+          </div>
+          <hr class="ru-divider">
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="ru-form-label mb-0">📝 Evaluaciones pendientes</label>
+              <button class="ru-btn ru-btn-primary ru-btn-sm" type="button" id="simAgregarBtn">+ Agregar</button>
             </div>
-
+            <div style="display:grid; grid-template-columns:1fr 110px 100px 36px; gap:.5rem; padding:0 .5rem; margin-bottom:.3rem; font-size:.7rem; color:var(--navy-muted); text-transform:uppercase;">
+              <span>Evaluación</span><span style="text-align:center">Nota esp.</span><span style="text-align:center">Peso %</span><span></span>
+            </div>
             <div id="simEvalList"></div>
           </div>
-
-          <div class="sim-divider"></div>
-
-          <!-- Meta -->
-          <div class="sim-section">
-            <label class="sim-label">🎯 ¿Cuál es tu nota mínima para aprobar?</label>
+          <hr class="ru-divider">
+          <div class="mb-3">
+            <label class="ru-form-label">🎯 Meta mínima para aprobar</label>
             <div class="d-flex align-items-center gap-2">
-              <input type="number" id="simMeta" class="sim-input" style="max-width:110px;"
-                     placeholder="70" min="0" max="100" step="1" value="70">
-              <span class="sim-hint">puntos</span>
+              <input type="number" id="simMeta" class="ru-form-control" style="max-width:110px;" placeholder="70" min="0" max="100" step="1" value="70">
+              <span style="font-size:.8rem; color:var(--navy-muted);">puntos</span>
             </div>
           </div>
-
-          <!-- Resultados -->
-          <div class="sim-results" id="simResults">
-            <div class="sim-results-grid">
-              <div class="sim-res-card">
-                <div class="sim-res-label">Acumulado actual</div>
-                <div class="sim-res-value" id="simResActual">—</div>
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:1.25rem;">
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; margin-bottom:1rem;">
+              <div style="text-align:center; padding:.85rem .5rem; background:var(--bg); border-radius:var(--radius-sm);">
+                <div style="font-size:.7rem; color:var(--navy-muted); text-transform:uppercase; margin-bottom:.3rem;">Actual</div>
+                <div id="simResActual" style="font-size:1.45rem; font-weight:700; color:var(--navy);">—</div>
               </div>
-              <div class="sim-res-card sim-res-highlight">
-                <div class="sim-res-label">Nota proyectada</div>
-                <div class="sim-res-value" id="simResProyectada" style="color:#3b5bdb;">—</div>
+              <div style="text-align:center; padding:.85rem .5rem; background:var(--indigo-light); border:1px solid #c7d2fe; border-radius:var(--radius-sm);">
+                <div style="font-size:.7rem; color:var(--indigo); text-transform:uppercase; margin-bottom:.3rem;">Proyectada</div>
+                <div id="simResProyectada" style="font-size:1.45rem; font-weight:700; color:var(--indigo);">—</div>
               </div>
-              <div class="sim-res-card">
-                <div class="sim-res-label">Para llegar a la meta</div>
-                <div class="sim-res-value" id="simResMeta">—</div>
+              <div style="text-align:center; padding:.85rem .5rem; background:var(--bg); border-radius:var(--radius-sm);">
+                <div style="font-size:.7rem; color:var(--navy-muted); text-transform:uppercase; margin-bottom:.3rem;">Para meta</div>
+                <div id="simResMeta" style="font-size:1.45rem; font-weight:700; color:var(--navy);">—</div>
               </div>
             </div>
-
-            <div class="sim-bar-labels">
-              <span>Actual</span>
-              <span id="simBarLabel">Proyectado</span>
-              <span>Meta</span>
+            <div style="height:10px; background:#f1f5f9; border-radius:5px; overflow:visible; position:relative; display:flex; margin-bottom:.85rem;">
+              <div id="simBarActual" style="height:100%; background:var(--indigo); border-radius:5px 0 0 5px; transition:width .4s ease; width:0%;"></div>
+              <div id="simBarExtra"  style="height:100%; background:#a5b4fc; transition:width .4s ease; width:0%;"></div>
+              <div id="simBarMeta"   style="position:absolute; top:-3px; bottom:-3px; width:3px; background:var(--amber); border-radius:2px; transition:left .4s ease; left:70%;"></div>
             </div>
-            <div class="sim-bar-track">
-              <div class="sim-bar-fill-actual" id="simBarActual" style="width:0%"></div>
-              <div class="sim-bar-fill-extra"  id="simBarExtra"  style="width:0%"></div>
-              <div class="sim-bar-marker"       id="simBarMeta"   style="left:70%"></div>
-            </div>
-            <div class="sim-bar-scale">
-              <span>0</span><span></span><span>100</span>
-            </div>
-
-            <div class="sim-diagnosis" id="simDiagnosis">
-              Agrega evaluaciones futuras para ver la proyección.
+            <div id="simDiagnosis" style="text-align:center; font-size:.88rem; font-weight:500; padding:.65rem 1rem; border-radius:var(--radius-sm); background:var(--bg); color:var(--navy-muted);">
+              Agrega evaluaciones para ver la proyección.
             </div>
           </div>
-
-        </div><!-- /sim-modal-body -->
+        </div>
       </div>
     </div>
   </div>
-  <!-- /modal simulador -->
 
-  <!-- ===== SCRIPT SIMULADOR ===== -->
+  <div th:replace="fragments/footer :: FooterPagina"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-  (function () {
-    'use strict';
-
+  (function(){
     var evalList = document.getElementById('simEvalList');
     var bsModal  = new bootstrap.Modal(document.getElementById('simModal'));
-
-    /* Abrir desde el botón del dashboard */
-    document.getElementById('abrirSimuladorBtn').addEventListener('click', function () {
-      if (evalList && evalList.children.length === 0) {
-        agregarFila('Examen Final', '', '');
-      }
-      calcular();
-      bsModal.show();
+    document.getElementById('abrirSimuladorBtn').addEventListener('click',function(){
+      if(evalList&&evalList.children.length===0) agregarFila('Examen Final','','');
+      calcular(); bsModal.show();
     });
-
-    /* Botón agregar fila */
-    document.getElementById('simAgregarBtn').addEventListener('click', function () {
-      agregarFila('', '', '');
-    });
-
-    /* Recalcular al cambiar inputs globales */
-    document.getElementById('simNotaActual').addEventListener('input', calcular);
-    document.getElementById('simMeta').addEventListener('input', calcular);
-
-    /* ── Agregar fila ── */
-    function agregarFila(nombre, nota, peso) {
-      var row = document.createElement('div');
-      row.className = 'sim-eval-row';
-      row.innerHTML =
-        '<input type="text"   placeholder="Nombre (opcional)" class="sev-name" value="' + (nombre || '') + '">' +
-        '<input type="number" placeholder="0–100" min="0" max="100" step="0.01" class="sev-nota" value="' + (nota !== undefined && nota !== '' ? nota : '') + '">' +
-        '<input type="number" placeholder="0–100" min="0" max="100" step="0.01" class="sev-peso" value="' + (peso !== undefined && peso !== '' ? peso : '') + '">' +
-        '<button class="sim-del-btn" type="button" title="Eliminar">✕</button>';
-
-      row.querySelector('.sim-del-btn').addEventListener('click', function () {
-        row.remove(); calcular();
-      });
-      row.querySelectorAll('input').forEach(function (inp) {
-        inp.addEventListener('input', calcular);
-      });
-
-      evalList.appendChild(row);
-      calcular();
+    document.getElementById('simAgregarBtn').addEventListener('click',function(){ agregarFila('','',''); });
+    document.getElementById('simNotaActual').addEventListener('input',calcular);
+    document.getElementById('simMeta').addEventListener('input',calcular);
+    function agregarFila(n,nota,peso){
+      var row=document.createElement('div');
+      row.style.cssText='display:grid;grid-template-columns:1fr 110px 100px 36px;gap:.5rem;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:.5rem .65rem;margin-bottom:.4rem;';
+      row.innerHTML='<input type="text" placeholder="Nombre" style="border:none;outline:none;font-size:.88rem;background:transparent;width:100%;" value="'+(n||'')+'">'
+        +'<input type="number" placeholder="0–100" min="0" max="100" step="0.01" style="border:1px solid #e2e8f0;border-radius:6px;padding:.3rem .4rem;width:100%;font-size:.85rem;text-align:center;outline:none;" value="'+(nota!==undefined&&nota!==''?nota:'')+'">'
+        +'<input type="number" placeholder="0–100" min="0" max="100" step="0.01" style="border:1px solid #e2e8f0;border-radius:6px;padding:.3rem .4rem;width:100%;font-size:.85rem;text-align:center;outline:none;" value="'+(peso!==undefined&&peso!==''?peso:'')+'">'
+        +'<button type="button" style="background:none;border:none;color:#f43f5e;cursor:pointer;font-size:.9rem;padding:.2rem .3rem;border-radius:5px;" title="Eliminar">✕</button>';
+      row.querySelector('button').addEventListener('click',function(){ row.remove(); calcular(); });
+      row.querySelectorAll('input').forEach(function(i){ i.addEventListener('input',calcular); });
+      evalList.appendChild(row); calcular();
     }
-
-    /* ── Calcular proyección ── */
-    function calcular() {
-      var notaActual  = parseFloat(document.getElementById('simNotaActual').value) || 0;
-      var meta        = parseFloat(document.getElementById('simMeta').value) || 70;
-      var puntosExtra = 0;
-
-      evalList.querySelectorAll('.sim-eval-row').forEach(function (row) {
-        var n = parseFloat(row.querySelector('.sev-nota').value) || 0;
-        var p = parseFloat(row.querySelector('.sev-peso').value) || 0;
-        puntosExtra += (n / 100) * p;
+    function calcular(){
+      var na=parseFloat(document.getElementById('simNotaActual').value)||0;
+      var mt=parseFloat(document.getElementById('simMeta').value)||70;
+      var pe=0;
+      evalList.querySelectorAll('div').forEach(function(r){
+        var ins=r.querySelectorAll('input[type="number"]');
+        if(ins.length>=2){ var n=parseFloat(ins[0].value)||0; var p=parseFloat(ins[1].value)||0; pe+=(n/100)*p; }
       });
-
-      var proyectada = notaActual + puntosExtra;
-      var deltaMeta  = meta - proyectada;
-      var filas      = evalList.querySelectorAll('.sim-eval-row').length;
-
-      /* Tarjetas */
-      setText('simResActual', notaActual.toFixed(1));
-
-      var elProy = document.getElementById('simResProyectada');
-      elProy.textContent = proyectada.toFixed(1);
-      elProy.style.color = proyectada >= meta ? '#2f9e44' : (deltaMeta > 20 ? '#c92a2a' : '#3b5bdb');
-
-      var elMeta = document.getElementById('simResMeta');
-      if (deltaMeta <= 0) { elMeta.textContent = '✅ Meta lograda'; elMeta.style.color = '#2f9e44'; }
-      else { elMeta.textContent = '+' + deltaMeta.toFixed(1) + ' pts'; elMeta.style.color = deltaMeta > 20 ? '#c92a2a' : '#e67700'; }
-
-      /* Barra */
-      var pActual = Math.min(notaActual, 100);
-      var pExtra  = Math.max(0, Math.min(puntosExtra, 100 - pActual));
-      setStyle('simBarActual', 'width', pActual.toFixed(1) + '%');
-      setStyle('simBarExtra',  'width', pExtra.toFixed(1)  + '%');
-      setStyle('simBarMeta',   'left',  Math.min(meta, 100).toFixed(1) + '%');
-      setText ('simBarLabel', 'Proyectado: ' + proyectada.toFixed(1));
-
-      /* Diagnóstico */
-      var diag = document.getElementById('simDiagnosis');
-      if (filas === 0) {
-        diag.textContent = 'Agrega evaluaciones futuras para ver la proyección.';
-        diag.style.background = '#f1f3f5'; diag.style.color = '#6b6b7a';
-      } else if (proyectada >= meta) {
-        diag.textContent = '🎉 ¡Con esta proyección alcanzas la meta!';
-        diag.style.background = '#ebfbee'; diag.style.color = '#2f9e44';
-      } else if (deltaMeta <= 10) {
-        diag.textContent = '⚠️ Estás cerca. Necesitas ' + deltaMeta.toFixed(1) + ' pts más para llegar a ' + meta + '.';
-        diag.style.background = '#fff9db'; diag.style.color = '#e67700';
-      } else {
-        diag.textContent = '🔴 Te faltan ' + deltaMeta.toFixed(1) + ' pts. Revisa cuánto peso te queda.';
-        diag.style.background = '#fff5f5'; diag.style.color = '#c92a2a';
+      var pr=na+pe, dm=mt-pr, fi=evalList.children.length;
+      var s=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
+      s('simResActual',na.toFixed(1));
+      var ep=document.getElementById('simResProyectada');
+      if(ep){ep.textContent=pr.toFixed(1);ep.style.color=pr>=mt?'#10b981':(dm>20?'#f43f5e':'#4f46e5');}
+      var em=document.getElementById('simResMeta');
+      if(em){if(dm<=0){em.textContent='✅ Meta';em.style.color='#10b981';}else{em.textContent='+'+dm.toFixed(1)+' pts';em.style.color=dm>20?'#f43f5e':'#f59e0b';}}
+      var pa=Math.min(na,100),px=Math.max(0,Math.min(pe,100-pa));
+      var sa=document.getElementById('simBarActual'),se=document.getElementById('simBarExtra'),sm=document.getElementById('simBarMeta');
+      if(sa)sa.style.width=pa.toFixed(1)+'%';if(se)se.style.width=px.toFixed(1)+'%';if(sm)sm.style.left=Math.min(mt,100).toFixed(1)+'%';
+      var dg=document.getElementById('simDiagnosis');
+      if(dg){
+        if(fi===0){dg.textContent='Agrega evaluaciones para ver la proyección.';dg.style.background='#f8fafc';dg.style.color='#64748b';}
+        else if(pr>=mt){dg.textContent='🎉 ¡Con esta proyección alcanzas la meta!';dg.style.background='#ecfdf5';dg.style.color='#047857';}
+        else if(dm<=10){dg.textContent='⚠️ Estás cerca. Necesitas '+dm.toFixed(1)+' pts más.';dg.style.background='#fffbeb';dg.style.color='#b45309';}
+        else{dg.textContent='🔴 Te faltan '+dm.toFixed(1)+' pts. Revisa tu estrategia.';dg.style.background='#fff1f2';dg.style.color='#be123c';}
       }
     }
-
-    function setText(id, val)   { var e = document.getElementById(id); if (e) e.textContent = val; }
-    function setStyle(id, p, v) { var e = document.getElementById(id); if (e) e.style[p] = v; }
-
   })();
   </script>
-
 </body>
 </html>

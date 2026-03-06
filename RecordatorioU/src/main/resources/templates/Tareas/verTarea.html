@@ -1,205 +1,262 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ver Tarea</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        html, body { height:100%; margin:0; padding:0; font-family:Arial,sans-serif; background-color:#f0f2f5; }
-        main { flex:1; padding:20px; }
-        .custom-card {
-            background-color:#fff; border-radius:1rem;
-            border:1px solid rgba(219,234,254,1); padding:2rem;
-            box-shadow:0 4px 8px rgba(0,0,0,0.05);
-            max-width:800px; margin:0 auto;
-        }
-        .custom-card-title { font-size:1.5rem; font-weight:700; color:#1f2937; margin:0; }
-        .custom-card-subtitle { color:#6b7280; font-weight:600; font-size:1rem; margin-bottom:1rem; }
-        .separador-card { border:0; border-top:2px solid #e0e0e0; margin:1rem 0; }
-        .custom-card-content { color:#374151; font-size:1rem; line-height:1.6; margin-bottom:1rem; }
-        .custom-card-info { display:grid; gap:0.75rem; margin-bottom:1.5rem; }
-        .info-item {
-            display:flex; align-items:center; gap:0.5rem; padding:0.75rem;
-            background-color:#f9fafb; border-radius:0.5rem; border-left:4px solid #3b82f6;
-            flex-wrap:wrap;
-        }
-        .info-label { font-weight:600; color:#374151; white-space:nowrap; }
-        .info-value { color:#6b7280; }
-        .nota-buena { color:#10b981 !important; font-weight:bold; }
-        .nota-mala  { color:#ef4444 !important; font-weight:bold; }
-        .task-status { width:12px; height:12px; border-radius:50%; display:inline-block; margin-left:0.5rem; }
-        .status-success { background-color:#10b981; }
-        .status-warning { background-color:#f59e0b; }
-        .status-danger  { background-color:#ef4444; }
-        .custom-card-actions { display:flex; flex-wrap:wrap; gap:0.75rem; justify-content:center; margin-top:1.5rem; }
-        .custom-card-btn {
-            color:#fff; border:none; padding:0.75rem 1.5rem; border-radius:0.5rem;
-            cursor:pointer; font-weight:600; transition:all 0.2s; text-decoration:none;
-            display:inline-flex; align-items:center; gap:0.5rem; background-color:#3b82f6;
-        }
-        .custom-card-btn:hover { filter:brightness(0.9); transform:translateY(-1px); color:#fff; }
-        .btn-green  { background-color:#10b981; }
-        .btn-yellow { background-color:#f59e0b; }
-        .btn-red    { background-color:#ef4444; }
-        .btn-gray   { background-color:#6b7280; }
-        .btn-disabled { background-color:#9ca3af; cursor:not-allowed; opacity:0.7; pointer-events:none; }
-        .nota-section {
-            background:#f0fdf4; border:1px solid #bbf7d0;
-            border-radius:0.75rem; padding:1.25rem; margin-bottom:1.25rem;
-        }
-        .nota-section h6 { color:#065f46; font-weight:700; margin-bottom:0.75rem; }
-        .nota-form-row { display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; }
-        .nota-form-row input {
-            flex:1; min-width:120px; border:2px solid #10b981;
-            padding:0.5rem 1rem; font-size:1rem; border-radius:0.5rem;
-        }
-        .estado-badge {
-            display:inline-block; padding:0.5rem 1.25rem;
-            border-radius:0.5rem; font-weight:700; margin-bottom:1rem; font-size:0.95rem;
-        }
-        .badge-entregada { background:#d1fae5; color:#065f46; border:1px solid #6ee7b7; }
-        .badge-pendiente { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; }
-        .badge-vencida   { background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; }
-        .volver-btn { margin-bottom:1.25rem; display:inline-block; }
-        .page-title { text-align:center; color:#1f2937; font-weight:700; margin-bottom:1.5rem; }
-        @media(max-width:768px){
-            .custom-card { padding:1.25rem; margin:0 0.5rem; }
-            .custom-card-actions { flex-direction:column; }
-            .custom-card-btn { justify-content:center; width:100%; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReminderU — Mi Perfil</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/estilos.css(v=${#dates.createNow().time})}" href="/css/estilos.css">
+
+  <style>
+    .page-body { padding: 0 1rem 3rem; max-width: 680px; margin: 0 auto; }
+    @media (min-width: 768px) { .page-body { padding: 0 1.5rem 3rem; } }
+
+    /* Section label */
+    .section-label {
+      font-size:.72rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:.08em; color:var(--navy-muted); margin-bottom:.9rem;
+    }
+
+    /* Avatar */
+    .perfil-avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--indigo), #818cf8);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.75rem; font-weight: 800; color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(79,70,229,.3);
+    }
+
+    /* Hero card */
+    .perfil-hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 1.75rem;
+      box-shadow: var(--shadow-sm);
+      display: flex; align-items: center; gap: 1.25rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.75rem;
+    }
+    .perfil-hero-info { flex: 1; min-width: 0; }
+    .perfil-hero-name { font-size: 1.5rem; font-weight: 800; letter-spacing: -.4px; }
+    .perfil-hero-email { font-size: .85rem; color: var(--navy-muted); margin-top: .2rem; }
+
+    /* Stats row */
+    .perfil-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .75rem;
+      margin-bottom: 1.75rem;
+    }
+    .perfil-stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .perfil-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--navy); }
+    .perfil-stat-label { font-size: .72rem; color: var(--navy-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-top: .2rem; }
+
+    /* Form section */
+    .perfil-form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 1.5rem 1.75rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.75rem;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-group-full { grid-column: 1 / -1; }
+
+    /* Password toggle */
+    .pass-wrapper { position: relative; }
+    .pass-toggle {
+      position: absolute; right: .75rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--navy-muted); font-size: .85rem; padding: .2rem;
+    }
+
+    /* Danger zone */
+    .danger-zone {
+      background: var(--rose-light);
+      border: 1px solid #fda4af;
+      border-radius: var(--radius-xl);
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 2rem;
+    }
+    .danger-zone-title {
+      font-size: .95rem; font-weight: 700; color: #9f1239;
+      margin-bottom: .4rem;
+    }
+    .danger-zone-desc {
+      font-size: .82rem; color: #be123c; margin-bottom: 1rem; line-height: 1.5;
+    }
+
+    /* Confirm modal */
+    .confirm-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.45); z-index: 9999;
+      align-items: center; justify-content: center;
+    }
+    .confirm-overlay.show { display: flex; }
+    .confirm-box {
+      background: var(--surface); border-radius: var(--radius-xl);
+      padding: 2rem; max-width: 420px; width: 90%;
+      box-shadow: var(--shadow-lg); text-align: center;
+    }
+    .confirm-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .confirm-title { font-size: 1.2rem; font-weight: 800; margin-bottom: .5rem; }
+    .confirm-desc { font-size: .88rem; color: var(--navy-muted); margin-bottom: 1.5rem; line-height: 1.55; }
+    .confirm-actions { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
+  </style>
 </head>
+
 <body>
-    <div th:replace="~{fragments/header :: HeaderPagina}"></div>
+  <div th:replace="fragments/header :: HeaderPagina"></div>
 
-    <main class="container mt-4">
-        <a th:href="@{/tareas}" class="custom-card-btn btn-gray volver-btn">← Volver a la lista</a>
-        <h2 class="page-title">Detalle de la Tarea</h2>
+  <main>
+    <div class="page-body">
 
-        <div th:if="${mensaje}" class="alert mb-3 mx-auto" style="max-width:800px"
-             th:classappend="'alert-' + ${tipo}" th:text="${mensaje}"></div>
-
-        <div class="custom-card">
-            <!-- Estado -->
-            <div th:switch="${tarea.estado.name()}">
-                <span th:case="'ENTREGADA'" class="estado-badge badge-entregada">✅ Entregada</span>
-                <span th:case="'PENDIENTE'" class="estado-badge badge-pendiente">⏳ Pendiente</span>
-                <span th:case="'VENCIDA'"   class="estado-badge badge-vencida">⚠️ Vencida</span>
-            </div>
-
-            <h3 class="custom-card-title" th:text="${tarea.titulo}">Título</h3>
-            <h6 class="custom-card-subtitle mt-1">📚 Curso: <span th:text="${tarea.curso.nombre}">Curso</span></h6>
-            <hr class="separador-card">
-
-            <div class="custom-card-content">
-                <p th:text="${tarea.descripcion}">Descripción...</p>
-                <p><strong>👥 Modalidad:</strong> <span th:text="${tarea.modalidad}">INDIVIDUAL</span></p>
-            </div>
-
-            <div class="custom-card-info">
-                <div class="info-item">
-                    <span class="info-label">📅 Fecha de entrega:</span>
-                    <span class="info-value" th:text="${#temporals.format(tarea.fechaEntrega,'dd/MM/yyyy')}">--</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">⏰ Tiempo restante:</span>
-                    <span class="info-value" id="tiempo-restante"
-                          th:attr="data-fecha=${tarea.fechaEntrega},data-hora=${tarea.horaEntrega != null ? tarea.horaEntrega : '23:59'}">
-                        Calculando...
-                    </span>
-                    <span class="task-status" id="status-circulo"></span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">💯 Valor:</span>
-                    <span class="info-value" th:text="${tarea.porcentaje + '%'}">0%</span>
-                </div>
-                <div class="info-item" th:if="${tarea.notaObtenida != null}">
-                    <span class="info-label">📝 Nota obtenida:</span>
-                    <span class="info-value"
-                          th:text="${tarea.notaObtenida}"
-                          th:classappend="${tarea.notaObtenida >= 70} ? ' nota-buena' : ' nota-mala'">--</span>
-                </div>
-            </div>
-
-            <!-- SECCIÓN NOTA: form POST con CSRF automático de Thymeleaf -->
-            <div class="nota-section">
-                <h6>📝 <span th:text="${tarea.notaObtenida != null} ? 'Editar Nota' : 'Agregar Nota'">Nota</span></h6>
-                <form th:action="@{/tareas/nota/{id}(id=${tarea.id})}" method="post" class="nota-form-row">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <input type="number" name="nota" step="0.01" min="0" max="100"
-                           th:value="${tarea.notaObtenida}" placeholder="Ej: 85.5" required />
-                    <button type="submit" class="custom-card-btn btn-green">
-                        <i class="fas fa-check"></i> Guardar Nota
-                    </button>
-                </form>
-                <small class="text-muted mt-1 d-block">Ingresa un valor entre 0 y 100</small>
-            </div>
-
-            <!-- Acciones principales -->
-            <div class="custom-card-actions">
-                <!-- Marcar como hecha: form POST con CSRF automático -->
-                <form th:if="${tarea.estado.name() != 'ENTREGADA'}"
-                      th:action="@{/tareas/completar/{id}(id=${tarea.id})}" method="post" style="margin:0">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <button type="submit" class="custom-card-btn btn-green">✅ Marcar como hecha</button>
-                </form>
-                <span th:if="${tarea.estado.name() == 'ENTREGADA'}"
-                      class="custom-card-btn btn-disabled">✅ Tarea Completada</span>
-
-                <a th:href="@{/tareas/editar/{id}(id=${tarea.id})}" class="custom-card-btn btn-yellow">
-                    <i class="fas fa-edit"></i> Editar
-                </a>
-                <button type="button" class="custom-card-btn btn-red" id="eliminar-btn">🗑️ Eliminar</button>
-            </div>
+      <!-- ══ HERO PERFIL ══ -->
+      <div style="padding: 2rem 0 0;"></div>
+      <div class="perfil-hero">
+        <div class="perfil-avatar"
+             th:text="${#strings.substring(usuario.nombre, 0, 1).toUpperCase()}">U</div>
+        <div class="perfil-hero-info">
+          <div class="perfil-hero-name" th:text="${usuario.nombre}">Nombre</div>
+          <div class="perfil-hero-email" th:text="${usuario.email}">correo@ejemplo.com</div>
+          <div class="mt-2">
+            <span class="ru-badge ru-badge-indigo">Estudiante</span>
+          </div>
         </div>
-    </main>
+      </div>
 
-    <!-- Modal eliminación -->
-    <div class="modal fade" id="eliminarModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirmar Eliminación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>¿Estás seguro de que deseas eliminar esta tarea?</p>
-                    <p class="text-muted">Esta acción no se puede deshacer.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <a th:href="@{/tareas/eliminar/{id}(id=${tarea.id})}" class="btn btn-danger">Eliminar</a>
-                </div>
-            </div>
+      <!-- ══ STATS ══ -->
+      <div class="perfil-stats">
+        <div class="perfil-stat">
+          <div class="perfil-stat-value" th:text="${totalCursos}">0</div>
+          <div class="perfil-stat-label">Cursos</div>
         </div>
+        <div class="perfil-stat">
+          <div class="perfil-stat-value" th:text="${tareasPendientes}">0</div>
+          <div class="perfil-stat-label">Pendientes</div>
+        </div>
+        <div class="perfil-stat">
+          <div class="perfil-stat-value" th:text="${tareasEntregadas}">0</div>
+          <div class="perfil-stat-label">Entregadas</div>
+        </div>
+      </div>
+
+      <!-- ══ FORM EDICIÓN ══ -->
+      <div class="perfil-form-card">
+        <p class="section-label">✏️ Editar información</p>
+
+        <!-- Alert éxito -->
+        <div class="ru-alert ru-alert-success mb-3"
+             th:if="${mensajeExito != null}"
+             th:text="${mensajeExito}"></div>
+
+        <!-- Alert error -->
+        <div class="ru-alert ru-alert-danger mb-3"
+             th:if="${mensajeError != null}"
+             th:text="${mensajeError}"></div>
+
+        <form th:action="@{/perfil/actualizar}" method="post">
+          <div class="form-grid">
+            <div>
+              <label class="ru-form-label">Nombre</label>
+              <input type="text" name="nombre" class="ru-form-control"
+                     th:value="${usuario.nombre}" required>
+            </div>
+            <div>
+              <label class="ru-form-label">Correo electrónico</label>
+              <input type="email" name="email" class="ru-form-control"
+                     th:value="${usuario.email}" required>
+            </div>
+            <div class="form-group-full">
+              <label class="ru-form-label">Nueva contraseña <span style="font-weight:400; color:var(--navy-muted);">(dejar en blanco para no cambiar)</span></label>
+              <div class="pass-wrapper">
+                <input type="password" name="password" id="passInput" class="ru-form-control"
+                       placeholder="••••••••" autocomplete="new-password">
+                <button type="button" class="pass-toggle" onclick="togglePass()">👁</button>
+              </div>
+            </div>
+          </div>
+          <div class="mt-3 d-flex gap-2 flex-wrap">
+            <button type="submit" class="ru-btn ru-btn-primary">💾 Guardar cambios</button>
+            <a th:href="@{/}" class="ru-btn ru-btn-ghost">Cancelar</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- ══ ZONA DE PELIGRO ══ -->
+      <div class="danger-zone">
+        <div class="danger-zone-title">⚠️ Zona de peligro</div>
+        <div class="danger-zone-desc">
+          Eliminar tu perfil es una acción irreversible. Se borrarán permanentemente
+          tu cuenta, todos tus cursos y tareas asociadas.
+        </div>
+        <button type="button" class="ru-btn ru-btn-danger" onclick="mostrarConfirmacion()">
+          🗑 Eliminar perfil permanentemente
+        </button>
+      </div>
+
+    </div><!-- /page-body -->
+  </main>
+
+  <!-- ══ MODAL CONFIRMACIÓN ELIMINAR ══ -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <div class="confirm-icon">⚠️</div>
+      <div class="confirm-title">¿Eliminar perfil?</div>
+      <div class="confirm-desc">
+        Esta acción es <strong>permanente e irreversible</strong>.<br>
+        Se eliminarán tu cuenta, todos tus cursos y tareas.<br>
+        ¿Estás completamente seguro/a?
+      </div>
+      <div class="confirm-actions">
+        <button type="button" class="ru-btn ru-btn-ghost" onclick="cerrarConfirmacion()">
+          Cancelar
+        </button>
+        <form th:action="@{/perfil/eliminar}" method="post" style="display:inline;">
+          <button type="submit" class="ru-btn ru-btn-danger">
+            Sí, eliminar mi perfil
+          </button>
+        </form>
+      </div>
     </div>
+  </div>
 
-    <div th:replace="~{fragments/footer :: FooterPagina}"></div>
+  <div th:replace="fragments/footer :: FooterPagina"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function actualizarTiempo() {
-            const el = document.getElementById('tiempo-restante');
-            const circulo = document.getElementById('status-circulo');
-            const fecha = el.getAttribute('data-fecha');
-            const hora  = el.getAttribute('data-hora') || '23:59';
-            const entrega = new Date(fecha + 'T' + hora);
-            let diff = entrega - new Date();
-            if (diff < 0) diff = 0;
-            const dias    = Math.floor(diff / 86400000);
-            const horas   = Math.floor((diff % 86400000) / 3600000);
-            const minutos = Math.floor((diff % 3600000)  / 60000);
-            el.textContent = `${dias}d ${horas}h ${minutos}m`;
-            circulo.className = 'task-status ' + (dias > 3 ? 'status-success' : dias >= 1 ? 'status-warning' : 'status-danger');
-        }
-        actualizarTiempo();
-        setInterval(actualizarTiempo, 60000);
-
-        document.getElementById('eliminar-btn')?.addEventListener('click', () => {
-            new bootstrap.Modal(document.getElementById('eliminarModal')).show();
-        });
-    </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function togglePass() {
+      var inp = document.getElementById('passInput');
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+    }
+    function mostrarConfirmacion() {
+      document.getElementById('confirmOverlay').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function cerrarConfirmacion() {
+      document.getElementById('confirmOverlay').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    // Cerrar al hacer click fuera del box
+    document.getElementById('confirmOverlay').addEventListener('click', function(e){
+      if(e.target === this) cerrarConfirmacion();
+    });
+  </script>
 </body>
 </html>

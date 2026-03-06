@@ -1,420 +1,444 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="'Curso - ' + ${curso.nombre}">Curso</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #f5f4f0;
-            --surface: #ffffff;
-            --border: #e8e5df;
-            --text-primary: #1a1a2e;
-            --text-muted: #6b6b7a;
-            --accent: #3b5bdb;
-            --accent-light: #e8eeff;
-            --success: #2f9e44;
-            --success-light: #ebfbee;
-            --warning: #e67700;
-            --warning-light: #fff9db;
-            --danger: #c92a2a;
-            --danger-light: #fff5f5;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReminderU — Ver Curso</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/estilos.css(v=${#dates.createNow().time})}" href="/css/estilos.css">
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+  <style>
+    .page-body { padding: 0 1rem 3rem; max-width: 1100px; margin: 0 auto; }
+    @media (min-width: 768px) { .page-body { padding: 0 1.5rem 3rem; } }
 
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background-color: var(--bg);
-            color: var(--text-primary);
-        }
+    /* Breadcrumb */
+    .ru-breadcrumb {
+      display: flex; align-items: center; gap: .5rem;
+      font-size: .8rem; color: var(--navy-muted);
+      padding: 1.25rem 0 .25rem;
+    }
+    .ru-breadcrumb a { color: var(--indigo); text-decoration: none; font-weight: 600; }
+    .ru-breadcrumb a:hover { text-decoration: underline; }
+    .ru-breadcrumb-sep { opacity: .4; }
 
-        .page-wrapper { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+    /* Curso hero */
+    .curso-hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 1.75rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.75rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .curso-hero::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 5px;
+      background: var(--indigo);
+      border-radius: 5px 0 0 5px;
+    }
+    .curso-hero.presencial::before { background: var(--emerald); }
+    .curso-hero-top { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .curso-hero-name { font-size: clamp(1.3rem, 3vw, 1.75rem); font-weight: 800; letter-spacing: -.4px; }
+    .curso-hero-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+    .curso-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: .75rem;
+      margin-top: 1.25rem;
+    }
+    .curso-meta-item {
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      padding: .7rem 1rem;
+    }
+    .curso-meta-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--navy-muted); margin-bottom: .2rem; }
+    .curso-meta-value { font-size: .92rem; font-weight: 600; color: var(--navy); }
 
-        /* Back button */
-        .btn-back {
-            display: inline-flex; align-items: center; gap: 0.4rem;
-            padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem;
-            font-weight: 500; text-decoration: none;
-            background: var(--surface); border: 1px solid var(--border);
-            color: var(--text-primary); transition: all 0.15s;
-            margin-bottom: 1.5rem;
-        }
-        .btn-back:hover { background: var(--border); color: var(--text-primary); }
+    /* Section tabs-like label */
+    .section-label {
+      font-size: .72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--navy-muted); margin-bottom: .9rem;
+    }
 
-        /* Course header */
-        .course-header {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 16px; padding: 2rem; margin-bottom: 1.5rem;
-        }
-        .course-title { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .course-meta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem; }
-        .meta-chip {
-            display: inline-flex; align-items: center; gap: 0.35rem;
-            padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.8rem;
-            font-weight: 500; background: var(--bg); border: 1px solid var(--border);
-            color: var(--text-muted);
-        }
+    /* Tareas list */
+    .tarea-row {
+      display: flex; align-items: center; gap: 1rem;
+      padding: .9rem 1.1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: .5rem;
+      transition: var(--transition);
+    }
+    .tarea-row:hover { box-shadow: var(--shadow-sm); border-color: var(--border-hover); }
+    .tarea-row-status { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .tarea-row-title { font-size: .9rem; font-weight: 600; flex: 1; min-width: 0; }
+    .tarea-row-date { font-size: .78rem; color: var(--navy-muted); white-space: nowrap; }
+    .tarea-row-actions { display: flex; gap: .4rem; flex-shrink: 0; }
 
-        /* Rubros inline */
-        .rubros-inline { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
-        .rubro-tag {
-            display: inline-flex; align-items: center; gap: 0.35rem;
-            padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.78rem;
-            font-family: 'DM Mono', monospace; font-weight: 500;
-            background: var(--accent-light); color: var(--accent);
-            border: 1px solid #c5d3f8;
-        }
+    /* Notas panel */
+    .nota-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .75rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: .5rem;
+      gap: 1rem;
+    }
+    .nota-nombre { font-size: .88rem; font-weight: 600; flex: 1; }
+    .nota-valor { font-size: 1rem; font-weight: 700; min-width: 60px; text-align: right; }
+    .nota-valor.aprobado { color: var(--emerald); }
+    .nota-valor.reprobado { color: var(--rose); }
 
-        /* ================================================
-           ACCUMULATED SCORE PANEL — Feature #1
-           ================================================ */
-        .score-panel {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            border-radius: 16px; padding: 1.75rem; margin-bottom: 1.5rem;
-            color: #fff; position: relative; overflow: hidden;
-        }
-        .score-panel::before {
-            content: ''; position: absolute; top: -40px; right: -40px;
-            width: 160px; height: 160px; border-radius: 50%;
-            background: rgba(59,91,219,0.25);
-        }
-        .score-panel-header {
-            display: flex; justify-content: space-between; align-items: flex-start;
-            flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;
-        }
-        .score-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.6; margin-bottom: 0.25rem; }
-        .score-value { font-size: 2.5rem; font-weight: 700; font-family: 'DM Mono', monospace; line-height: 1; }
-        .score-value small { font-size: 1rem; opacity: 0.6; margin-left: 2px; }
-        .score-stats { display: flex; gap: 2rem; flex-wrap: wrap; }
-        .stat-item { }
-        .stat-label { font-size: 0.72rem; opacity: 0.55; text-transform: uppercase; letter-spacing: 0.06em; }
-        .stat-value { font-size: 1rem; font-weight: 600; font-family: 'DM Mono', monospace; }
-
-        /* Progress bar */
-        .progress-track {
-            height: 8px; background: rgba(255,255,255,0.15); border-radius: 4px; overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(.4,0,.2,1);
-            background: linear-gradient(90deg, #748ffc, #74c0fc);
-        }
-        .progress-footer {
-            display: flex; justify-content: space-between; margin-top: 0.4rem;
-            font-size: 0.72rem; opacity: 0.55;
-        }
-
-        /* Section title */
-        .section-title {
-            font-size: 1rem; font-weight: 600; margin-bottom: 1rem;
-            display: flex; align-items: center; gap: 0.5rem;
-        }
-
-        /* Task rows */
-        .tasks-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 16px; overflow: hidden; margin-bottom: 1.5rem;
-        }
-        .tasks-card-header {
-            padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; gap: 0.5rem;
-            font-size: 0.85rem; font-weight: 600; color: var(--text-muted);
-        }
-        .dot { width: 8px; height: 8px; border-radius: 50%; }
-        .dot-success { background: var(--success); }
-        .dot-warning { background: var(--warning); }
-
-        .task-row {
-            display: grid;
-            grid-template-columns: 1fr auto auto auto;
-            gap: 1rem; align-items: center;
-            padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border);
-            transition: background 0.1s;
-        }
-        .task-row:last-child { border-bottom: none; }
-        .task-row:hover { background: var(--bg); }
-        .task-name { font-weight: 500; font-size: 0.9rem; }
-        .task-date { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
-
-        .badge-pill {
-            padding: 0.25rem 0.6rem; border-radius: 20px;
-            font-size: 0.75rem; font-weight: 600;
-            font-family: 'DM Mono', monospace; white-space: nowrap;
-        }
-        .badge-success { background: var(--success-light); color: var(--success); }
-        .badge-warning { background: var(--warning-light); color: var(--warning); }
-        .badge-pending { background: #f1f3f5; color: #868e96; }
-
-        .weight-badge {
-            background: var(--accent-light); color: var(--accent);
-            padding: 0.25rem 0.6rem; border-radius: 6px;
-            font-size: 0.75rem; font-weight: 600; font-family: 'DM Mono', monospace;
-        }
-
-        /* Points column */
-        .points-col {
-            text-align: right; font-family: 'DM Mono', monospace;
-            font-size: 0.85rem; font-weight: 600;
-        }
-        .points-col.earned { color: var(--success); }
-        .points-col.pending { color: var(--text-muted); }
-
-        /* Summary sidebar */
-        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
-        @media (max-width: 640px) { .summary-grid { grid-template-columns: 1fr; } }
-
-        .summary-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 12px; padding: 1.25rem;
-        }
-        .summary-card-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.35rem; }
-        .summary-card-value { font-size: 1.5rem; font-weight: 700; font-family: 'DM Mono', monospace; }
-        .summary-card-value.accent { color: var(--accent); }
-        .summary-card-value.success { color: var(--success); }
-
-        /* Empty state */
-        .empty-state {
-            text-align: center; padding: 2.5rem;
-            color: var(--text-muted); font-size: 0.9rem;
-        }
-        .empty-icon { font-size: 2rem; margin-bottom: 0.5rem; }
-    </style>
+    /* Simulador launcher */
+    .sim-launcher-wrapper { display: flex; justify-content: center; margin: .5rem 0 1.75rem; }
+  </style>
 </head>
+
 <body>
+  <div th:replace="fragments/header :: HeaderPagina"></div>
 
-    <!-- Header -->
-    <div th:replace="~{fragments/header :: HeaderPagina}"></div>
+  <main>
+    <div class="page-body">
 
-    <div class="page-wrapper">
-        <!-- Back -->
-        <a href="/cursos" class="btn-back">← Volver a cursos</a>
+      <!-- Breadcrumb -->
+      <nav class="ru-breadcrumb">
+        <a th:href="@{/}">Inicio</a>
+        <span class="ru-breadcrumb-sep">›</span>
+        <span>Cursos</span>
+        <span class="ru-breadcrumb-sep">›</span>
+        <span th:text="${curso.nombre}">Nombre del curso</span>
+      </nav>
 
-        <!-- Course header -->
-        <div class="course-header">
-            <div class="course-title" th:text="${curso.nombre}">Nombre del curso</div>
-            <div class="course-meta">
-                <span class="meta-chip">👨‍🏫 <span th:text="${curso.profesor}">Profesor</span></span>
-                <span class="meta-chip">📧 <span th:text="${curso.correo}">correo</span></span>
-                <span class="meta-chip">📅 <span th:text="${curso.dia.name() + ' ' + curso.hora}">Horario</span></span>
-                <span class="meta-chip">🏫 <span th:text="${curso.modalidad.name()}">Modalidad</span></span>
+      <!-- ══ HERO ══ -->
+      <div class="curso-hero" th:classappend="${curso.modalidad == 'PRESENCIAL'} ? 'presencial' : ''">
+        <div class="curso-hero-top">
+          <div>
+            <div class="curso-hero-name" th:text="${curso.nombre}">Nombre del Curso</div>
+            <div class="mt-2 d-flex gap-2 flex-wrap">
+              <span class="ru-badge ru-badge-indigo"
+                    th:if="${curso.modalidad == 'VIRTUAL'}">🖥 Virtual</span>
+              <span class="ru-badge ru-badge-emerald"
+                    th:if="${curso.modalidad == 'PRESENCIAL'}">🏫 Presencial</span>
+              <span class="ru-badge ru-badge-gray"
+                    th:text="${curso.creditos} + ' créditos'"
+                    th:if="${curso.creditos != null}">3 créditos</span>
             </div>
-
-            <!-- Rubros -->
-            <div th:if="${!#lists.isEmpty(curso.rubros)}">
-                <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.4rem;font-weight:500;">ESTRATEGIA DE EVALUACIÓN</div>
-                <div class="rubros-inline">
-                    <span th:each="rubro : ${curso.rubros}" class="rubro-tag">
-                        <span th:text="${rubro.nombre}">Rubro</span>
-                        <span th:text="'· ' + ${rubro.porcentaje} + '%'">0%</span>
-                    </span>
-                </div>
-            </div>
+          </div>
+          <div class="curso-hero-actions">
+            <a th:href="@{/cursos/editar/{id}(id=${curso.id})}" class="ru-btn ru-btn-ghost ru-btn-sm">✏️ Editar</a>
+            <a th:href="@{/cursos/eliminar/{id}(id=${curso.id})}"
+               class="ru-btn ru-btn-danger ru-btn-sm"
+               onclick="return confirm('¿Eliminar este curso y todas sus tareas?')">🗑 Eliminar</a>
+          </div>
         </div>
 
-        <!-- ================================================
-             SCORE PANEL — Porcentaje acumulado actual
-             El JavaScript calcula esto dinámicamente.
-             Fórmula: Σ(nota_obtenida × valor_porcentual) / 100
-             ================================================ -->
-        <div class="score-panel" id="scorePanel">
-            <div class="score-panel-header">
-                <div>
-                    <div class="score-label">Porcentaje Acumulado</div>
-                    <div class="score-value" id="displayAccumulated">0<small>%</small></div>
-                </div>
-                <div class="score-stats">
-                    <div class="stat-item">
-                        <div class="stat-label">Puntos obtenidos</div>
-                        <div class="stat-value" id="displayPoints">0.00</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">% del curso evaluado</div>
-                        <div class="stat-value" id="displayCovered">0%</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Evaluaciones</div>
-                        <div class="stat-value" id="displayCount">0 / 0</div>
-                    </div>
-                </div>
-            </div>
-            <div class="progress-track">
-                <div class="progress-fill" id="progressFill" style="width:0%"></div>
-            </div>
-            <div class="progress-footer">
-                <span>0%</span>
-                <span id="progressLabel">0% del cuatrimestre completado</span>
-                <span>100%</span>
-            </div>
+        <div class="curso-meta-grid">
+          <div class="curso-meta-item" th:if="${curso.profesor != null}">
+            <div class="curso-meta-label">Profesor</div>
+            <div class="curso-meta-value" th:text="${curso.profesor}">—</div>
+          </div>
+          <div class="curso-meta-item" th:if="${curso.aula != null}">
+            <div class="curso-meta-label">Aula</div>
+            <div class="curso-meta-value" th:text="${curso.aula}">—</div>
+          </div>
+          <div class="curso-meta-item">
+            <div class="curso-meta-label">Tareas pendientes</div>
+            <div class="curso-meta-value"
+                 th:text="${#lists.size(tareasPendientes)}">0</div>
+          </div>
+          <div class="curso-meta-item">
+            <div class="curso-meta-label">Tareas entregadas</div>
+            <div class="curso-meta-value"
+                 th:text="${#lists.size(tareasEntregadas)}">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SCORE PANEL ══ -->
+      <div class="score-panel mb-4" th:if="${notaPromedio != null}">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; position:relative; z-index:1;">
+          <div>
+            <div style="font-size:.75rem; font-weight:600; opacity:.55; text-transform:uppercase; letter-spacing:.07em; margin-bottom:.3rem;">Nota acumulada</div>
+            <div style="font-size:2.5rem; font-weight:800; letter-spacing:-1px;"
+                 th:text="${#numbers.formatDecimal(notaPromedio, 1, 2)}">0.00</div>
+            <div style="font-size:.8rem; opacity:.55; margin-top:.3rem;">de 100 puntos</div>
+          </div>
+          <div style="text-align:right;">
+            <span class="ru-badge"
+                  th:classappend="${notaPromedio >= 70} ? 'ru-badge-emerald' : 'ru-badge-rose'"
+                  style="font-size:.85rem; padding:.4rem 1rem;"
+                  th:text="${notaPromedio >= 70} ? '✅ Aprobando' : '⚠️ En riesgo'">Estado</span>
+          </div>
+        </div>
+        <div class="progress-track mt-3" style="position:relative; z-index:1;">
+          <div class="progress-fill"
+               th:style="'width:' + ${notaPromedio} + '%'"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:.72rem; opacity:.45; margin-top:.35rem; position:relative; z-index:1;">
+          <span>0</span><span>Meta: 70</span><span>100</span>
+        </div>
+      </div>
+
+      <!-- ══ SIMULADOR ══ -->
+      <div class="sim-launcher-wrapper">
+        <button class="sim-launcher-btn" type="button" id="abrirSimuladorBtn">
+          <span class="sim-icon">🧮</span>
+          <span class="sim-text">
+            <span class="sim-title">Simulador de Notas</span>
+            <span class="sim-sub">Proyecta cuánto necesitas en los exámenes restantes</span>
+          </span>
+          <span class="sim-arrow">→</span>
+        </button>
+      </div>
+
+      <!-- ══ NOTAS ══ -->
+      <div class="mb-4" th:if="${notas != null and !#lists.isEmpty(notas)}">
+        <div class="ru-section-header">
+          <div>
+            <p class="section-label mb-0">📊 Notas registradas</p>
+          </div>
+          <a th:href="@{/notas/agregar/{id}(id=${curso.id})}" class="ru-btn ru-btn-primary ru-btn-sm">+ Agregar nota</a>
+        </div>
+        <div th:each="nota : ${notas}" class="nota-item">
+          <span class="nota-nombre" th:text="${nota.nombre}">Examen 1</span>
+          <div class="d-flex align-items-center gap-3">
+            <span class="nota-valor"
+                  th:classappend="${nota.valor >= 70} ? 'aprobado' : 'reprobado'"
+                  th:text="${#numbers.formatDecimal(nota.valor, 1, 2)}">0.00</span>
+            <a th:href="@{/notas/eliminar/{id}(id=${nota.id})}"
+               class="ru-btn ru-btn-ghost ru-btn-sm"
+               onclick="return confirm('¿Eliminar esta nota?')"
+               style="padding:.2rem .6rem; color:var(--rose);">✕</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-4" th:if="${notas == null or #lists.isEmpty(notas)}">
+        <div class="ru-section-header">
+          <p class="section-label mb-0">📊 Notas registradas</p>
+          <a th:href="@{/notas/agregar/{id}(id=${curso.id})}" class="ru-btn ru-btn-primary ru-btn-sm">+ Agregar nota</a>
+        </div>
+        <div class="ru-empty">
+          <div class="ru-empty-icon">📋</div>
+          <div class="ru-empty-title">Sin notas aún</div>
+          <div class="ru-empty-text">Agrega tus notas para calcular el promedio y usar el simulador.</div>
+        </div>
+      </div>
+
+      <!-- ══ TAREAS PENDIENTES ══ -->
+      <div class="mb-4">
+        <div class="ru-section-header">
+          <div>
+            <p class="section-label mb-0">⏳ Tareas pendientes</p>
+          </div>
+          <a th:href="@{/tareas/agregar/{id}(id=${curso.id})}" class="ru-btn ru-btn-success ru-btn-sm">+ Nueva tarea</a>
         </div>
 
-        <!-- Summary cards -->
-        <div class="summary-grid">
-            <div class="summary-card">
-                <div class="summary-card-label">Nota actual (sobre lo evaluado)</div>
-                <div class="summary-card-value accent" id="displayCurrentGrade">—</div>
+        <div th:if="${!#lists.isEmpty(tareasPendientes)}">
+          <div class="tarea-row" th:each="tarea : ${tareasPendientes}">
+            <div class="tarea-row-status ru-dot"
+                 th:classappend="${tarea.diasRestantes <= 1} ? 'ru-dot-rose' :
+                                  (${tarea.diasRestantes} <= 3 ? 'ru-dot-amber' : 'ru-dot-indigo')"></div>
+            <div class="tarea-row-title" th:text="${tarea.titulo}">Tarea</div>
+            <div class="tarea-row-date"
+                 th:text="${#temporals.format(tarea.fechaEntrega, 'dd MMM yyyy')}">Fecha</div>
+            <div class="tarea-row-actions">
+              <a th:href="@{/tareas/ver/{id}(id=${tarea.id})}" class="ru-btn ru-btn-ghost ru-btn-sm">Ver</a>
+              <a th:href="@{/tareas/entregar/{id}(id=${tarea.id})}" class="ru-btn ru-btn-success ru-btn-sm">✓</a>
             </div>
-            <div class="summary-card">
-                <div class="summary-card-label">Tareas pendientes</div>
-                <div class="summary-card-value" id="displayPending">—</div>
-            </div>
+          </div>
         </div>
 
-        <!-- Tareas completadas -->
-        <div class="tasks-card">
-            <div class="tasks-card-header">
-                <span class="dot dot-success"></span>
-                Tareas completadas
-                (<span id="countCompleted">0</span>)
-            </div>
-            <div id="listCompleted">
-                <div th:if="${tareasEntregadas == null or #lists.isEmpty(tareasEntregadas)}" class="empty-state">
-                    <div class="empty-icon">📭</div>
-                    <div>Sin tareas completadas todavía</div>
-                </div>
-
-                <!--
-                    Cada fila tiene data-attributes para que JS pueda calcular sin hacer peticiones.
-                    data-nota: nota obtenida (0-100)
-                    data-weight: valor porcentual de la tarea
-                -->
-                <div th:each="tarea : ${tareasEntregadas}"
-                     class="task-row"
-                     th:attr="data-nota=${tarea.notaObtenida != null ? tarea.notaObtenida : 0},
-                              data-weight=${tarea.porcentaje}">
-                    <div>
-                        <div class="task-name" th:text="${tarea.titulo}">Título</div>
-                        <div class="task-date" th:text="'Entregada · ' + ${#temporals.format(tarea.fechaEntrega,'dd/MM/yyyy')}">fecha</div>
-                    </div>
-                    <span class="weight-badge" th:text="${tarea.porcentaje} + '%'">20%</span>
-                    <span class="badge-pill"
-                          th:classappend="${tarea.notaObtenida != null and tarea.notaObtenida >= 70} ? ' badge-success' : ' badge-warning'"
-                          th:text="${tarea.notaObtenida != null} ? (tarea.notaObtenida + ' / 100') : 'Sin nota'">85</span>
-                    <!-- Puntos aportados: (nota × peso) / 100 -->
-                    <div class="points-col earned"
-                         th:text="${tarea.notaObtenida != null} ? (${T(java.lang.String).format('%.2f', (tarea.notaObtenida / 100.0) * tarea.porcentaje)} + ' pts') : '—'">
-                        pts
-                    </div>
-                </div>
-            </div>
+        <div class="ru-empty" th:if="${#lists.isEmpty(tareasPendientes)}">
+          <div class="ru-empty-icon">🎉</div>
+          <div class="ru-empty-title">¡Al día!</div>
+          <div class="ru-empty-text">No tienes tareas pendientes en este curso.</div>
         </div>
+      </div>
 
-        <!-- Tareas pendientes -->
-        <div class="tasks-card">
-            <div class="tasks-card-header">
-                <span class="dot dot-warning"></span>
-                Tareas pendientes
-                (<span id="countPending">0</span>)
-            </div>
-            <div id="listPending">
-                <div th:if="${tareasPendientes == null or #lists.isEmpty(tareasPendientes)}" class="empty-state">
-                    <div class="empty-icon">🎉</div>
-                    <div>¡Sin tareas pendientes!</div>
-                </div>
-
-                <div th:each="tarea : ${tareasPendientes}"
-                     class="task-row"
-                     th:attr="data-weight=${tarea.porcentaje}">
-                    <div>
-                        <div class="task-name" th:text="${tarea.titulo}">Título</div>
-                        <div class="task-date" th:text="'Entrega · ' + ${#temporals.format(tarea.fechaEntrega,'dd/MM/yyyy')}">fecha</div>
-                    </div>
-                    <span class="weight-badge" th:text="${tarea.porcentaje} + '%'">20%</span>
-                    <span class="badge-pill badge-pending">Pendiente</span>
-                    <div class="points-col pending">—</div>
-                </div>
-            </div>
+      <!-- ══ TAREAS ENTREGADAS ══ -->
+      <div class="mb-4" th:if="${!#lists.isEmpty(tareasEntregadas)}">
+        <p class="section-label">✅ Tareas entregadas</p>
+        <div class="tarea-row" th:each="tarea : ${tareasEntregadas}">
+          <div class="tarea-row-status ru-dot ru-dot-emerald"></div>
+          <div class="tarea-row-title"
+               style="text-decoration:line-through; opacity:.55;"
+               th:text="${tarea.titulo}">Tarea</div>
+          <div class="tarea-row-date"
+               th:text="${#temporals.format(tarea.fechaEntrega, 'dd MMM yyyy')}">Fecha</div>
+          <div class="tarea-row-actions">
+            <a th:href="@{/tareas/ver/{id}(id=${tarea.id})}" class="ru-btn ru-btn-ghost ru-btn-sm">Ver</a>
+          </div>
         </div>
+      </div>
+
+      <!-- ══ HORARIO ══ -->
+      <div class="mb-4" th:if="${horario != null and !#lists.isEmpty(horario)}">
+        <p class="section-label">📅 Horario del curso</p>
+        <div class="ru-card">
+          <div class="ru-card-body p-0">
+            <div class="horario-container">
+              <table class="horario-table">
+                <thead>
+                  <tr>
+                    <th>Hora</th>
+                    <th>Lunes</th>
+                    <th>Martes</th>
+                    <th>Miércoles</th>
+                    <th>Jueves</th>
+                    <th>Viernes</th>
+                    <th>Sábado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="fila : ${horario}">
+                    <td style="font-weight:600; color:var(--navy-muted);" th:text="${fila.hora}">07:00</td>
+                    <td th:each="dia : ${fila.dias}"
+                        th:class="${dia.clase}"
+                        th:text="${dia.contenido}"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="leyenda-cursos mt-2">
+          <span><span class="circulo-modalidad circulo-virtual"></span> Virtual</span>
+          <span><span class="circulo-modalidad circulo-presencial"></span> Presencial</span>
+        </div>
+      </div>
+
+    </div><!-- /page-body -->
+  </main>
+
+  <!-- Modal Simulador -->
+  <div class="modal fade" id="simModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content" style="border:none; border-radius:var(--radius-xl); overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#1E293B,#0f172a); color:#fff; padding:1.5rem 1.75rem; display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <div style="font-size:1.1rem; font-weight:700;">🧮 Simulador de Notas</div>
+            <div style="font-size:.78rem; opacity:.6; margin-top:2px;">Proyecta tu nota final antes de exámenes</div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div style="padding:1.5rem 1.75rem; background:#f9f9fb; overflow-y:auto; max-height:75vh;">
+          <div class="mb-3">
+            <label class="ru-form-label">📊 Puntos acumulados hasta ahora</label>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <input type="number" id="simNotaActual" class="ru-form-control" style="max-width:160px;"
+                     placeholder="Ej: 45.5" min="0" max="100" step="0.01"
+                     th:value="${notaPromedio}">
+              <span style="font-size:.8rem; color:var(--navy-muted);">puntos de 100</span>
+            </div>
+          </div>
+          <hr class="ru-divider">
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="ru-form-label mb-0">📝 Evaluaciones pendientes</label>
+              <button class="ru-btn ru-btn-primary ru-btn-sm" type="button" id="simAgregarBtn">+ Agregar</button>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 110px 100px 36px; gap:.5rem; padding:0 .5rem; margin-bottom:.3rem; font-size:.7rem; color:var(--navy-muted); text-transform:uppercase;">
+              <span>Evaluación</span><span style="text-align:center">Nota esp.</span><span style="text-align:center">Peso %</span><span></span>
+            </div>
+            <div id="simEvalList"></div>
+          </div>
+          <hr class="ru-divider">
+          <div class="mb-3">
+            <label class="ru-form-label">🎯 Meta mínima para aprobar</label>
+            <div class="d-flex align-items-center gap-2">
+              <input type="number" id="simMeta" class="ru-form-control" style="max-width:110px;"
+                     placeholder="70" min="0" max="100" step="1" value="70">
+              <span style="font-size:.8rem; color:var(--navy-muted);">puntos</span>
+            </div>
+          </div>
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:1.25rem;">
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; margin-bottom:1rem;">
+              <div style="text-align:center; padding:.85rem .5rem; background:var(--bg); border-radius:var(--radius-sm);">
+                <div style="font-size:.7rem; color:var(--navy-muted); text-transform:uppercase; margin-bottom:.3rem;">Actual</div>
+                <div id="simResActual" style="font-size:1.45rem; font-weight:700; color:var(--navy);">—</div>
+              </div>
+              <div style="text-align:center; padding:.85rem .5rem; background:var(--indigo-light); border:1px solid #c7d2fe; border-radius:var(--radius-sm);">
+                <div style="font-size:.7rem; color:var(--indigo); text-transform:uppercase; margin-bottom:.3rem;">Proyectada</div>
+                <div id="simResProyectada" style="font-size:1.45rem; font-weight:700; color:var(--indigo);">—</div>
+              </div>
+              <div style="text-align:center; padding:.85rem .5rem; background:var(--bg); border-radius:var(--radius-sm);">
+                <div style="font-size:.7rem; color:var(--navy-muted); text-transform:uppercase; margin-bottom:.3rem;">Para meta</div>
+                <div id="simResMeta" style="font-size:1.45rem; font-weight:700; color:var(--navy);">—</div>
+              </div>
+            </div>
+            <div style="height:10px; background:#f1f5f9; border-radius:5px; overflow:visible; position:relative; display:flex; margin-bottom:.85rem;">
+              <div id="simBarActual" style="height:100%; background:var(--indigo); border-radius:5px 0 0 5px; transition:width .4s ease; width:0%;"></div>
+              <div id="simBarExtra"  style="height:100%; background:#a5b4fc; transition:width .4s ease; width:0%;"></div>
+              <div id="simBarMeta"   style="position:absolute; top:-3px; bottom:-3px; width:3px; background:var(--amber); border-radius:2px; transition:left .4s ease; left:70%;"></div>
+            </div>
+            <div id="simDiagnosis" style="text-align:center; font-size:.88rem; font-weight:500; padding:.65rem 1rem; border-radius:var(--radius-sm); background:var(--bg); color:var(--navy-muted);">
+              Agrega evaluaciones para ver la proyección.
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Footer -->
-    <div th:replace="~{fragments/footer :: FooterPagina}"></div>
+  <div th:replace="fragments/footer :: FooterPagina"></div>
 
-    <script>
-        /**
-         * Calcula el porcentaje acumulado actual y actualiza el panel.
-         *
-         * Fórmula:
-         *   porcentajeAcumulado = Σ( (nota_i / 100) × peso_i )
-         *
-         * Solo se cuentan las filas dentro de #listCompleted (tareas entregadas con nota).
-         * El panel se actualiza dinámicamente; si el DOM cambia (p. ej. tras guardar nota)
-         * basta con llamar calcularAcumulado() de nuevo.
-         */
-        function calcularAcumulado() {
-            // --- Recolectar datos de tareas completadas ---
-            const rowsCompleted = document.querySelectorAll('#listCompleted .task-row');
-            const rowsPending   = document.querySelectorAll('#listPending .task-row');
-
-            let puntosObtenidos      = 0;  // Σ (nota/100 × peso)
-            let pesoCompletado       = 0;  // Σ peso de entregadas
-            let pesoPendiente        = 0;  // Σ peso de pendientes
-            let countCompletedValid  = 0;  // tareas con nota real
-            const totalTareas        = rowsCompleted.length + rowsPending.length;
-
-            rowsCompleted.forEach(row => {
-                const nota   = parseFloat(row.getAttribute('data-nota') || 0);
-                const peso   = parseFloat(row.getAttribute('data-weight') || 0);
-                const puntos = (nota / 100) * peso;
-                puntosObtenidos += puntos;
-                pesoCompletado  += peso;
-                if (nota > 0) countCompletedValid++;
-            });
-
-            rowsPending.forEach(row => {
-                const peso = parseFloat(row.getAttribute('data-weight') || 0);
-                pesoPendiente += peso;
-            });
-
-            // Porcentaje acumulado (sobre el 100% total del curso)
-            const acumulado = puntosObtenidos; // ya está en escala 0-100
-
-            // Nota actual: cuánto obtuve sobre lo que ya se evaluó
-            const notaActual = pesoCompletado > 0
-                ? (puntosObtenidos / pesoCompletado) * 100
-                : 0;
-
-            // Porcentaje del curso que ya fue evaluado
-            const cursoCubierto = pesoCompletado; // en %
-
-            // Progreso de la barra: cuánto del total ha sido cubierto
-            const totalPeso       = pesoCompletado + pesoPendiente;
-            const progresoBarra   = totalPeso > 0 ? (pesoCompletado / totalPeso) * 100 : 0;
-
-            // --- Actualizar DOM ---
-            document.getElementById('displayAccumulated').innerHTML =
-                acumulado.toFixed(1) + '<small>%</small>';
-
-            document.getElementById('displayPoints').textContent =
-                puntosObtenidos.toFixed(2);
-
-            document.getElementById('displayCovered').textContent =
-                cursoCubierto.toFixed(1) + '%';
-
-            document.getElementById('displayCount').textContent =
-                countCompletedValid + ' / ' + totalTareas;
-
-            document.getElementById('displayCurrentGrade').textContent =
-                pesoCompletado > 0 ? notaActual.toFixed(1) + ' / 100' : '—';
-
-            document.getElementById('displayPending').textContent =
-                rowsPending.length;
-
-            // Barra de progreso
-            document.getElementById('progressFill').style.width =
-                Math.min(progresoBarra, 100).toFixed(1) + '%';
-
-            document.getElementById('progressLabel').textContent =
-                progresoBarra.toFixed(1) + '% del cuatrimestre evaluado';
-
-            // Contadores en headers de tarjetas
-            document.getElementById('countCompleted').textContent = rowsCompleted.length;
-            document.getElementById('countPending').textContent   = rowsPending.length;
-        }
-
-        // Ejecutar al cargar y cuando cambie el DOM (por si se usa turbo/ajax)
-        document.addEventListener('DOMContentLoaded', calcularAcumulado);
-    </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+  (function(){
+    var evalList = document.getElementById('simEvalList');
+    var bsModal  = new bootstrap.Modal(document.getElementById('simModal'));
+    document.getElementById('abrirSimuladorBtn').addEventListener('click',function(){
+      if(evalList&&evalList.children.length===0) agregarFila('Examen Final','','');
+      calcular(); bsModal.show();
+    });
+    document.getElementById('simAgregarBtn').addEventListener('click',function(){ agregarFila('','',''); });
+    document.getElementById('simNotaActual').addEventListener('input',calcular);
+    document.getElementById('simMeta').addEventListener('input',calcular);
+    function agregarFila(n,nota,peso){
+      var row=document.createElement('div');
+      row.style.cssText='display:grid;grid-template-columns:1fr 110px 100px 36px;gap:.5rem;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:.5rem .65rem;margin-bottom:.4rem;';
+      row.innerHTML='<input type="text" placeholder="Nombre" style="border:none;outline:none;font-size:.88rem;background:transparent;width:100%;" value="'+(n||'')+'">'
+        +'<input type="number" placeholder="0–100" min="0" max="100" step="0.01" style="border:1px solid #e2e8f0;border-radius:6px;padding:.3rem .4rem;width:100%;font-size:.85rem;text-align:center;outline:none;" value="'+(nota!==undefined&&nota!==''?nota:'')+'">'
+        +'<input type="number" placeholder="0–100" min="0" max="100" step="0.01" style="border:1px solid #e2e8f0;border-radius:6px;padding:.3rem .4rem;width:100%;font-size:.85rem;text-align:center;outline:none;" value="'+(peso!==undefined&&peso!==''?peso:'')+'">'
+        +'<button type="button" style="background:none;border:none;color:#f43f5e;cursor:pointer;font-size:.9rem;padding:.2rem .3rem;border-radius:5px;" title="Eliminar">✕</button>';
+      row.querySelector('button').addEventListener('click',function(){ row.remove(); calcular(); });
+      row.querySelectorAll('input').forEach(function(i){ i.addEventListener('input',calcular); });
+      evalList.appendChild(row); calcular();
+    }
+    function calcular(){
+      var na=parseFloat(document.getElementById('simNotaActual').value)||0;
+      var mt=parseFloat(document.getElementById('simMeta').value)||70;
+      var pe=0;
+      evalList.querySelectorAll('div').forEach(function(r){
+        var ins=r.querySelectorAll('input[type="number"]');
+        if(ins.length>=2){ var n=parseFloat(ins[0].value)||0; var p=parseFloat(ins[1].value)||0; pe+=(n/100)*p; }
+      });
+      var pr=na+pe, dm=mt-pr, fi=evalList.children.length;
+      var s=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
+      s('simResActual',na.toFixed(1));
+      var ep=document.getElementById('simResProyectada');
+      if(ep){ep.textContent=pr.toFixed(1);ep.style.color=pr>=mt?'#10b981':(dm>20?'#f43f5e':'#4f46e5');}
+      var em=document.getElementById('simResMeta');
+      if(em){if(dm<=0){em.textContent='✅ Meta';em.style.color='#10b981';}else{em.textContent='+'+dm.toFixed(1)+' pts';em.style.color=dm>20?'#f43f5e':'#f59e0b';}}
+      var pa=Math.min(na,100),px=Math.max(0,Math.min(pe,100-pa));
+      var sa=document.getElementById('simBarActual'),se=document.getElementById('simBarExtra'),sm=document.getElementById('simBarMeta');
+      if(sa)sa.style.width=pa.toFixed(1)+'%';if(se)se.style.width=px.toFixed(1)+'%';if(sm)sm.style.left=Math.min(mt,100).toFixed(1)+'%';
+      var dg=document.getElementById('simDiagnosis');
+      if(dg){
+        if(fi===0){dg.textContent='Agrega evaluaciones para ver la proyección.';dg.style.background='#f8fafc';dg.style.color='#64748b';}
+        else if(pr>=mt){dg.textContent='🎉 ¡Con esta proyección alcanzas la meta!';dg.style.background='#ecfdf5';dg.style.color='#047857';}
+        else if(dm<=10){dg.textContent='⚠️ Estás cerca. Necesitas '+dm.toFixed(1)+' pts más.';dg.style.background='#fffbeb';dg.style.color='#b45309';}
+        else{dg.textContent='🔴 Te faltan '+dm.toFixed(1)+' pts. Revisa tu estrategia.';dg.style.background='#fff1f2';dg.style.color='#be123c';}
+      }
+    }
+    calcular();
+  })();
+  </script>
 </body>
 </html>
