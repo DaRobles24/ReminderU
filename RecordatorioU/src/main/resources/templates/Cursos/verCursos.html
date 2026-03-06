@@ -284,6 +284,7 @@
           </div>
           <div class="curso-meta-item">
             <div class="curso-meta-label">Hora</div>
+            <!-- FIX 1: clase corregida de "hora-" a "hora-ampm" para que el JS la formatee -->
             <div class="curso-meta-value hora-ampm" th:text="${curso.hora}">—</div>
           </div>
           <div class="curso-meta-item" th:if="${curso.sede != null and curso.sede != ''}">
@@ -315,6 +316,7 @@
       </div>
 
       <!-- ══ PROGRESO DEL CURSO ══ -->
+      <!-- Se muestra solo cuando el controller envía notaPromedio (hay notas registradas) -->
       <div class="curso-progress-panel" th:if="${notaPromedio != null}">
         <div class="cp-header">
           <div>
@@ -370,37 +372,6 @@
         </button>
       </div>
 
-      <!-- ══ NOTAS ══ -->
-      <div class="mb-4">
-        <div class="ru-section-header">
-          <p class="section-label mb-0">📝 Notas registradas</p>
-          <!-- FIX: etiqueta <a> completa y correcta -->
-          <a th:href="@{/notas/agregar/{id}(id=${curso.id})}"
-             class="ru-btn ru-btn-primary ru-btn-sm">+ Agregar nota</a>
-        </div>
-
-        <div th:if="${notas != null and !#lists.isEmpty(notas)}">
-          <div th:each="nota : ${notas}" class="nota-item">
-            <span class="nota-nombre" th:text="${nota.nombre}">Examen 1</span>
-            <div class="d-flex align-items-center gap-3">
-              <span class="nota-valor"
-                    th:classappend="${nota.valor >= 70} ? 'aprobado' : 'reprobado'"
-                    th:text="${#numbers.formatDecimal(nota.valor, 1, 2)}">0.00</span>
-              <a th:href="@{/notas/eliminar/{id}(id=${nota.id})}"
-                 class="ru-btn ru-btn-ghost ru-btn-sm"
-                 onclick="return confirm('¿Eliminar esta nota?')"
-                 style="padding:.2rem .6rem; color:var(--rose);">🗑</a>
-            </div>
-          </div>
-        </div>
-
-        <div class="ru-empty" th:if="${notas == null or #lists.isEmpty(notas)}">
-          <div class="ru-empty-icon">📋</div>
-          <div class="ru-empty-title">Sin notas aún</div>
-          <div class="ru-empty-text">Agrega tus notas para calcular el promedio y usar el simulador.</div>
-        </div>
-      </div>
-
       <!-- ══ TAREAS PENDIENTES ══ -->
       <div class="mb-4">
         <div class="ru-section-header">
@@ -437,9 +408,9 @@
             <div class="tarea-row-actions">
               <a th:href="@{/tareas/ver/{id}(id=${tarea.id})}"
                  class="ru-btn ru-btn-ghost ru-btn-sm">Ver</a>
-              <!-- FIX: tareaId DENTRO del @{} -->
-              <a th:href="@{/notas/agregar/{id}(id=${curso.id}, tareaId=${tarea.id})}"
-                 class="ru-btn ru-btn-ghost ru-btn-sm" title="Agregar nota" style="color:var(--indigo);">📝</a>
+              <!-- Botón para agregar/editar nota de esta tarea -->
+              <a th:href="@{/tareas/ver/{id}(id=${tarea.id})}"
+                 class="ru-btn ru-btn-ghost ru-btn-sm" title="Agregar nota a esta tarea" style="color:var(--indigo);">+ Nota</a>
               <a th:href="@{/tareas/entregar/{id}(id=${tarea.id})}"
                  class="ru-btn ru-btn-success ru-btn-sm" title="Marcar entregada">✓</a>
             </div>
@@ -473,9 +444,8 @@
             </div>
           </div>
           <div class="tarea-row-actions">
-            <!-- FIX: tareaId DENTRO del @{} -->
             <a th:if="${tarea.notaObtenida == null}"
-               th:href="@{/notas/agregar/{id}(id=${curso.id}, tareaId=${tarea.id})}"
+               th:href="@{/tareas/ver/{id}(id=${tarea.id})}"
                class="ru-btn ru-btn-primary ru-btn-sm">+ Nota</a>
             <a th:href="@{/tareas/ver/{id}(id=${tarea.id})}"
                class="ru-btn ru-btn-ghost ru-btn-sm">Ver</a>
@@ -595,18 +565,24 @@
   }
 
   // ── Formatear horas a AM/PM ──
+  // El valor en BD es "8-11 AM", "11-2 PM", "2-5 PM", "6-9 PM"
+  // El sufijo ya indica a qué período corresponde el rango completo.
+  // Mapeo fijo para evitar ambigüedades:
+  var HORAS_MAP = {
+    '8-11 AM':  '8 AM – 11 AM',
+    '11-2 PM':  '11 AM – 2 PM',
+    '2-5 PM':   '2 PM – 5 PM',
+    '6-9 PM':   '6 PM – 9 PM'
+  };
   document.addEventListener('DOMContentLoaded', function(){
     document.querySelectorAll('.hora-ampm').forEach(function(el){
       var raw = el.textContent.trim();
-      var match = raw.match(/^(\d+)[:\-](\d+)$/);
-      if(match){
-        var h1 = parseInt(match[1]);
-        var h2 = parseInt(match[2]);
-        var fmt = function(h){ return h < 12 ? h + ' AM' : (h === 12 ? '12 PM' : (h-12) + ' PM'); };
-        el.textContent = fmt(h1) + ' – ' + fmt(h2);
+      if(HORAS_MAP[raw]){
+        el.textContent = HORAS_MAP[raw];
       }
     });
   });
+
   (function(){
     var evalList = document.getElementById('simEvalList');
     var bsModal  = new bootstrap.Modal(document.getElementById('simModal'));
@@ -659,7 +635,7 @@
         else { dg.textContent='🔴 Te faltan '+dm.toFixed(1)+' pts. Revisa tu estrategia.'; dg.style.background='#fff1f2'; dg.style.color='#be123c'; }
       }
     }
-    
+
     calcular();
   })();
   </script>
