@@ -2,13 +2,18 @@ package com.reminderU.reminderU.controller;
 
 import com.reminderU.reminderU.modelo.Usuario;
 import com.reminderU.reminderU.service.UsuarioService;
+import com.reminderU.reminderU.service.impl.CustomOAuth2User;
+import com.reminderU.reminderU.service.impl.CustomUserDetails;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,51 +31,34 @@ public class PerfilController {
         this.homeController = homeController;
     }
 
-    private String obtenerEmailDeAutenticacion(Authentication authentication) {
-        if (authentication.getPrincipal() instanceof OAuth2User) {
-            OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
-            return oauth2User.getAttribute("email");
-        } else {
-            return authentication.getName();
+    // ─── Obtener usuario actual (OAuth2 o local) ─────────────────────────────
+    private Usuario obtenerUsuarioActual(Authentication authentication) {
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof CustomOAuth2User) {
+            return ((CustomOAuth2User) principal).getUsuario();
+        } else if (principal instanceof CustomUserDetails) {
+            return ((CustomUserDetails) principal).getUsuario();
         }
+        // Fallback por email
+        return usuarioService.obtenerPorEmail(authentication.getName());
     }
 
-    // ================================
-    // HOME/DASHBOARD — redirige a / para que HomeController cargue todo
-    // ================================
+    // ─── HOME ────────────────────────────────────────────────────────────────
     @GetMapping("/home")
     public String perfilHome(Authentication authentication, Model model) {
-        // Delegamos al HomeController para que cargue tareas, semanas, Q, etc.
         return homeController.index(model, authentication);
     }
 
-    // ================================
-    // VER PERFIL
-    // ================================
+    // ─── VER PERFIL ──────────────────────────────────────────────────────────
     @GetMapping("/ver")
     public String verMiPerfil(Authentication authentication, Model model) {
-        String email = obtenerEmailDeAutenticacion(authentication);
-        Usuario usuario = usuarioService.obtenerPorEmail(email);
+        Usuario usuario = obtenerUsuarioActual(authentication);
         if (usuario == null) return "redirect:/login?error=true";
         model.addAttribute("usuario", usuario);
         return "perfil/ver";
     }
 
-    // ================================
-    // EDITAR PERFIL
-    // ================================
-    @GetMapping("/editar")
-    public String editarPerfil(Authentication authentication, Model model) {
-        String email = obtenerEmailDeAutenticacion(authentication);
-        Usuario usuario = usuarioService.obtenerPorEmail(email);
-        if (usuario == null) return "redirect:/login?error=true";
-        model.addAttribute("usuario", usuario);
-        return "perfil/editar";
-    }
-
-    // ================================
-    // VER PERFIL POR ID
-    // ================================
+    // ─── VER PERFIL POR ID ───────────────────────────────────────────────────
     @GetMapping("/{id}")
     public String verPerfilPorId(@PathVariable Long id, Model model) {
         Usuario usuario = usuarioService.obtenerPorId(id);
@@ -79,9 +67,16 @@ public class PerfilController {
         return "perfil/ver";
     }
 
-    // ================================
-    // GUARDAR PERFIL
-    // ================================
+    // ─── EDITAR PERFIL ───────────────────────────────────────────────────────
+    @GetMapping("/editar")
+    public String editarPerfil(Authentication authentication, Model model) {
+        Usuario usuario = obtenerUsuarioActual(authentication);
+        if (usuario == null) return "redirect:/login?error=true";
+        model.addAttribute("usuario", usuario);
+        return "perfil/editar";
+    }
+
+    // ─── GUARDAR PERFIL ──────────────────────────────────────────────────────
     @PostMapping("/editar")
     public String guardarPerfil(
             Authentication authentication,
@@ -89,8 +84,7 @@ public class PerfilController {
             @RequestParam(value = "foto", required = false) MultipartFile foto,
             Model model) {
         try {
-            String email = obtenerEmailDeAutenticacion(authentication);
-            Usuario usuarioActual = usuarioService.obtenerPorEmail(email);
+            Usuario usuarioActual = obtenerUsuarioActual(authentication);
             if (usuarioActual == null) return "redirect:/login?error=true";
 
             usuarioActual.setNombre(usuarioForm.getNombre());
@@ -113,5 +107,22 @@ public class PerfilController {
             model.addAttribute("usuario", usuarioForm);
             return "perfil/editar";
         }
+    }
+
+    // ─── ELIMINAR CUENTA ─────────────────────────────────────────────────────
+    @PostMapping("/eliminar")
+    public String eliminarCuenta(Authentication authentication,
+                                  HttpServletRequest request,
+                                  HttpServletResponse response) {
+        Usuario usuario = obtenerUsuarioActual(authentication);
+        if (usuario == null) return "redirect:/login?error=true";
+
+        // Cerrar sesión antes de eliminar
+        new SecurityContextLogoutHandler().logout(request, response, authentication);
+
+        // Eliminar usuario
+        usuarioService.eliminarUsuario(usuario.getIdUsuario());
+
+        return "redirect:/login?eliminado=true";
     }
 }

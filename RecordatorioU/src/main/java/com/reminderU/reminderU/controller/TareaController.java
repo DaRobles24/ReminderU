@@ -19,10 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Controller
 @RequestMapping("/tareas")
@@ -58,7 +55,6 @@ public class TareaController {
             model.addAttribute("fechaInicioCuatrimestre", cuatri.getFechaInicio().toString());
             model.addAttribute("fechaFinCuatrimestre",    cuatri.getFechaFin().toString());
         }
-        // Si es null, NO se agrega el atributo → th:if="${fechaInicioCuatrimestre != null}" queda false
     }
 
     // ─── Método auxiliar: construir cursosMap para el JS inline ──────────────
@@ -75,45 +71,90 @@ public class TareaController {
         return cursosMap;
     }
 
+    // ─── Clase interna para agrupar tareas por curso ─────────────────────────
+    public static class GrupoCurso {
+        private final Curso curso;
+        private final List<Map<String, Object>> tareas;
+
+        public GrupoCurso(Curso curso, List<Map<String, Object>> tareas) {
+            this.curso = curso;
+            this.tareas = tareas;
+        }
+
+        public Curso getCurso() { return curso; }
+        public List<Map<String, Object>> getTareas() { return tareas; }
+    }
+
     // ─── LISTAR ──────────────────────────────────────────────────────────────
     @GetMapping
     public String listarTareas(Model model) {
         Usuario usuarioLogueado = obtenerUsuarioActual();
-        List<Tarea> tareas = tareaService.listarTareasPorUsuario(usuarioLogueado);
+        List<Tarea> todasTareas = tareaService.listarTareasPorUsuario(usuarioLogueado);
 
-        List<Map<String, Object>> tareasConTiempo = tareas.stream().map(t -> {
-            Map<String, Object> mapa = new HashMap<>();
-            mapa.put("tarea", t);
+        // Separar pendientes y entregadas
+        List<Tarea> pendientes = new ArrayList<>();
+        List<Tarea> entregadas = new ArrayList<>();
 
-            java.time.LocalDateTime ahora = java.time.LocalDateTime.now();
-            java.time.LocalDateTime entrega = (t.getFechaEntrega() != null && t.getHoraEntrega() != null)
-                    ? java.time.LocalDateTime.of(t.getFechaEntrega(), t.getHoraEntrega())
-                    : java.time.LocalDateTime.of(
-                        t.getFechaEntrega() != null ? t.getFechaEntrega() : LocalDate.now(),
-                        LocalTime.of(23, 59));
-
-            long totalMinutos = ChronoUnit.MINUTES.between(ahora, entrega);
-            long dias    = totalMinutos / (60 * 24);
-            long horas   = (totalMinutos % (60 * 24)) / 60;
-            long minutos = totalMinutos % 60;
-
-            mapa.put("dias", dias);
-            mapa.put("horas", horas);
-            mapa.put("minutos", minutos);
-
-            String color;
-            if (totalMinutos < 0)  color = "text-danger";
-            else if (dias > 4)     color = "text-success";
-            else if (dias >= 1)    color = "text-warning";
-            else                   color = "text-danger alerta-urgente";
-            mapa.put("colorTiempo", color);
-
+        for (Tarea t : todasTareas) {
             if (t.getEstado() == null) t.setEstado(Tarea.Estado.PENDIENTE);
-            return mapa;
-        }).toList();
+            if (t.getEstado() == Tarea.Estado.ENTREGADA) {
+                entregadas.add(t);
+            } else {
+                pendientes.add(t);
+            }
+        }
 
-        model.addAttribute("tareasConTiempo", tareasConTiempo);
+        // Agrupar pendientes por curso
+        model.addAttribute("cursosPendientes", agruparPorCurso(pendientes));
+
+        // Agrupar entregadas por curso
+        model.addAttribute("cursosEntregados", agruparPorCurso(entregadas));
+
         return "Tareas/listarTareas";
+    }
+
+    /**
+     * Agrupa una lista de tareas por curso, calculando diasRestantes para cada una.
+     */
+    private List<GrupoCurso> agruparPorCurso(List<Tarea> tareas) {
+        // Mapa ordenado: cursoId -> (curso, lista de tareas enriquecidas)
+        Map<Long, Curso> cursosMap = new LinkedHashMap<>();
+        Map<Long, List<Map<String, Object>>> tareasMap = new LinkedHashMap<>();
+
+        LocalDate hoy = LocalDate.now();
+
+        for (Tarea t : tareas) {
+            if (t.getCurso() == null) continue;
+            Long cursoId = t.getCurso().getId();
+
+            cursosMap.putIfAbsent(cursoId, t.getCurso());
+            tareasMap.putIfAbsent(cursoId, new ArrayList<>());
+
+            Map<String, Object> tareaData = new HashMap<>();
+            tareaData.put("id", t.getId());
+            tareaData.put("titulo", t.getTitulo());
+            tareaData.put("descripcion", t.getDescripcion());
+            tareaData.put("fechaEntrega", t.getFechaEntrega());
+            tareaData.put("horaEntrega", t.getHoraEntrega());
+            tareaData.put("porcentaje", t.getPorcentaje());
+            tareaData.put("estado", t.getEstado());
+            tareaData.put("prioridad", t.getPrioridad());
+            tareaData.put("modalidad", t.getModalidad());
+            tareaData.put("notaObtenida", t.getNotaObtenida());
+            tareaData.put("curso", t.getCurso());
+
+            long diasRestantes = t.getFechaEntrega() != null
+                    ? ChronoUnit.DAYS.between(hoy, t.getFechaEntrega()) : 0;
+            tareaData.put("diasRestantes", diasRestantes);
+
+            tareasMap.get(cursoId).add(tareaData);
+        }
+
+        List<GrupoCurso> grupos = new ArrayList<>();
+        for (Long cursoId : cursosMap.keySet()) {
+            grupos.add(new GrupoCurso(cursosMap.get(cursoId), tareasMap.get(cursoId)));
+        }
+        return grupos;
     }
 
     // ─── FORM NUEVA TAREA ────────────────────────────────────────────────────
@@ -123,13 +164,8 @@ public class TareaController {
         Usuario usuarioLogueado = obtenerUsuarioActual();
         List<Curso> cursos = cursoService.listarCursosPorUsuario(usuarioLogueado);
         model.addAttribute("cursos", cursos);
-
-        // ✅ FIX: mapa serializado por Thymeleaf, evita error de inline JS
         model.addAttribute("cursosMap", buildCursosMap(cursos));
-
-        // ✅ FIX: fechas del cuatrimestre para el selector de semanas
         cargarCuatrimestre(model, usuarioLogueado);
-
         return "Tareas/formTarea";
     }
 
@@ -161,11 +197,7 @@ public class TareaController {
 
             List<Curso> cursos = cursoService.listarCursosPorUsuario(obtenerUsuarioActual());
             model.addAttribute("cursos", cursos);
-
-            // ✅ FIX: mapa serializado por Thymeleaf, evita error de inline JS
             model.addAttribute("cursosMap", buildCursosMap(cursos));
-
-            // ✅ FIX: fechas del cuatrimestre para el selector de semanas
             cargarCuatrimestre(model, obtenerUsuarioActual());
 
             return "Tareas/formTarea";
@@ -256,6 +288,23 @@ public class TareaController {
         }
         redirectAttributes.addFlashAttribute("mensaje", "Tarea no encontrada");
         redirectAttributes.addFlashAttribute("tipo", "danger");
+        return "redirect:/tareas";
+    }
+
+    // ─── ENTREGAR (alias de completar, usado en la vista listarTareas) ────────
+    @GetMapping("/entregar/{id}")
+    public String entregarTarea(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        Optional<Tarea> opt = tareaService.buscarPorId(id);
+        if (opt.isPresent()) {
+            Tarea tarea = opt.get();
+            tarea.setEstado(Tarea.Estado.ENTREGADA);
+            tareaService.guardarTarea(tarea);
+            redirectAttributes.addFlashAttribute("mensaje", "¡Tarea marcada como entregada! 🎉");
+            redirectAttributes.addFlashAttribute("tipo", "success");
+        } else {
+            redirectAttributes.addFlashAttribute("mensaje", "Tarea no encontrada");
+            redirectAttributes.addFlashAttribute("tipo", "danger");
+        }
         return "redirect:/tareas";
     }
 }

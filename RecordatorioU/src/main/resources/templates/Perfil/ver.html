@@ -96,6 +96,26 @@
                 background-color: #2563eb;
                 color: #fff;
             }
+
+            .btn-delete-profile {
+                background-color: transparent;
+                color: #ef4444;
+                border: 2px solid #ef4444;
+                padding: 0.75rem 2rem;
+                border-radius: 0.5rem;
+                font-weight: 600;
+                display: inline-block;
+                transition: all 0.2s;
+                width: 100%;
+                text-align: center;
+                margin-top: 0.75rem;
+                cursor: pointer;
+            }
+
+            .btn-delete-profile:hover {
+                background-color: #ef4444;
+                color: #fff;
+            }
         </style>
     </head>
     <body>
@@ -103,25 +123,31 @@
 
         <main>
             <div class="profile-container">
+
+                <!-- Mensaje de éxito -->
+                <div th:if="${param.success}" class="alert alert-success mb-3">
+                    Perfil actualizado correctamente ✅
+                </div>
+
                 <div class="profile-card">
                     <!-- Header del perfil -->
                     <div class="profile-header">
                         <!-- Foto de Google (URL externa) -->
-                        <img th:if="${usuario.fotoPerfil != null && usuario.fotoPerfil.startsWith('http')}" 
-                             th:src="${usuario.fotoPerfil}" 
-                             alt="Foto de perfil" 
+                        <img th:if="${usuario.fotoPerfil != null && usuario.fotoPerfil.startsWith('http')}"
+                             th:src="${usuario.fotoPerfil}"
+                             alt="Foto de perfil"
                              class="profile-img"/>
 
                         <!-- Foto local (desde servidor) -->
-                        <img th:if="${usuario.fotoPerfil != null && !usuario.fotoPerfil.startsWith('http')}" 
-                             th:src="@{${usuario.fotoPerfil}}" 
-                             alt="Foto de perfil" 
+                        <img th:if="${usuario.fotoPerfil != null && !usuario.fotoPerfil.startsWith('http')}"
+                             th:src="@{${usuario.fotoPerfil}}"
+                             alt="Foto de perfil"
                              class="profile-img"/>
 
                         <!-- Sin foto -->
-                        <img th:if="${usuario.fotoPerfil == null}" 
-                             src="https://via.placeholder.com/120" 
-                             alt="Sin foto" 
+                        <img th:if="${usuario.fotoPerfil == null}"
+                             src="https://ui-avatars.com/api/?name=User&background=3b82f6&color=fff&size=120"
+                             alt="Sin foto"
                              class="profile-img"/>
 
                         <div class="profile-name" th:text="${usuario.nombre + ' ' + usuario.apellido}">
@@ -147,18 +173,58 @@
                             <div class="info-value" th:text="${usuario.carrera}">Ingeniería</div>
                         </div>
 
+                        <div class="info-item">
+                            <div class="info-label">Proveedor</div>
+                            <div class="info-value" th:text="${usuario.proveedor}">LOCAL</div>
+                        </div>
 
                         <!-- Botón editar -->
                         <a th:href="@{/perfil/editar}" class="btn-edit-profile">
-                            Editar Perfil
+                            ✏️ Editar Perfil
                         </a>
+
+                        <!-- Botón eliminar cuenta -->
+                        <button type="button" class="btn-delete-profile"
+                                onclick="document.getElementById('modalEliminar').style.display='flex'">
+                            🗑️ Eliminar Cuenta
+                        </button>
                     </div>
                 </div>
             </div>
         </main>
 
-        <div th:replace="~{fragments/footer :: FooterPagina}"></div>
+        <!-- Modal de confirmación eliminar -->
+        <div id="modalEliminar"
+             style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5);
+                    z-index:9999; align-items:center; justify-content:center;">
+            <div style="background:#fff; border-radius:1rem; padding:2rem; max-width:420px;
+                        width:90%; box-shadow:0 8px 32px rgba(0,0,0,0.2); text-align:center;">
+                <div style="font-size:3rem; margin-bottom:0.5rem;">⚠️</div>
+                <h5 style="font-weight:700; color:#374151; margin-bottom:0.5rem;">¿Eliminar tu cuenta?</h5>
+                <p style="color:#6b7280; margin-bottom:1.5rem;">
+                    Esta acción es <strong>irreversible</strong>. Se eliminarán todos tus datos,
+                    cursos y tareas permanentemente.
+                </p>
+                <div style="display:flex; gap:0.75rem;">
+                    <button type="button"
+                            onclick="document.getElementById('modalEliminar').style.display='none'"
+                            style="flex:1; padding:0.75rem; border-radius:0.5rem; border:2px solid #d1d5db;
+                                   background:transparent; color:#374151; font-weight:600; cursor:pointer;">
+                        Cancelar
+                    </button>
+                    <form th:action="@{/perfil/eliminar}" method="post" style="flex:1;">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit"
+                                style="width:100%; padding:0.75rem; border-radius:0.5rem; border:none;
+                                       background:#ef4444; color:#fff; font-weight:600; cursor:pointer;">
+                            Sí, eliminar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
+        <div th:replace="~{fragments/footer :: FooterPagina}"></div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>
