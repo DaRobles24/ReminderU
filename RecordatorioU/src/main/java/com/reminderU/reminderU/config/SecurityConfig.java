@@ -34,7 +34,8 @@ public class SecurityConfig {
                     "/login", "/registro",
                     "/css/**", "/js/**", "/images/**",
                     "/uploads/**", "/webjars/**",
-                    "/error", "/favicon.ico"
+                    "/error", "/favicon.ico",
+                    "/onboarding", "/onboarding/**"   // ← NUEVO: permitir onboarding
                 ).permitAll()
                 .anyRequest().authenticated()
             )
@@ -60,9 +61,6 @@ public class SecurityConfig {
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
             )
-            // ✅ FIX BUG 3: Usar CookieCsrfTokenRepository para que el token
-            // sea accesible desde JavaScript via las meta tags de Thymeleaf
-            // Los endpoints /tareas/api/** usan fetch con el header CSRF incluido.
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())

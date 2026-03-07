@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenido a ReminderU</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/estilos.css(v=${#dates.createNow().time})}">
+    <style>
+        body {
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .onboarding-wrap {
+            width: 100%;
+            max-width: 560px;
+            padding: 1.5rem;
+        }
+
+        /* Logo / brand */
+        .onboarding-brand {
+            text-align: center;
+            margin-bottom: 1.75rem;
+        }
+        .onboarding-brand .brand-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--navy);
+            letter-spacing: -.4px;
+        }
+        .onboarding-brand .brand-sub {
+            font-size: .875rem;
+            color: var(--navy-muted);
+            margin-top: .25rem;
+        }
+
+        /* Card principal */
+        .onboarding-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            padding: 2rem 2.25rem;
+        }
+
+        /* Step indicator */
+        .step-indicator {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 1.75rem;
+        }
+        .step-dot {
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border);
+            flex: 1;
+            transition: background .3s;
+        }
+        .step-dot.active, .step-dot.done { background: var(--indigo); }
+
+        /* Steps */
+        .step { display: none; }
+        .step.active { display: block; }
+
+        /* Universidad cards */
+        .uni-card {
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: .9rem 1.1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: .6rem;
+            display: flex;
+            align-items: center;
+            gap: .85rem;
+        }
+        .uni-card:hover {
+            border-color: var(--indigo);
+            background: var(--indigo-light);
+        }
+        .uni-card.selected {
+            border-color: var(--indigo);
+            background: var(--indigo-light);
+            box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+        }
+        .uni-icon {
+            width: 40px; height: 40px;
+            border-radius: var(--radius-sm);
+            background: var(--indigo-light);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; flex-shrink: 0;
+        }
+        .uni-card.selected .uni-icon { background: var(--indigo); }
+        .uni-nombre { font-size: .9rem; font-weight: 700; color: var(--navy); }
+        .uni-desc   { font-size: .75rem; color: var(--navy-muted); margin-top: .1rem; }
+
+        /* Período buttons */
+        .periodo-btn {
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.25rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            flex: 1;
+        }
+        .periodo-btn:hover {
+            border-color: var(--indigo);
+            background: var(--indigo-light);
+        }
+        .periodo-btn.selected {
+            border-color: var(--indigo);
+            background: var(--indigo-light);
+            box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+        }
+        .periodo-emoji { font-size: 1.75rem; }
+        .periodo-nombre { font-size: .875rem; font-weight: 700; color: var(--navy); margin-top: .4rem; }
+        .periodo-desc   { font-size: .72rem; color: var(--navy-muted); margin-top: .15rem; }
+
+        /* Días */
+        .dia-btn {
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: .4rem .7rem;
+            cursor: pointer;
+            font-size: .78rem;
+            font-weight: 700;
+            color: var(--navy-muted);
+            transition: var(--transition);
+            user-select: none;
+        }
+        .dia-btn:hover { border-color: var(--indigo); color: var(--indigo); }
+        .dia-btn.selected {
+            border-color: var(--indigo);
+            background: var(--indigo);
+            color: #fff;
+        }
+
+        /* Franjas */
+        .franja-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: .4rem;
+        }
+
+        /* Step title */
+        .step-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 1rem;
+        }
+
+        /* Subtítulo pasos */
+        .onboarding-steps-label {
+            font-size: .78rem;
+            font-weight: 600;
+            color: var(--navy-muted);
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            margin-bottom: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="onboarding-wrap">
+
+    <!-- Brand -->
+    <div class="onboarding-brand">
+        <div class="brand-name">ReminderU</div>
+        <div class="brand-sub" id="subtitulo">Configuremos tu experiencia</div>
+    </div>
+
+    <!-- Card -->
+    <div class="onboarding-card">
+
+        <!-- Step indicator -->
+        <div class="step-indicator">
+            <div class="step-dot active" id="dot1"></div>
+            <div class="step-dot"        id="dot2"></div>
+            <div class="step-dot"        id="dot3"></div>
+        </div>
+
+        <!-- ══ FORM NORMAL ══ -->
+        <form th:action="@{/onboarding/guardar}" method="post" id="onboardingForm">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="universidadId" id="universidadIdInput"/>
+            <input type="hidden" name="tipoPeriodo"   id="tipoPeriodoInput"/>
+
+            <!-- PASO 1 -->
+            <div class="step active" id="step1">
+                <p class="step-title">¿En qué universidad estudiás?</p>
+
+                <div th:each="uni : ${universidades}">
+                    <div class="uni-card"
+                         th:data-id="${uni.id}"
+                         th:data-custom="${uni.isCustom()}"
+                         onclick="selectUniversidad(this)">
+                        <div class="uni-icon">
+                            <span th:text="${uni.isCustom()} ? '⚙️' : '🎓'"></span>
+                        </div>
+                        <div>
+                            <div class="uni-nombre" th:text="${uni.nombre}"></div>
+                            <div class="uni-desc"
+                                 th:text="${uni.isCustom()} ? 'Configurá tus propios horarios' : 'Horarios predefinidos'">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${error}" class="ru-alert ru-alert-danger mt-3" th:text="${error}"></div>
+
+                <button type="button" class="ru-btn ru-btn-primary ru-btn-block ru-btn-lg mt-3"
+                        id="btnPaso1" disabled onclick="irAPaso2()">
+                    Continuar →
+                </button>
+            </div>
+
+            <!-- PASO 2 normal -->
+            <div class="step" id="step2">
+                <p class="step-title">¿Cómo se organiza tu año académico?</p>
+                <div class="d-flex gap-3 mb-4">
+                    <div class="periodo-btn" onclick="selectPeriodo('CUATRIMESTRE', this)">
+                        <div class="periodo-emoji">📅</div>
+                        <div class="periodo-nombre">Cuatrimestre</div>
+                        <div class="periodo-desc">3 períodos por año</div>
+                    </div>
+                    <div class="periodo-btn" onclick="selectPeriodo('SEMESTRE', this)">
+                        <div class="periodo-emoji">🗓️</div>
+                        <div class="periodo-nombre">Semestre</div>
+                        <div class="periodo-desc">2 períodos por año</div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="ru-btn ru-btn-ghost" onclick="irAPaso1()">← Atrás</button>
+                    <button type="submit" class="ru-btn ru-btn-success ru-btn-block ru-btn-lg"
+                            id="btnFinalizar" disabled>
+                        ¡Listo, empezar! 🚀
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- ══ FORM CUSTOM ══ -->
+        <form th:action="@{/onboarding/guardar-custom}" method="post" id="customForm">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="universidadId" id="customUniversidadIdInput"/>
+            <input type="hidden" name="tipoPeriodo"   id="customTipoPeriodoInput"/>
+            <div id="customDiasHidden"></div>
+            <div id="customFranjasHidden"></div>
+
+            <!-- PASO 2 custom -->
+            <div class="step" id="step2custom">
+                <p class="step-title">¿Cómo se organiza tu año académico?</p>
+                <div class="d-flex gap-3 mb-4">
+                    <div class="periodo-btn" onclick="selectPeriodoCustom('CUATRIMESTRE', this)">
+                        <div class="periodo-emoji">📅</div>
+                        <div class="periodo-nombre">Cuatrimestre</div>
+                        <div class="periodo-desc">3 períodos por año</div>
+                    </div>
+                    <div class="periodo-btn" onclick="selectPeriodoCustom('SEMESTRE', this)">
+                        <div class="periodo-emoji">🗓️</div>
+                        <div class="periodo-nombre">Semestre</div>
+                        <div class="periodo-desc">2 períodos por año</div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="ru-btn ru-btn-ghost" onclick="irAPaso1()">← Atrás</button>
+                    <button type="button" class="ru-btn ru-btn-primary ru-btn-block ru-btn-lg"
+                            id="btnPaso2Custom" disabled onclick="irAPaso3()">
+                        Continuar →
+                    </button>
+                </div>
+            </div>
+
+            <!-- PASO 3 custom -->
+            <div class="step" id="step3">
+                <p class="step-title">Personalizá tu horario</p>
+
+                <label class="ru-form-label">Días disponibles</label>
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <span class="dia-btn" data-dia="LUNES"     onclick="toggleDia(this)">Lun</span>
+                    <span class="dia-btn" data-dia="MARTES"    onclick="toggleDia(this)">Mar</span>
+                    <span class="dia-btn" data-dia="MIERCOLES" onclick="toggleDia(this)">Mié</span>
+                    <span class="dia-btn" data-dia="JUEVES"    onclick="toggleDia(this)">Jue</span>
+                    <span class="dia-btn" data-dia="VIERNES"   onclick="toggleDia(this)">Vie</span>
+                    <span class="dia-btn" data-dia="SABADO"    onclick="toggleDia(this)">Sáb</span>
+                    <span class="dia-btn" data-dia="DOMINGO"   onclick="toggleDia(this)">Dom</span>
+                </div>
+
+                <label class="ru-form-label">Franjas horarias</label>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:6px; margin-bottom:.35rem;">
+                    <small class="text-muted fw-600">Etiqueta</small>
+                    <small class="text-muted">Inicio</small>
+                    <small class="text-muted">Fin</small>
+                    <span></span>
+                </div>
+                <div id="franjasContainer"></div>
+
+                <button type="button"
+                        class="ru-btn ru-btn-ghost ru-btn-sm mb-3 mt-1"
+                        onclick="agregarFranja()">
+                    + Agregar franja
+                </button>
+
+                <div id="errorCustom" class="ru-alert ru-alert-danger d-none mb-3"></div>
+
+                <div class="d-flex gap-2">
+                    <button type="button" class="ru-btn ru-btn-ghost"
+                            onclick="irAPaso2Custom()">← Atrás</button>
+                    <button type="button" class="ru-btn ru-btn-success ru-btn-block ru-btn-lg"
+                            onclick="finalizarCustom()">
+                        ¡Listo, empezar! 🚀
+                    </button>
+                </div>
+            </div>
+        </form>
+
+    </div><!-- /onboarding-card -->
+</div><!-- /onboarding-wrap -->
+
+<script>
+    let universidadSeleccionada = null;
+    let esCustom = false;
+
+    function selectUniversidad(el) {
+        document.querySelectorAll('.uni-card').forEach(c => c.classList.remove('selected'));
+        el.classList.add('selected');
+        universidadSeleccionada = el.dataset.id;
+        esCustom = el.dataset.custom === 'true';
+        document.getElementById('btnPaso1').disabled = false;
+    }
+
+    function irAPaso2() {
+        if (!universidadSeleccionada) return;
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('dot1').classList.add('done');
+        document.getElementById('dot2').classList.add('active');
+
+        if (esCustom) {
+            document.getElementById('subtitulo').textContent = 'Configuremos tu experiencia en 3 pasos';
+            document.getElementById('customUniversidadIdInput').value = universidadSeleccionada;
+            document.getElementById('step2custom').classList.add('active');
+        } else {
+            document.getElementById('subtitulo').textContent = 'Configuremos tu experiencia en 2 pasos';
+            document.getElementById('universidadIdInput').value = universidadSeleccionada;
+            document.getElementById('step2').classList.add('active');
+        }
+    }
+
+    function irAPaso1() {
+        ['step2','step2custom','step3'].forEach(id =>
+            document.getElementById(id).classList.remove('active'));
+        document.getElementById('step1').classList.add('active');
+        document.getElementById('dot1').classList.remove('done');
+        document.getElementById('dot2').classList.remove('active','done');
+        document.getElementById('dot3').classList.remove('active','done');
+        document.getElementById('subtitulo').textContent = 'Configuremos tu experiencia';
+    }
+
+    function selectPeriodo(valor, el) {
+        document.querySelectorAll('#step2 .periodo-btn').forEach(b => b.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('tipoPeriodoInput').value = valor;
+        document.getElementById('btnFinalizar').disabled = false;
+    }
+
+    function selectPeriodoCustom(valor, el) {
+        document.querySelectorAll('#step2custom .periodo-btn').forEach(b => b.classList.remove('selected'));
+        el.classList.add('selected');
+        document.getElementById('customTipoPeriodoInput').value = valor;
+        document.getElementById('btnPaso2Custom').disabled = false;
+    }
+
+    function irAPaso3() {
+        document.getElementById('step2custom').classList.remove('active');
+        document.getElementById('step3').classList.add('active');
+        document.getElementById('dot2').classList.add('done');
+        document.getElementById('dot3').classList.add('active');
+        if (document.querySelectorAll('.franja-row').length === 0) agregarFranja();
+    }
+
+    function irAPaso2Custom() {
+        document.getElementById('step3').classList.remove('active');
+        document.getElementById('step2custom').classList.add('active');
+        document.getElementById('dot2').classList.remove('done');
+        document.getElementById('dot3').classList.remove('active');
+    }
+
+    function toggleDia(el) { el.classList.toggle('selected'); }
+
+    function agregarFranja() {
+        const container = document.getElementById('franjasContainer');
+        const row = document.createElement('div');
+        row.className = 'franja-row';
+        row.innerHTML = `
+            <input type="text"  class="ru-form-control franja-etiqueta" placeholder="8-11" maxlength="10">
+            <input type="time"  class="ru-form-control franja-inicio"   value="08:00">
+            <input type="time"  class="ru-form-control franja-fin"      value="11:00">
+            <button type="button" class="ru-btn ru-btn-danger ru-btn-sm"
+                    onclick="this.closest('.franja-row').remove()">✕</button>
+        `;
+        container.appendChild(row);
+    }
+
+    function finalizarCustom() {
+        const errorDiv = document.getElementById('errorCustom');
+        errorDiv.classList.add('d-none');
+
+        const diasSeleccionados = [...document.querySelectorAll('.dia-btn.selected')]
+            .map(el => el.dataset.dia);
+        if (diasSeleccionados.length === 0) {
+            errorDiv.textContent = 'Seleccioná al menos un día.';
+            errorDiv.classList.remove('d-none');
+            return;
+        }
+
+        const filas = document.querySelectorAll('.franja-row');
+        if (filas.length === 0) {
+            errorDiv.textContent = 'Agregá al menos una franja horaria.';
+            errorDiv.classList.remove('d-none');
+            return;
+        }
+
+        const franjas = [];
+        let valido = true;
+        filas.forEach((row, i) => {
+            const etiqueta = row.querySelector('.franja-etiqueta').value.trim();
+            const inicio   = row.querySelector('.franja-inicio').value;
+            const fin      = row.querySelector('.franja-fin').value;
+            if (!etiqueta || !inicio || !fin) { valido = false; return; }
+            franjas.push({ etiqueta, inicio, fin, orden: i + 1 });
+        });
+
+        if (!valido) {
+            errorDiv.textContent = 'Completá todos los campos de cada franja.';
+            errorDiv.classList.remove('d-none');
+            return;
+        }
+
+        const diasHidden = document.getElementById('customDiasHidden');
+        diasHidden.innerHTML = '';
+        diasSeleccionados.forEach(dia => {
+            const inp = document.createElement('input');
+            inp.type = 'hidden'; inp.name = 'dias'; inp.value = dia;
+            diasHidden.appendChild(inp);
+        });
+
+        const franjasHidden = document.getElementById('customFranjasHidden');
+        franjasHidden.innerHTML = '';
+        const inp = document.createElement('input');
+        inp.type = 'hidden'; inp.name = 'franjasJson'; inp.value = JSON.stringify(franjas);
+        franjasHidden.appendChild(inp);
+
+        document.getElementById('customForm').submit();
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

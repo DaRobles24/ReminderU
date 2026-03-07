@@ -20,7 +20,6 @@ public class Usuario {
 
     private String carrera;
 
-    // Cédula OPCIONAL - solo obligatoria para usuarios LOCAL
     @Column(unique = true, nullable = true)
     private String cedula;
 
@@ -29,7 +28,6 @@ public class Usuario {
     @Column(unique = true, nullable = false)
     private String email;
 
-    // Password OPCIONAL - solo obligatoria para usuarios LOCAL
     @Column(nullable = true)
     private String password;
 
@@ -42,84 +40,59 @@ public class Usuario {
     @Column(nullable = false)
     private String proveedor = "LOCAL";
 
+    // ===== ONBOARDING =====
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "universidad_id")
+    private Universidad universidad;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_periodo")
+    private TipoPeriodo tipoPeriodo;
+
+    @Column(name = "onboarding_completado", nullable = false)
+    private boolean onboardingCompletado = false;
+
+    public enum TipoPeriodo {
+        CUATRIMESTRE, SEMESTRE
+    }
+
     // ===== Getters y Setters =====
-    public Long getIdUsuario() {
-        return idUsuario;
-    }
+    public Long getIdUsuario() { return idUsuario; }
+    public void setIdUsuario(Long idUsuario) { this.idUsuario = idUsuario; }
 
-    public void setIdUsuario(Long idUsuario) {
-        this.idUsuario = idUsuario;
-    }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
 
-    public String getNombre() {
-        return nombre;
-    }
+    public String getApellido() { return apellido; }
+    public void setApellido(String apellido) { this.apellido = apellido; }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
+    public String getCarrera() { return carrera; }
+    public void setCarrera(String carrera) { this.carrera = carrera; }
 
-    public String getApellido() {
-        return apellido;
-    }
+    public String getCedula() { return cedula; }
+    public void setCedula(String cedula) { this.cedula = cedula; }
 
-    public void setApellido(String apellido) {
-        this.apellido = apellido;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public String getCarrera() {
-        return carrera;
-    }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
-    public void setCarrera(String carrera) {
-        this.carrera = carrera;
-    }
+    public String getFotoPerfil() { return fotoPerfil; }
+    public void setFotoPerfil(String fotoPerfil) { this.fotoPerfil = fotoPerfil; }
 
-    public String getCedula() {
-        return cedula;
-    }
+    public String getRol() { return rol; }
+    public void setRol(String rol) { this.rol = rol; }
 
-    public void setCedula(String cedula) {
-        this.cedula = cedula;
-    }
+    public String getProveedor() { return proveedor; }
+    public void setProveedor(String proveedor) { this.proveedor = proveedor; }
 
-    public String getEmail() {
-        return email;
-    }
+    public Universidad getUniversidad() { return universidad; }
+    public void setUniversidad(Universidad universidad) { this.universidad = universidad; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public TipoPeriodo getTipoPeriodo() { return tipoPeriodo; }
+    public void setTipoPeriodo(TipoPeriodo tipoPeriodo) { this.tipoPeriodo = tipoPeriodo; }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getFotoPerfil() {
-        return fotoPerfil;
-    }
-
-    public void setFotoPerfil(String fotoPerfil) {
-        this.fotoPerfil = fotoPerfil;
-    }
-
-    public String getRol() {
-        return rol;
-    }
-
-    public void setRol(String rol) {
-        this.rol = rol;
-    }
-
-    public String getProveedor() {
-        return proveedor;
-    }
-
-    public void setProveedor(String proveedor) {
-        this.proveedor = proveedor;
-    }
+    public boolean isOnboardingCompletado() { return onboardingCompletado; }
+    public void setOnboardingCompletado(boolean onboardingCompletado) { this.onboardingCompletado = onboardingCompletado; }
 }

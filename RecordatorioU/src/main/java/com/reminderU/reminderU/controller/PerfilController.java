@@ -31,7 +31,6 @@ public class PerfilController {
         this.homeController = homeController;
     }
 
-    // ─── Obtener usuario actual (OAuth2 o local) ─────────────────────────────
     private Usuario obtenerUsuarioActual(Authentication authentication) {
         Object principal = authentication.getPrincipal();
         if (principal instanceof CustomOAuth2User) {
@@ -39,13 +38,19 @@ public class PerfilController {
         } else if (principal instanceof CustomUserDetails) {
             return ((CustomUserDetails) principal).getUsuario();
         }
-        // Fallback por email
         return usuarioService.obtenerPorEmail(authentication.getName());
     }
 
     // ─── HOME ────────────────────────────────────────────────────────────────
     @GetMapping("/home")
     public String perfilHome(Authentication authentication, Model model) {
+        Usuario usuario = obtenerUsuarioActual(authentication);
+
+        // ← NUEVO: si no completó el onboarding, redirigir
+        if (usuario != null && !usuario.isOnboardingCompletado()) {
+            return "redirect:/onboarding";
+        }
+
         return homeController.index(model, authentication);
     }
 
@@ -117,10 +122,7 @@ public class PerfilController {
         Usuario usuario = obtenerUsuarioActual(authentication);
         if (usuario == null) return "redirect:/login?error=true";
 
-        // Cerrar sesión antes de eliminar
         new SecurityContextLogoutHandler().logout(request, response, authentication);
-
-        // Eliminar usuario
         usuarioService.eliminarUsuario(usuario.getIdUsuario());
 
         return "redirect:/login?eliminado=true";
